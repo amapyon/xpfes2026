@@ -1,0 +1,6 @@
+# Ignore everything directly under the repository root by default.
+/*
+
+# Track the root project documentation and this ignore file.
+!/*.md
+!/.gitignore

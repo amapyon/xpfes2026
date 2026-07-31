@@ -1,0 +1,896 @@
+# 決定履歴
+
+この文書は、決定事項、検討中事項、未確認事項、却下事項を区別するために使用する。
+
+新しい決定は日付付きで追記する。過去の記録を無断で書き換えず、変更理由を残す。
+
+---
+
+## 2026-07-19時点の決定事項
+
+### ワークショップ
+
+- XP祭り2026で物理UIの電子工作ワークショップを実施する
+- 所要時間は約1.5時間
+- 参加者は約8人
+- 初心者から経験者まで複数レベルが混在する
+- UIAPduino本体は当日配布する
+- VS Codeは参加者が事前にインストールする
+- 外付けスイッチとロータリーエンコーダを配布予定
+
+### ハードウェア
+
+- 標準ボードはUIAPduino Pro Micro CH32V003 V1.4
+- MCUはCH32V003
+- PCとの接続には主にUSBを使用する
+
+### 対象OS
+
+- Windows 11 64bit
+- macOS Apple Silicon
+- 主な実験と検証はWindows 11で行う
+- 参加者向け演習は両OSに対応する
+- Intel Macは必須対応に含めない
+
+### 配布開発環境
+
+- Windows版: `uiap-devkit-win64.zip`
+- macOS版: `uiap-devkit-macarm64.zip`
+- 展開後ディレクトリ名も同名に固定
+- Windows版の標準環境はMSYS2 UCRT64
+- Windows版のMSYS2は`runtime/msys64`へ格納
+- macOS版はApple Silicon arm64ネイティブ
+- Rosetta 2を必須にしない
+- WindowsとmacOSで演習コマンドを可能な限り共通化する
+
+### ディレクトリ
+
+- 外部依存は`workspace/deps`
+- 参加者向け演習は`workspace/exercises`
+- 主催者用PoCは`workspace/poc`
+- 共通補助スクリプトはトップレベル`scripts`
+- 復旧用バイナリは`firmware`
+- ライセンスは`licenses`
+
+### 共通環境変数
+
+- `UIAP_DEVKIT_ROOT`
+- `UIAP_WORKSPACE`
+
+### ビルド
+
+- Makefileに開発者固有の絶対パスを記述しない
+- `ch32fun`は`$(UIAP_WORKSPACE)/deps/ch32fun`から参照
+- `rv003usb`は`$(UIAP_WORKSPACE)/deps/rv003usb`から参照
+- 共通ターゲットとして`make`、`make flash`、`make clean`を使用する
+- 参加者向け標準手順では追加インストールとインターネット接続を前提にしない
+
+### 検証状態
+
+技術項目は、少なくとも次を区別して記録する。
+
+- 提案
+- 実装済み
+- ビルド確認済み
+- 書き込み確認済み
+- USB列挙確認済み
+- HID送受信確認済み
+- 物理動作確認済み
+- Windows確認済み
+- macOS確認済み
+- 参加者向け採用済み
+
+一段階の成功を、後続段階の成功として扱わない。
+
+---
+
+## 2026-07-19 振動モーターPoCと書き込み方式
+
+### 決定・確認済み
+
+- Windows 11 64bitのMSYS2 UCRT64環境で、UIAPduino Pro Micro CH32V003 V1.4へ`minichlink`を使って書き込みできる
+- 書き込み用USBブートローダーのVID:PIDは`1209:B803`
+- `minichlink`では`-c 0x1209b803`相当の指定が必要
+- 参加者向けの書き込みコマンドは`make flash`へ統一する
+- `D6/A2`はCH32V003の`PC4`へ接続され、`TIM1_CH4`としてPWM出力に使用できる
+- ドライバー回路内蔵振動モーターモジュールを`5V`、`GND`、`D6/A2`へ接続し、Windows実機で振動を確認した
+
+### USB HID振動モーターPoC
+
+`workspace/poc/vibration_motor_hid`のPoCについて、Windows 11 64bitで次を確認済みとする。
+
+- ファームウェアのビルド
+- PC側ユーティリティのビルド
+- `1209:B803`ブートローダーによる書き込み
+- Vendor-defined USB HID Feature Report
+- アプリケーション`1209:D003`としての列挙
+- 振動レベル`1`～`100`の受信
+- 振動強度の変化
+- `status`による設定値取得
+- `off`による停止
+
+`1209:D003`はPoC用暫定値であり、公開配布または製品化前に利用可否を確認し、必要なら正式なVID:PIDへ変更する。
+
+macOS Apple Silicon向けのPC側ソースコードとMakefileは存在するが、実ビルド、書き込み、列挙、HID送受信、モーター動作は未検証である。
+
+### 採用状態
+
+- 振動モーターHID制御PoCはWindows向けPoCとして完了
+- ワークショップの最終制作物または必須演習としての採用は未決定
+- Vendor-defined HID Feature Report、Report ID、振動レベル範囲を最終仕様へ採用するかは未決定
+
+---
+
+## 移行状況
+
+### 確認済み
+
+次の移行先が存在することを確認済み。
+
+```text
+C:\pj\uiap-devkit-win64\runtime\msys64
+C:\pj\uiap-devkit-win64\workspace\deps\ch32fun
+C:\pj\uiap-devkit-win64\workspace\deps\rv003usb
+C:\pj\uiap-devkit-win64\workspace\poc
+```
+
+`workspace/poc`で確認済みのディレクトリ:
+
+```text
+hscroll_encoder_poc
+touchpad_pinch_poc
+vibration_motor_hid
+```
+
+### 移行未完了
+
+単純PWM制御に使用した`vibration_motor_poc`は、次の旧配置で動作確認された。
+
+```text
+C:\pj\uiap-devkit-win64\workspace\vibration_motor_poc
+```
+
+標準配置は次である。
+
+```text
+workspace/poc/vibration_motor_poc
+```
+
+必要なら旧PoCを標準位置へ移動し、Makefileの依存参照を`UIAP_WORKSPACE`ベースへ変更する。参加者向け配布版へ含めるかは別途判断する。
+
+---
+
+## 検討中
+
+- ワークショップで最終的に制作するUSBデバイス
+- USB HIDクラスの具体的な用途
+- HID Usage
+- 演習の最終構成
+- 振動モーターHID PoCを参加者向け演習へ採用するか
+- キックスタートを実装するか
+- 参加者が使用する振動レベルの範囲
+- macOS Apple Siliconでの振動モーターHID PoC実機検証
+- macOS版RISC-Vツールチェーンの最終採用とオフライン同梱方式（検証基準はxPack 14.2.0-3）
+- macOS版の書き込みツールと書き込み方式
+- 使用するVS Code拡張機能
+- 配布する電子部品の最終構成
+- 当日のネットワーク接続を前提とするか
+- `workspace/poc`を参加者向け配布版へ含めるか
+- ブートローダーおよび復旧用ファームウェアの配布範囲
+- ブートローダー破損時の復旧手順と必要機材
+- `runtime`をどこまで最小化するか
+- macOS向けコード署名または公証
+- Intel Macへの任意対応
+- 公開配布時のアプリケーションVID:PID
+
+---
+
+## 明示的に未決定
+
+- USBメディアコントローラーを制作物にすること
+- 振動モーターコントローラーを最終制作物にすること
+- 特定のHID Usageへの固定
+- Vendor-defined Feature Reportを最終方式に固定すること
+- `1209:D003`を公開配布用VID:PIDとして採用すること
+- Intel Macを必須対応にすること
+- ワークショップ当日にインターネット接続を必須にすること
+
+---
+
+## 2026-07-24
+
+### 検証済み
+
+- Windows 11 x64で、xPack Windows Build Tools、xPack GNU RISC-V GCC、
+  ch32fun、rv003usb、minichlinkを使用したオンライン・ブートストラップ型
+  開発環境が動作した
+- `make clean`、`make`、`make flash`を実行し、UIAPduino Pro Micro
+  CH32V003 V1.4への書き込みと実機動作を確認した
+- Windows形式パスは、MakefileからPOSIXシェルへ渡す前に
+  `C:/...`形式へ正規化する必要がある
+- モメンタリスイッチをD5へ接続したHIDキーボードを確認した
+- ロータリーエンコーダーをD8、D9、GNDへ接続し、
+  Vendor-defined HID経由でWindowsホストアプリへ回転量を送信できた
+- PythonホストアプリがHIDレポートを受信し、
+  Windowsのポインターサイズを変更できた
+
+### 影響
+
+- Windows版のMSYS2 UCRT64標準構成と、今回検証した
+  xPackネイティブ構成の比較が必要
+- MakefileにWindowsパス正規化規則を追加する
+- 書き込み対象数は物理USB親デバイス単位で判定する
+- PowerShellからPythonを実行するときは、複雑な `python -c` を使用せず、
+  Pythonファイルを実行する
+
+### 検討中
+
+- Windows版標準環境をxPackベースのネイティブ構成へ変更すること
+- ロータリーエンコーダーによるポインターサイズ変更を
+  ワークショップ演習として採用すること
+
+### 未確認
+
+- オフライン環境
+- 別PCおよび別ユーザー
+- macOS Apple Silicon
+- 複数UIAPduinoの同時接続
+- USBシリアル番号のMCU固有ID化
+
+### PoC限定
+
+- `1209:C003`、`1209:C004`は一時的なアプリケーションVID/PID
+- `TEST3-001`、`TEST7-001`は一時的なUSBシリアル番号
+
+
+## 2026-07-25 Windows標準構成とch32fun参加者向けサブセット
+
+### 決定
+
+- Windows版の標準構成は、MSYS2を使用しないxPackベースのWindowsネイティブ構成とする
+- 参加者向け`workspace/deps/ch32fun`は、固定済み上流コミットから許可リスト方式で生成する
+- 完全な上流ツリーから不要ディレクトリを手作業または削除リストだけで除く方式を、最終リリースの標準にしない
+- 許可リストに記載した相対パスだけを、新しい空ディレクトリへコピーする
+- 上流MIT `LICENSE`、上流コミット、サブセット識別情報、実際の許可リストを参加者向けサブセットへ残す
+- 完全な固定コミットの上流ソース、許可リスト、生成スクリプト、検査スクリプト、ローカルパッチ、再生成手順を対応ソースとして別途保持する
+- SBOMでは`ch32fun`を完全版ではなく参加者向けサブセットとして識別する
+
+### 初期除外方針
+
+次は参加者向けサブセットへ原則として含めない。
+
+```text
+.github/
+build_scripts/
+examples/
+examples_ch5xx/
+examples_h41x/
+examples_l103/
+examples_usb/
+examples_v10x/
+examples_v20x/
+examples_v30x/
+examples_x00x/
+examples_x035/
+projects/
+platformio.ini
+package.json
+.git/
+```
+
+採用演習で必要になった場合は、ディレクトリ全体ではなく必要ファイルを個別に許可し、理由と検証結果を記録する。
+
+### 理由
+
+- UIAPduino Pro Micro CH32V003 V1.4で使用しない他MCU向けサンプルによる混乱を減らす
+- 参加者向けZIPのファイル数、展開時間、セキュリティスキャン、ライセンス監査の対象を減らす
+- 手作業による削除漏れと必要ファイルの誤削除を防ぐ
+- 上流更新時に意図しない新規ファイルが参加者向けZIPへ混入することを防ぐ
+- 配布物の来歴、再生成性、SBOM、対応ソースの整合性を維持する
+
+### 影響
+
+- `15_CH32FUN_SUBSET_RULES.md`を追加する
+- `10_DEVKIT_STRUCTURE.md`、`20_BUILD_RULES.md`、`50_RELEASE_CHECKLIST.md`、`60_TROUBLESHOOTING.md`、`70_VALIDATION_RESULTS.md`を更新する
+- リリース元に許可リスト、生成スクリプト、検査スクリプト、上流情報、パッチ管理を追加する
+- WindowsとmacOSの全採用演習をサブセットで再検証する
+- 過去のMSYS2標準構成の記録は履歴として残すが、現行標準としては本決定が優先する
+
+### 未確認
+
+- 許可リストの最終ファイル一覧
+- 生成スクリプトと検査スクリプトの実装
+- Windows 11 x64でのサブセット全演習検証
+- macOS Apple Siliconでのサブセット全演習検証
+- 最終オフラインZIP
+- 対応ソースアーカイブとSBOMの生成
+- サブセット化による実際のZIPサイズ、展開時間、スキャン時間の削減量
+
+---
+
+
+## 2026-07-25 PC側Pythonプログラムの演習内配置
+
+### 決定
+
+- PC側Pythonプログラムは、対応する演習の`host`ディレクトリへ配置する
+- 標準パスは`workspace/exercises/<exercise-name>/host/<program>.py`とする
+- トップレベルの`workspace/host`は使用しない
+- PC側プログラムがない演習には、空の`host`ディレクトリを作成しない
+- 各演習の`make app`は、同じ演習の`host`だけを参照する
+- `scripts/python`には、Devkit全体で使用する診断、USB列挙、復旧などの補助プログラムだけを配置する
+
+### 理由
+
+- ファームウェア、Makefile、参加者向けREADME、PC側プログラムを演習単位で完結させる
+- 演習の追加、削除、配布対象選択を容易にする
+- ホストアプリと対応ファームウェアのVID:PID、Usage、Report形式の不一致を防ぐ
+- 別演習のホストアプリを誤って起動する可能性を減らす
+- 参加者向けZIPから未採用演習を除外するときに、関連ホストアプリも同時に除外できるようにする
+
+### 影響
+
+- ロータリーエンコーダー演習の標準配置は次とする
+
+```text
+workspace/exercises/02_rotary_cursor_size/host/cursor_size_host.py
+```
+
+- `10_DEVKIT_STRUCTURE.md`、`20_BUILD_RULES.md`、`40_WORKSHOP_GUIDE_RULES.md`、`50_RELEASE_CHECKLIST.md`、`60_TROUBLESHOOTING.md`、`70_VALIDATION_RESULTS.md`を更新する
+- `99_FULL_PROJECT_GUIDE.md`を分割文書から再生成する
+- Devkit本体では、旧`workspace/host/cursor_size_host.py`を新しい標準位置へ移し、Makefileとコマンドラッパーを修正する必要がある
+
+### 検証状態
+
+- ディレクトリ構成と文書規約: 決定済み
+- Devkit本体のファイル移設: 未確認
+- 移設後の`make app`: 未確認
+- 移設後のHID受信とWindowsポインターサイズ変更: 未確認
+- 移設後の`Ctrl+C`終了と設定復元: 未確認
+
+### 過去の検証記録
+
+Devkit `0.3.2-test7`のWindows実機検証では、次の旧配置を使用した。
+
+```text
+workspace/host/cursor_size_host.py
+```
+
+過去の検証結果は履歴として保持し、標準配置へ移設後に再検証する。
+
+---
+
+## 2026-07-25 GPIO直結パッシブブザーPoCの上限
+
+### 決定
+
+- 対象をUIAPduino Pro Micro CH32V003 V1.4、`12085P`、D6/A2（PC4 / TIM1_CH4）の追加部品なし直結PoCに限定する
+- ファームウェアとホスト側の上限を次に固定する
+
+```c
+#define MAX_TONE_DURATION_MS  2000u
+#define MAX_TOTAL_TONE_MS     2000u
+#define DIRECT_DUTY_DIVISOR   2u
+#define DIRECT_COOLDOWN_MS    5000u
+```
+
+- 連続発音と1 PLAYコマンド内の総発音時間は2,000msを上限とする
+- PWM通電デューティ比は50%を上限とする
+- 発音後は5,000msのクールダウンを強制する
+- 上限を超える時間、デューティ比、短いクールダウンは採用しない
+
+### 利用者実機報告
+
+- ブザーを5Vへ接続した構成で発音した
+- 2,000msの連続発音で明確な問題は確認されなかった
+- 50%デューティ比で明確な問題は確認されなかった
+- この結果は利用者の実機報告であり、GPIO電流、PC4端子電圧、誘導性スパイク、温度の測定結果ではない
+
+### 位置付け
+
+- 本決定は主催者用PoCのソフトウェア上限である
+- GPIO直結を一般に許可する決定ではない
+- 5V接続がCH32V003の端子定格へ適合することを確認した決定ではない
+- 参加者向け必須演習、標準回路、長期利用としての採用は未決定かつ現時点では不可とする
+- `30_HARDWARE_RULES.md`のGPIO直接接続と誘導性負荷に関する一般規則を変更しない
+
+### 次の検証
+
+- GPIOピーク電流と平均電流
+- PC4のHigh-Z期間を含む最高・最低電圧
+- PWM切替時の誘導性スパイク
+- MCU、レギュレーター、ブザーの温度
+- 2秒発音の反復耐久
+- 複数のUIAPduinoとブザー個体
+- WindowsとmacOSでの更新版ビルド、書き込み、USB HID、発音
+
+---
+
+
+## 2026-07-26 ポテンショメーター＋ポインターサイズ＋振動統合PoC
+
+### 現行実装
+
+- 演習ディレクトリは`workspace/exercises/03_pot_cursor_haptic`
+- 実機確認済みリビジョンは`v1.0.8`
+- 対象OSはWindows 11 x64
+- RV09 B10Kポテンショメーター値を0～1023としてVendor-defined HIDでPCへ送る
+- Windowsポインターサイズを32～256の15段階へ変更する
+- サイズ変更成功時に振動モーターモジュールでクリック感を出す
+- 振動既定値はレベル4、80msを2回、間隔40msとする
+- 振動レベルは0～5からホスト起動時に選択できる
+
+### 確認済み配線
+
+- ポテンショメーター両端: +5V、GND
+- ワイパー: 68kΩ/100kΩ分圧、0.1µF、D1/A0（PA2/A0）
+- 5V基準: 68kΩ/100kΩ分圧、0.1µF、D0/A1（PA1/A1）
+- 振動モジュールIN: D6/A2（PC4）
+- 振動モジュール電源: +5V、GND、100µF追加
+- 5VワイパーをADCへ直接接続しない
+
+### ADC安定化
+
+v1.0.8では次を現行方式とする。
+
+- チャンネル切替後の先頭2回を破棄
+- 16回測定から最大値と最小値を除外して平均
+- 5点中央値と低域フィルタ
+- 3カウントの報告値デッドバンド
+- 12カウントの段階ヒステリシス
+- 隣接段階は3サンプル連続で確定
+- モーター駆動中と停止後50msはADC更新停止
+
+利用者実機で、ADC値によるポインターサイズのふらつきが解消したことを確認した。
+
+### Windowsホスト処理
+
+- `make doctor`、`make hidcheck`、`make adc-monitor`、`make cursor-test`、`make haptic-test`、`make app`を提供する
+- 起動前の`CursorBaseSize`と`Accessibility\\CursorSize`を保存する
+- stale restore stateがある場合はアプリ起動前に復元する
+- Windows 11 x64の即時サイズ反映に使用する`SystemParametersInfoW`アクション`0x2029`は未文書化であり、このPoCに限定する
+- 公開仕様またはWindows更新で動作が変わる可能性があるため、各リリース候補で`make cursor-test`を実行する
+
+### 一時識別子
+
+```text
+VID:PID: 1209:D003
+Usage Page: 0xFF00
+Usage: 0x0001
+Product: UIAP Pot Cursor Haptic
+Serial: POT-HAPTIC-001
+```
+
+正式な公開配布用VID:PID、製品名、USBシリアル番号としては未決定である。
+
+### 検証状態
+
+- Windowsビルド: 確認済み
+- FLASH 3428 B、RAM 252 B: 確認済み
+- USBブートローダー書き込み: 確認済み
+- HID列挙と送受信: 確認済み
+- ADC読取り: 確認済み
+- Windowsポインターサイズ変更: 確認済み
+- 振動レベル4: 確認済み
+- ADC安定化v1.0.8: 確認済み
+- macOS相当実装: 未実装
+- ワークショップ必須演習への採用: 未決定
+
+### 位置付け
+
+- Windows 11 x64向け統合PoCとして主要動作合格
+- PoC合格を最終参加者向け採用済みとは扱わない
+- macOSを含む共通演習へ採用する場合は、macOS側ポインター設定またはOS非依存の別成果物を設計する
+- 正式VID:PID、複数個体、長時間、USB切断、強制終了、スリープ復帰、最終オフラインZIPを追加検証する
+
+---
+
+
+## 2026-07-26 Windows版Devkitの展開先パス制約
+
+### 決定
+
+- Windows版Devkitのルートは、ローカルドライブ上のASCII・空白なしパスに限定する
+- 使用できる文字は半角英数字、ドット、ハイフン、アンダースコアとする
+- 推奨展開先は`C:\uiap\uiap-devkit-win64`または`C:\pj\uiap-devkit-win64`とする
+- 空白、全角文字、その他の非ASCII文字、UNCパスを含む場所は非対応とする
+- 非対応パスでは`UIAP-E103`を表示し、`setup`前に停止する
+- `start-uiap.cmd`、`setup.ps1`、`doctor.ps1`で同じ規則を検査する
+
+### 理由
+
+- GNU Makeの`include`は、展開後の空白を複数ファイルの区切りとして扱う
+- `ch32fun.mk`を含むビルド全体で、ソース、インクルード、リンカースクリプト、リダイレクト先を完全に空白対応させる変更は影響範囲が大きい
+- 全角文字はPowerShell、GNU Make、xPack `sh.exe`、RISC-V GCC間の文字コード互換性を保証できない
+- 当日の安定性と復旧容易性を、任意パス対応より優先する
+
+### 採用しない対策
+
+- 8.3短縮パスへの依存
+- `subst`ドライブを参加者へ作成させる方式
+- Devkitを自動的に別場所へコピーする方式
+- Makefileの一部だけへ引用符を追加して対応済みとすること
+
+### 影響
+
+- 事前案内で推奨展開先を指定する
+- `README.md`、`10_DEVKIT_STRUCTURE.md`、`20_BUILD_RULES.md`、`40_WORKSHOP_GUIDE_RULES.md`、`50_RELEASE_CHECKLIST.md`、`60_TROUBLESHOOTING.md`、`70_VALIDATION_RESULTS.md`を更新する
+- `99_FULL_PROJECT_GUIDE.md`を再生成する
+- Windowsリリース候補では、ASCIIパスでの成功と非対応パスでの早期停止を両方検証する
+
+### 検証状態
+
+- 利用者による空白・全角パスでのsetup失敗報告: 確認済み
+- 原因調査と対策実装: 完了
+- 対策版`0.4.2-test10`の静的検査、ZIP CRC、内部マニフェスト: 合格
+- Windows実機での`UIAP-E103`表示と推奨パスでの再セットアップ: 未確認
+
+---
+
+## 2026-07-26 展開先パスエラーの日本語表示
+
+### 決定
+
+- 参加者向けの展開先パスエラーは日本語で表示する
+- `UIAP-E103`などのエラーコードは変更しない
+- 原因、現在の場所、利用できない条件、推奨移動先、再起動手順を表示する
+- `start-uiap.cmd`、`setup.ps1`、`doctor.ps1`の各経路で日本語表示する
+- 英語だけの復旧案内を参加者向け標準にしない
+
+### 理由
+
+- 英語のエラーメッセージを理解できない参加者がいる可能性がある
+- エラーコードだけでは、フォルダー移動とコンソール再起動の必要性を判断できない
+- ワークショップ中の講師への質問と誤った自己修正を減らす
+
+### 検証状態
+
+- 空白を含むパスで`UIAP-E103`が表示されること: 利用者実機確認済み
+- 全角文字を含むパスで`UIAP-E103`が表示されること: 利用者実機確認済み
+- 日本語表示版`0.4.3-test11`の静的検査、ZIP CRC、内部マニフェスト: 合格
+- 日本語表示版のWindows実機確認: 未確認
+
+## 2026-07-26 展開先パス検査の回帰不具合と訂正
+
+### 新しい決定
+
+- Windows版Devkitは、条件を満たす複数階層のローカルパスを許可する
+- 各フォルダー名は半角英数字、ドット、ハイフン、アンダースコアだけとし、空白を含めない
+- `C:\pj\xpfes2026\uiap-devkit-win64`は有効な展開先とする
+- `UIAP-E103`は、空白、非ASCII文字、UNCパスなど、実際に非対応のパスだけに使用する
+- パス判定は`scripts/path-check.ps1`へ集約する
+- `setup.ps1`と`doctor.ps1`に同じ正規表現を重複実装しない
+- 有効パスと非対応パスの自動テストをリリース必須項目とする
+- 日本語エラーメッセージの方針は維持する
+
+### 訂正対象
+
+Devkit `0.4.3-test11`は、有効な次のパスを`UIAP-E103`で拒否した。
+
+```text
+C:\pj\xpfes2026\uiap-devkit-win64
+```
+
+原因は次の正規表現である。
+
+```powershell
+'^[A-Za-z]:\[A-Za-z0-9_.\-]+$'
+```
+
+この実装はWindowsのバックスラッシュと複数階層を正しく表現していない。
+
+### 影響
+
+- `0.4.3-test11`をWindows版リリース候補として使用しない
+- 有効なパスで`UIAP-E103`が表示された場合、参加者へフォルダー移動を案内しない
+- 修正版Devkitへ切り替える
+- `20_BUILD_RULES.md`、`40_WORKSHOP_GUIDE_RULES.md`、`50_RELEASE_CHECKLIST.md`、`60_TROUBLESHOOTING.md`、`70_VALIDATION_RESULTS.md`を更新する
+- `99_FULL_PROJECT_GUIDE.md`を再生成する
+
+### 検証状態
+
+- 有効パスでの誤拒否: 利用者実機確認済み
+- 原因特定: 完了
+- 文書訂正: 完了
+- パス判定コードの修正: 未実施
+- 修正版の有効パス実機確認: 未確認
+- 修正版の空白、全角、UNC拒否確認: 未確認
+
+### 過去決定との関係
+
+2026-07-26の「Windows版Devkitの展開先パス制約」と「展開先パスエラーの日本語表示」は、非対応パスの方針と日本語表示について引き続き有効である。
+
+ただし、`0.4.2-test10`および`0.4.3-test11`の判定実装が正しいという記録は、本項で訂正する。複数階層のASCII・空白なしパスは拒否対象ではない。
+
+---
+
+## 2026-07-27 演習ディレクトリへの移動とコマンド体系
+
+### 決定
+
+- `start-uiap.cmd`または`start-uiap.command`起動後、受講者自身が`cd`コマンドで対象演習ディレクトリへ移動する
+- Windows版の初期ディレクトリは`workspace`とする
+- 演習移動用の`sample`、`macro`、`blink`などのトップレベルコマンドを廃止する
+- 特定演習用の`cursorapp`、`cursorlist`、`cursorrestore`、`hidcheck`などのトップレベルコマンドも廃止する
+- `cursorstore`は標準コマンド名として採用しない
+- 演習固有操作は、対象演習ディレクトリ内のMakefileターゲットへ統一する
+- Devkit共通のトップレベルコマンドは`setup`、`doctor`、`versions`、`report`などに限定する
+
+### 標準操作例
+
+Windows Command Prompt:
+
+```text
+cd /d "%UIAP_WORKSPACE%\exercises\02_rotary_cursor_size"
+make hidcheck
+make app
+make list
+make restore
+```
+
+macOS:
+
+```sh
+cd "$UIAP_WORKSPACE/exercises/02_rotary_cursor_size"
+make hidcheck
+make app
+make list
+make restore
+```
+
+### 理由
+
+- 受講者が現在の演習と実行ディレクトリを把握できる
+- WindowsとmacOSで、標準的な`cd`と`make`を学べる
+- グローバル別名と演習Makefileの機能重複をなくせる
+- 演習の追加・削除時にトップレベルラッパーを増減する必要がない
+- 間違った演習のホストアプリやVID:PIDを操作する可能性を減らせる
+- 手順書、README、Makefileを演習単位で完結させられる
+
+### 影響
+
+- Windows Devkitから`sample.cmd`、`macro.cmd`、`blink.cmd`、`cursorapp.cmd`、`cursorlist.cmd`、`cursorrestore.cmd`を削除する
+- グローバル`hidcheck.cmd`が特定演習のVID:PIDを既定値にする構成を廃止する
+- `welcome.cmd`とトップレベルREADMEには、演習一覧と`cd`例を表示する
+- 各演習READMEは、最初に対象ディレクトリへの`cd`を記載する
+- 各演習Makefileは、必要な`make hidcheck`、`make app`、`make list`、`make app-dry-run`、`make restore`を提供する
+- `50_RELEASE_CHECKLIST.md`で旧ラッパー不在を検査する
+
+### 検証状態
+
+- 根拠文書の更新: 完了
+- Devkit本体の旧ラッパー削除: 未実施
+- Windows 11 x64での`cd`から各演習を実行する確認: 未確認
+- macOS Apple Siliconでの確認: `00_onboard_led_blink`への`cd`、`make clean`、`make flash`を確認済み。他演習は未確認
+- Devkit `0.4.4-test12`: 旧ラッパーを含むため本決定へ未適合
+
+---
+
+## 2026-07-29 macOS Apple Silicon Devkit主催者検証
+
+### 決定
+
+- macOS版の主催者検証用ベースラインを`uiap-devkit-macarm64` `0.1.7-test8`とする
+- この版はオンライン初期化型の検証版であり、参加者向け最終版として配布しない
+- macOS版はApple Silicon arm64ネイティブとし、Rosetta 2を使用しない
+- 参加者向け最終版では、Homebrew、Xcode Command Line Tools、システムPython、管理者権限、当日のインターネット接続を要求しない
+- 主催者が`minichlink`を生成する`build-minichlink`は主催者専用とし、検証用MacではXcode Command Line Toolsを使用してよい
+- GNU MakeはDevkit内へ配置し、参加者向けコマンド名を`make`へ統一する
+- システムの`/usr/bin/make`へフォールバックしない
+- RISC-Vツールチェーンの検証基準をxPack GNU RISC-V Embedded GCC 14.2.0-3 arm64とする
+- `ch32fun`と`rv003usb`はWindowsと同じ固定コミットを使用する
+- `minichlink`は固定済み`ch32fun`ソースとlibusb 1.0.29からarm64ネイティブで生成し、libusbを静的リンクする
+- ローカル生成した`runtime/bin/minichlink`だけを対象に隔離属性を除去し、その後にアドホック署名と署名検証を行う
+- Devkit全体への再帰的な隔離属性削除、Gatekeeper全体の無効化、`sudo spctl --master-disable`は標準手順にしない
+- `doctor`でarm64、動的ライブラリ依存、隔離属性、コード署名、ビルド来歴を検査する
+- `doctor`でリリース阻害項目が残る場合は`UIAP-E299`で失敗させる
+
+### 利用者実機確認済み
+
+検証環境:
+
+```text
+macOS: 26.5.2
+Architecture: Apple Silicon arm64
+Rosetta: not detected
+Devkit: 0.1.7-test8
+Distribution: Online Bootstrap Test
+```
+
+確認済み:
+
+- `start-uiap.command`起動
+- Devkitルート、環境変数、初期`workspace`の設定
+- オンライン`setup`
+- GNU Make 4.4.1 arm64
+- xPack RISC-V GCC 14.2.0-3 arm64
+- `ch32fun`コミット`1e4887e11d4bfa739ed5604524b69f5be9f9275b`
+- `rv003usb`コミット`75d926abe89a3002020b989015eab97ce5ad0470`
+- `build-minichlink`によるlibusb 1.0.29の静的ビルド
+- `minichlink`バージョン識別子`38e653f8354ea8fc19da5f2595cf9958d26738e7`
+- `minichlink`のMach-O arm64、静的libusb、システムフレームワークのみの動的依存
+- `minichlink`単体の隔離属性除去、アドホック署名、署名検証
+- `doctor`結果`PASS=32 WARN=1 FAIL=1`
+- `00_onboard_led_blink`のビルド
+- FLASH 444 B、RAM 0 B
+- ELF、BIN、HEX、LST、MAP生成
+- USBブートローダー`1209:B803`の検出
+- CH32V003の検出
+- `make flash`による書き込みと`Booting`
+- 基板上LEDの0.2秒点灯・0.8秒消灯
+
+実機ログで観測した入力・成果物SHA-256:
+
+```text
+ch32fun source archive: 37a507fa58710a14dbd3e959def57b02a6b0b1d410c9e307653e22aeb081ba9f
+libusb 1.0.29 archive: 5977fc950f8d1395ccea9bd48c06b3f808fd3c2c961b44b0c2e6e29fc3a70a85
+minichlink binary: 56515fb09d3d3f5d44f747f37bee6aee004e65e3cc4c41ab2dedae0cd738121e
+```
+
+これらは当該実機実行で観測した値である。最終リリース用固定値および再現ビルド保証としては、別途`bootstrap.lock`、SBOM、対応ソース、リリース手順へ正式反映して再検証する。
+
+### 回帰不具合と訂正
+
+- `0.1.0-test1`: 未署名・未公証のためGatekeeperの個別許可が必要
+- `0.1.1-test2`: Devkitルートを親`Downloads`と誤認するため使用しない
+- `0.1.2-test3`: パス解決を修正したが、`/usr/bin/make`依存のため最終候補にしない
+- `0.1.3-test4`: Devkit内GNU Makeへ変更し、Lチカのビルドまで確認
+- `0.1.4-test5`: `minichlink`導入方式の検討版。最終方式にしない
+- `0.1.5-test6`: `build-minichlink`初版。GNU Makeの`otool -L`先頭行を依存パスと誤検出
+- `0.1.6-test7`: `otool -L`誤検出を修正。生成した`minichlink`へ隔離属性が継承され、`Killed: 9`となる問題を確認
+- `0.1.7-test8`: `minichlink`単体の隔離属性除去、アドホック署名、署名検証を自動化し、書き込みとLED物理動作まで確認
+
+### 書き込み時の確認事項
+
+`Error: Could not initialize b003boot programmer`は、`minichlink`が実行できてもUSBブートローダー待機状態を捕捉できない場合に発生する。今回の実機では、RESETを押したままUSBを接続し、RESETを離して直ちに`make flash`を再実行することで成功した。
+
+この一度の再試行結果だけを根拠に自動復旧を実装しない。参加者向け手順では、ブートローダーモード、USBケーブル、直結、接続台数、待機時間を順に確認する。
+
+### 未確認・リリース阻害
+
+- Devkit内Pythonとhidapi
+- HID送受信とホストアプリ
+- 最終レビュー済みch32fun許可リスト
+- `ch32fun`およびlibusb入力アーカイブSHA-256の正式固定
+- `-I/usr/include/newlib`への暗黙依存の除去確認
+- ネットワーク切断状態
+- 最終オフラインZIP
+- Developer ID署名・公証の採否
+- 別のApple Silicon Mac、別ユーザー
+- macOS 15の最低対応環境での検証
+- 参加者向け採用
+
+### Gatekeeper方針
+
+- 検証版の起動ファイルについては、対象ファイルと入手元を確認した上でmacOS標準の個別許可を使用する
+- 主催者がローカル生成した`minichlink`に隔離属性が継承された場合は、その`minichlink`単体だけを処理対象とする
+- 隔離属性除去後にアドホック署名を付け、`codesign --verify`で検証する
+- Devkit全体への再帰的な`xattr -dr`を標準手順にしない
+- Gatekeeper全体を無効化しない
+- 最終参加者向け版でDeveloper ID署名・公証するか、個別許可を正式手順とするかは未決定
+
+## 2026-07-31 必須演習とmacOS test10検証
+
+### 決定
+
+- ワークショップの必須演習を次の3本とする
+  - `00_onboard_led_blink`
+  - `01_macro_keyboard`
+  - `02_rotary_cursor_size`
+- `01_macro_keyboard`の標準配線はD5 / PC3とGNDの間のモメンタリスイッチとする
+- `02_rotary_cursor_size`の標準配線はD8 / PC6=A、GND=C、D9 / PC7=Bとする
+- macOSのHID Boot Keyboardは、Device Descriptorのクラス値を`0`とし、Interface DescriptorでHIDクラスを宣言する
+- Boot Keyboardの`GET_REPORT`、`GET_IDLE`、`SET_IDLE`、`GET_PROTOCOL`、`SET_PROTOCOL`を処理する
+- macOS初回接続時にキーボード設定アシスタントが識別キーを要求した場合、Mac本体のキーを代用せず、前の画面へ戻って「終了」で閉じる
+- macOS 26.5.2の確認環境では「スキップ」ボタンがなかったため、「スキップしてANSIを選択」を標準手順にしない
+- `0.1.9-test10`を、LチカとHIDマクロキーボードを確認した当時の最新macOS主催者検証版とする
+
+### 実機確認済み
+
+`01_macro_keyboard`について、macOS Apple Siliconで次を確認した。
+
+- キーボード設定アシスタントを「終了」で閉じた後、スイッチ1回で`AbCdE`
+- 長押しで連続入力しない
+- 離して再度押すと再入力する
+- キーが押されたままにならない
+- USB抜き差し後も入力できる
+- 再接続時に設定アシスタントは再表示されない
+
+### test9の訂正
+
+`0.1.8-test9`は、macOSでUSB Device `1209:C003`として列挙したが、Device Descriptorの`bDeviceClass = 3`によりIOHIDデバイスとして列挙されず、文字入力できなかった。同じ書き込み済みデバイスはWindowsで`AbCdE`を入力できた。
+
+また、test9の`doctor`はNewlib依存なしと判定したが、実際のコンパイル行に`-I/usr/include/newlib`が残っていた。このPASS判定を訂正し、test10で元オプション除去と必須演習3本のdry-run検査を追加した。
+
+### 影響
+
+- 以前の「演習の最終構成は未決定」という記録は、必須演習3本の選定について本決定で更新する
+- ワークショップで最終的に制作するUSBデバイス、最終HID Usage、公開用VID:PIDは引き続き未決定である
+- `01_macro_keyboard`の参加者向けmacOS手順へキーボード設定アシスタントの終了方法を追加する
+- `doctor`の静的検査だけでHID実機合格としない
+- Newlib検査は必須演習ごとの実際のMake dry-runを使用する
+
+### 未確認・リリース阻害
+
+- `02_rotary_cursor_size`のmacOS実機動作
+- 非公開CoreGraphicsカーソルAPIを参加者向け方式として採用するか
+- `0.1.9-test10`マクロキーボードのWindows回帰確認
+- 最終レビュー済み`ch32fun`許可リスト
+- `rv003usb`入力SHA-256の正式固定
+- ネットワーク切断状態と最終オフラインZIP
+- 別のApple Silicon Mac、別ユーザー、macOS最低対応版
+- Developer ID署名・公証または正式な個別許可方針
+
+
+
+## 2026-07-31 macOSロータリーカーソル test11・test12
+
+### 決定
+
+- macOS Apple Silicon向け最新主催者検証版を`uiap-devkit-macarm64` `0.2.1-test12`とする
+- `02_rotary_cursor_size`は、macOS 26.5.2の当該実機では必須演習として合格とする
+- macOSホストはIOKit HIDを使用し、Python・hidapiを要求しない
+- 非公開カーソルAPIのスカラー型を固定せず、getterの書込み幅から`float32`／`float64` ABIを実行時判定する
+- カーソルAPI自己診断に失敗した場合は設定変更を開始しない
+- 不正な現在値を状態ファイルへ保存しない
+- 設定変更後と復元後は再読取りで検証する
+- 正常終了時の復元を必須動作とする
+
+### 実機確認済み
+
+`0.2.0-test11`で次を確認した。
+
+- `1209:C004`のUSB・IOHID列挙
+- 製品名`UIAP Rotary Cursor macOS Test11`
+- CW／CCW HID Input Report
+- 実コンパイル行に`-I/usr/include/newlib`がない
+
+一方、test11はカーソル倍率を`0.00`と誤読し、変更`E207`と復元`E205`に失敗したため、カーソル制御機能は不合格とする。
+
+`0.2.1-test12`ではABI判定と安全な保存・復元を修正した。利用者実機報告により次を確認した。
+
+- CW／CCWに応じたカーソルサイズ変更
+- `Ctrl+C`終了時の起動前サイズ復元
+
+### 影響
+
+- 以前の「`02_rotary_cursor_size`のmacOS実機動作は未確認」という現在状態は、本記録で更新する
+- 必須演習3本はmacOS 26.5.2の当該Apple Silicon実機で合格となる
+- 非公開APIの正式採用可否は、実機合格とは別の決定事項として残す
+- test11はUSB・HID入力の検証履歴として保持するが、カーソル変更用には使用しない
+- 参加者向け手順では`make list`、`make app-dry-run`、`make host-doctor`、`make app`の順に確認する
+
+### 未確認・リリース阻害
+
+- USB切断時の自動復元
+- 別のApple Silicon Mac、別ユーザー
+- 最低対応macOSと最新対象macOSでの回帰
+- スリープ復帰
+- 非公開CoreGraphicsカーソルAPIを参加者向け正式方式として採用するか
+- 公開APIだけで実現できる代替方式
+- 最終レビュー済み`ch32fun`許可リスト
+- `rv003usb`入力SHA-256の正式固定
+- ネットワーク切断状態と最終オフラインZIP
+- Developer ID署名・公証または正式な個別許可方針
+
+---
+## 決定更新テンプレート
+
+```markdown
+## YYYY-MM-DD
+
+### 決定
+- 
+
+### 理由
+- 
+
+### 影響
+- 
+
+### 検討中
+- 
+
+### 却下・未採用
+- 
+```
