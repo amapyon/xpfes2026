@@ -1150,5 +1150,7 @@ Windows test18では`make app-dry-run`が成功し、HID受信まで正常だっ
 ### 検証状態
 
 - 共通ファームウェアのWindows同梱ツールチェーンによるビルド: 合格
-- Windows実機、macOS実機での共通ファームウェア入力: 再確認待ち
+- 共通化コミット`c261cfa`後のWindows実機入力: 利用者実機合格
+- 共通化コミット`c261cfa`後のmacOS実機入力: 利用者実機合格
+- `01_macro_keyboard`のWindows/macOS共通化: 合格
 

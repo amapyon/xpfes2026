@@ -214,7 +214,7 @@ Windowsの`SystemParametersInfoW`アクション`0x2029`とmacOSの非公開Core
 | 演習 | 目的 | 現在の検証状態 |
 |---|---|---|
 | `00_onboard_led_blink` | 開発環境、ビルド、書き込み、復旧の基本確認 | Windows、macOSで物理動作確認済み |
-| `01_macro_keyboard` | エンコーダーモジュールのセンタースイッチとUSB HIDキーボード入力 | 従来のOS別実装は両OSで実機確認済み。共通化後の単一実装は再確認待ち |
+| `01_macro_keyboard` | エンコーダーモジュールのセンタースイッチとUSB HIDキーボード入力 | 共通化後の単一実装をWindows、macOSとも実機確認済み |
 | `02_rotary_cursor_size` | 同じエンコーダーモジュールとPC側処理の体験 | 新モジュールでWindows、macOSとも想定動作を実機確認済み |
 
 必須演習の決定は、ワークショップで最終的に制作するUSBデバイスや、公開配布用の正式HID Usage、VID:PIDを決定したことを意味しない。
@@ -9007,8 +9007,12 @@ Restored pointer size: 80
 - Windows同梱RISC-Vツールチェーンによるビルド: 合格
 - FLASH: 2460 B / 16 KB
 - RAM: 220 B / 2 KB
-- 共通ファームウェアのWindows実機入力: 再確認待ち
-- 共通ファームウェアのmacOS実機入力: 再確認待ち
+- 共通ファームウェアのWindows実機入力: 利用者実機合格
+- 共通ファームウェアのmacOS実機入力: 利用者実機合格
+
+### 実機追認
+
+共通化コミット`c261cfa`後、同じ共通ファームウェアをWindowsとmacOSで確認し、両方で想定どおり動作することを利用者実機で確認した。これにより、`01_macro_keyboard`のOS別ソース廃止と単一実装への統合を合格とする。
 
 <!-- Source: 90_DECISIONS.md -->
 
@@ -10164,4 +10168,6 @@ Windows test18では`make app-dry-run`が成功し、HID受信まで正常だっ
 ### 検証状態
 
 - 共通ファームウェアのWindows同梱ツールチェーンによるビルド: 合格
-- Windows実機、macOS実機での共通ファームウェア入力: 再確認待ち
+- 共通化コミット`c261cfa`後のWindows実機入力: 利用者実機合格
+- 共通化コミット`c261cfa`後のmacOS実機入力: 利用者実機合格
+- `01_macro_keyboard`のWindows/macOS共通化: 合格
