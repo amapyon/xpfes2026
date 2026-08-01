@@ -1,6 +1,22 @@
-# Ignore everything directly under the repository root by default.
-/*
+# Generated participant kits and local validation copies.
+/dist/
+/uiap-devkit-win64/
+/uiap-devkit-macarm64/
+/*.zip
+/_old/
+/xp2026_project_instructions/
+/runtime/
+/.state/
+/logs/
+/workspace/deps/*
+!/workspace/deps/README.md
 
-# Track the root project documentation and this ignore file.
-!/*.md
-!/.gitignore
+# Local caches and generated firmware outputs.
+__pycache__/
+*.pyc
+*.elf
+*.bin
+*.hex
+*.lst
+*.map
+*.log

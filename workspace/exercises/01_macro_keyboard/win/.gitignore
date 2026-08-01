@@ -1,0 +1,8 @@
+*.bin
+*.elf
+*.hex
+*.lst
+*.map
+*_ext.bin
+generated__.ld
+__pycache__/

@@ -1,0 +1,17 @@
+#!/bin/sh
+set -eu
+
+if [ -z "${UIAP_RUNTIME-}" ]; then
+    printf '%s\n' '[UIAP-E100] UIAP_RUNTIME is not set.' >&2
+    printf '%s\n' 'Start the Devkit with start-uiap.command.' >&2
+    exit 100
+fi
+
+bundled="$UIAP_RUNTIME/build-tools/bin/gmake"
+if [ ! -x "$bundled" ]; then
+    printf '%s\n' '[UIAP-E202] Bundled GNU Make is not installed.' >&2
+    printf '%s\n' 'Run setup from start-uiap.command, then retry.' >&2
+    exit 202
+fi
+
+exec "$bundled" "$@"

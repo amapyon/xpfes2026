@@ -1,0 +1,11 @@
+component,version_or_commit,license,distribution_status,notes
+UIAP Devkit organizer files,0.2.2-test13,Project-defined,to be distributed,See repository license before public release
+GNU Make,4.4.1,GPL-3.0-only,downloaded by setup,Official Homebrew arm64 bottle; SHA-256 pinned
+xPack GNU RISC-V Embedded GCC,14.2.0-3,GPL and bundled component licenses,downloaded by setup,Archive is not included in this ZIP
+Python,3.10.20,Python-2.0,downloaded by setup,python-build-standalone 20260728 arm64 archive; SHA-256 pinned
+hidapi,0.15.0,see upstream package metadata,downloaded by setup,CPython 3.10 macOS arm64 wheel; SHA-256 pinned
+ch32fun,1e4887e11d4bfa739ed5604524b69f5be9f9275b,MIT,downloaded by setup,Test subset generated after verified download
+rv003usb,75d926abe89a3002020b989015eab97ce5ad0470,see upstream,downloaded by setup,License review required before public distribution
+minichlink,locally built from pinned ch32fun,see ch32fun upstream,built by organizer,libusb 1.0.29 statically linked
+libusb,1.0.29,LGPL-2.1-or-later,built by organizer,Static linking and source-offer obligations require final review
+Python cursor host,0.2.2-test13,Project-defined,source in exercise 02,hidapi transport; ctypes private CoreGraphics API; validation-only

@@ -1,0 +1,86 @@
+name: Build participant kits
+
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - "VERSION"
+      - "start-uiap.cmd"
+      - "start-uiap.command"
+      - "config/**"
+      - "scripts/**"
+      - "workspace/**"
+      - "firmware/**"
+      - "licenses/**"
+      - "tools/build_devkit.py"
+      - "tools/new_poc.py"
+      - "tests/**"
+      - ".github/workflows/build-devkits.yml"
+  push:
+    branches: [main]
+    tags: ["v*"]
+    paths:
+      - "VERSION"
+      - "start-uiap.cmd"
+      - "start-uiap.command"
+      - "config/**"
+      - "scripts/**"
+      - "workspace/**"
+      - "firmware/**"
+      - "licenses/**"
+      - "tools/build_devkit.py"
+      - "tools/new_poc.py"
+      - "tests/**"
+      - ".github/workflows/build-devkits.yml"
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - target: win
+            runner: windows-latest
+          - target: mac
+            runner: macos-latest
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.13"
+      - name: Test package builder
+        run: python -m unittest discover -s tests -v
+      - name: Check Windows PowerShell syntax
+        if: matrix.target == 'win'
+        shell: powershell
+        run: |
+          $failed = $false
+          Get-ChildItem scripts -Recurse -Filter *.ps1 | ForEach-Object {
+            $tokens = $null
+            $errors = $null
+            [System.Management.Automation.Language.Parser]::ParseFile($_.FullName, [ref]$tokens, [ref]$errors) | Out-Null
+            if ($errors.Count) { $errors; $failed = $true }
+          }
+          if ($failed) { exit 1 }
+      - name: Check macOS shell syntax
+        if: matrix.target == 'mac'
+        shell: bash
+        run: |
+          /bin/sh -n start-uiap.command
+          find scripts -type f \( -name '*.sh' -o -path 'scripts/bin/*' \) -print0 | xargs -0 -n1 /bin/sh -n
+      - name: Build participant kit
+        run: python tools/build_devkit.py --target ${{ matrix.target }}
+      - name: Upload participant kit
+        uses: actions/upload-artifact@v4
+        with:
+          name: uiap-devkit-${{ matrix.target }}
+          path: |
+            dist/*.zip
+            dist/*.zip.sha256
+            dist/SHA256SUMS
+          if-no-files-found: error
+          retention-days: 14

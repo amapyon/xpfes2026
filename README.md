@@ -1,11 +1,110 @@
-# Windows test19関連文書更新
+# XP祭り2026 UIAP Devkit統合開発環境
 
-このZIPには、test18のロータリーカーソルHID実機結果、`WinError 6`、test19修正に伴って変更が必要な文書だけを含む。
+Windows 11 x64とmacOS Apple Siliconで、同じリポジトリをクローンして演習・PoCを開発するための統合環境です。旧`uiap-devkit-win64`と`uiap-devkit-macarm64`の検証済み内容を、共通の`workspace/`へ統合しています。
 
-- リリース回帰検査: `50_RELEASE_CHECKLIST.md`
-- 原因と復旧: `60_TROUBLESHOOTING.md`
-- 実機・静的検証事実: `70_VALIDATION_RESULTS.md`
-- 採用方式と制約: `90_DECISIONS.md`
-- 統合参照: `99_FULL_PROJECT_GUIDE.md`
+## クローン後の開始方法
 
-構成、一般ビルド規約、ハードウェア配線、参加者向け記述規約、ch32fun規約は変更していない。
+Windowsでは`start-uiap.cmd`をダブルクリックし、専用Command Promptで次を実行します。
+
+```console
+setup
+doctor
+```
+
+macOS Apple Siliconでは、ターミナルから次を実行します。初回セットアップでは書き込みツールをビルドするため、Xcode Command Line Toolsが必要です。
+
+```console
+/bin/sh start-uiap.command
+setup
+doctor
+```
+
+セットアップ後は、両OSで同じコマンドを使用します。
+
+```console
+cd workspace/exercises/00_onboard_led_blink
+make
+make flash
+
+cd ../01_macro_keyboard
+make
+make flash
+make app
+
+cd ../02_rotary_cursor_size
+make
+make flash
+make app-dry-run
+make app
+```
+
+`start-uiap.cmd`は`UIAP_PLATFORM=win`、`start-uiap.command`は`UIAP_PLATFORM=mac`を設定します。演習の共通Makefileが対応する`win/`または`mac/`の検証済みソースを選択します。
+
+## ソースの配置
+
+```text
+start-uiap.cmd      # Windows起動
+start-uiap.command  # macOS起動
+config/
+  win/              # Windows依存関係ロック
+  mac/              # macOS依存関係ロック
+scripts/            # 両OSのsetup、doctor、補助コマンド
+runtime/
+  win/              # Windows setup生成物（Git管理外）
+  mac/              # macOS setup生成物（Git管理外）
+workspace/
+  deps/              # setup生成物（Git管理外）
+  exercises/         # 正式演習
+    <exercise>/
+      Makefile       # OS選択用の共通入口
+      win/           # Windows検証済みソース
+      mac/           # macOS検証済みソース
+  poc/
+    _template/       # PoC作成用テンプレート
+    <project>/       # PoCプロジェクト
+docs/
+  project/           # 設計、規約、検証履歴
+tools/
+  build_devkit.py
+  new_poc.py
+tests/
+.github/workflows/
+```
+
+演習とPoCはリポジトリ直下の`workspace/`を正本とします。演習の共通MakefileがOSを選び、既存の実機検証済みソースは各演習の`win/`と`mac/`へ保持します。
+
+PoCは`workspace/poc/<project-name>/`へ追加します。プロジェクト内の共通ファイルは直下へ置き、どうしても異なる実装だけを`win/`、`mac/`へ分けます。配布時は対象OS側のディレクトリだけがそのDevkitへ入ります。
+
+```console
+python tools/new_poc.py my_new_poc
+```
+
+## 配布キットの生成
+
+Python 3.11以降で実行します。外部パッケージは不要です。
+
+```console
+python tools/build_devkit.py --target all
+```
+
+生成物は`dist/`へ出力されます。
+
+- `uiap-devkit-win64-<version>.zip`
+- `uiap-devkit-macarm64-<version>.zip`
+- 各ZIPの`.sha256`
+- `SHA256SUMS`
+
+個別に作る場合は`--target win`または`--target mac`を指定します。版番号はルートの`VERSION`を更新するか、検証用に`--version`で指定します。
+
+```console
+python tools/build_devkit.py --target win --version 0.7.0-test1
+python tools/build_devkit.py --target mac --version 0.3.0-test1
+```
+
+GitHub Actionsの`Build participant kits`は、Windows runnerでWindows版、macOS runnerでMac版を検査・生成し、ダウンロード可能なArtifactとして保存します。手動実行にも対応しています。
+
+## 演習ソースの統合状態
+
+既存のWindows test19とMac test13は演習ソースに実質的な差があるため、各演習の`win/`と`mac/`へ分離して保持しています。一方を未検証のまま共通実装へ置き換えていません。今後、両OSで同一ソースの実機確認が取れたファイルから共通化します。
+
+文書の一覧は[docs/README.md](docs/README.md)、詳細な統合仕様は[99_FULL_PROJECT_GUIDE.md](docs/project/99_FULL_PROJECT_GUIDE.md)を参照してください。
