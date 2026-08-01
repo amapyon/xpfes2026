@@ -67,9 +67,11 @@ uiap-devkit-macarm64-<version>.zip
 
 展開後のディレクトリ名には、原則としてバージョン番号を含めない。
 
+バージョン文字列は`MAJOR.MINOR.PATCH`の3桁だけを使用する。`-rc1`、`-testN`などの接尾辞は使用しない。
+
 検証用ZIPと最終参加者向けZIPを区別する。
 
-オンライン・ブートストラップ型の検証版は、最終オフライン配布版として扱わない。
+最終参加者向け版もオンライン・ブートストラップ方式とする。`setup`で取得する入力は固定URL、固定バージョン、SHA-256で管理する。
 
 ## 4. Windows版の現行ディレクトリ構成
 
@@ -227,7 +229,7 @@ Pythonの診断処理は、複雑な`python -c`ではなく、`scripts/python`�
 
 ### 6.4 `runtime/downloads`
 
-オンライン・ブートストラップ検証版が取得したアーカイブやチェックサムを格納する。
+オンライン・ブートストラップ方式の`setup`が取得したアーカイブやチェックサムを格納する。
 
 用途:
 
@@ -236,9 +238,9 @@ Pythonの診断処理は、複雑な`python -c`ではなく、`scripts/python`�
 - SHA-256検証
 - 取得元の再現性確認
 
-`runtime/downloads`は、オンライン検証版では使用してよい。
+`runtime/downloads`は最終参加者向け版でもダウンロードキャッシュとして使用してよい。配布ZIPの初期状態には、原則として取得済みアーカイブを含めない。
 
-最終オフライン参加者向けZIPでは、原則として次を除外する。
+配布ZIPの初期状態では、原則として次を除外する。
 
 - 取得済みZIPやtarball
 - 一時ダウンロードファイル
@@ -246,7 +248,7 @@ Pythonの診断処理は、複雑な`python -c`ではなく、`scripts/python`�
 - 不要なSHA sidecar
 - セットアップ失敗時の残骸
 
-最終オフライン版では、必要な展開済みランタイムを`build-tools`、`toolchain`、`python`へ配置する。
+`setup`完了後は、取得・展開したランタイムを`build-tools`、`toolchain`、`python`などの所定位置へ配置する。
 
 ## 7. `scripts`
 
@@ -543,7 +545,7 @@ workspace/exercises/02_rotary_cursor_size/
 - 演習間で別演習の`host`を直接参照しない
 - Devkit全体で使用する診断コードは`scripts/python`へ配置する
 - Pythonホストアプリは`runtime/python`を使用し、システムPythonへ依存しない
-- macOS版`02_rotary_cursor_size`はネイティブarm64 CLIを使用し、Python・hidapiを要求しない
+- macOS版DevkitにもPython・hidapiを含める。ただし`02_rotary_cursor_size`の現行ホストはネイティブarm64 CLIであり、当該演習の実行自体はPython・hidapiへ依存しない
 - OS固有コードが必要な場合も、当該演習の`host`配下で共通処理と分離する
 
 ### 8.4 `workspace/poc`
@@ -606,6 +608,8 @@ firmware/
 ├── recovery/
 └── README.md
 ```
+
+参加者向け`firmware`へ含める範囲は、通常使用するものと、講師が当日に行う簡易復旧に必要なものへ限定する。SWIOなど専用機材を使う深い復旧用資材は、参加者向けDevkitとは分離して管理してよい。
 
 各バイナリに次を記録する。
 
@@ -759,9 +763,9 @@ C:\pj\xpfes2026\uiap-devkit-win64
 C:\Users\<user>
 ```
 
-## 16. オンライン検証版と最終オフライン版
+## 16. オンライン・ブートストラップ方式
 
-### 16.1 オンライン・ブートストラップ検証版
+### 16.1 検証版と最終版の共通方式
 
 目的:
 
@@ -778,24 +782,21 @@ C:\Users\<user>
 - 詳細ログ
 - 検証用エラーコード
 
-オンライン版だけの成功を、最終オフライン版の合格としない。
+検証版と最終版は同じオンライン取得方式を使用し、最終版では取得元、バージョン、SHA-256、再試行、キャッシュ再利用をリリース条件として固定する。
 
-### 16.2 最終オフライン参加者向け版
+### 16.2 最終参加者向け版
 
 次を満たす。
 
-- `runtime/build-tools`を展開済み
-- `runtime/toolchain`を展開済み
-- `runtime/python`とhidapiを配置済み
-- `workspace/deps`を固定済み
-- ワークショップ中に外部取得しない
+- 初回`setup`はオンラインで固定済み入力を取得する
+- `runtime/python`とhidapiをWindows・macOSの両方へ導入する
+- `workspace/deps`は現行の固定・サブセット方式を維持する
+- 取得URL、保存ファイル名、アーカイブ形式、SHA-256を固定する
+- ダウンロード失敗、SHA-256不一致、途中再実行、キャッシュ再利用を検証する
 - 管理者権限不要
-- ネットワーク切断状態で起動できる
-- ネットワーク切断状態でビルド、書き込み、HID、ホストアプリが動作する
-- `runtime/downloads`の不要物を除外
-- 実行ログと利用者の`.state`を除外
-- 未採用PoCを除外
-- ライセンスと対応ソース情報を同梱
+- 実行ログと利用者の`.state`を配布ZIPから除外する
+- 未採用PoCを除外する
+- ライセンスと対応ソース情報を管理する
 
 ## 17. 参加者向けZIPから除外するもの
 
@@ -890,7 +891,7 @@ uiap-devkit-macarm64/
 - 管理者権限
 - システムの`/usr/bin/make`
 - システムPython
-- 当日のインターネット接続
+- HomebrewやXcode Command Line Toolsなど、Devkit外の追加インストール
 
 GNU MakeはDevkit内の`runtime/build-tools/bin/gmake`を使用し、参加者向けコマンド名は`make`のままとする。取得元がHomebrewボトルであっても、参加者にHomebrew本体をインストールさせない。
 
@@ -945,10 +946,10 @@ Devkit全体へ再帰的な隔離属性削除を行わない。`runtime/build`�
 - 最終許可リスト版`ch32fun`
 - 入力アーカイブSHA-256の正式固定
 - `-I/usr/include/newlib`への暗黙依存除去
-- ネットワーク切断状態
+- 最終オンライン`setup`の通し検証
 - Developer ID署名・公証または正式な個別許可方針
-- 別のApple Silicon Mac、別ユーザー、macOS 15最低対応環境
-- 最終オフラインZIP
+- 別のApple Silicon Mac、別ユーザー、macOS 26以降の対象環境
+- 最終オンライン・ブートストラップ版の通し検証
 
 未署名・未公証の検証版では、ブラウザから取得したZIPの初回起動時にGatekeeperの個別許可が必要になる。Gatekeeper全体の無効化やDevkit全体への無差別な隔離属性削除を標準手順にしない。
 
@@ -1004,7 +1005,7 @@ Windows版の構成変更後は、少なくとも次を確認する。
 - USB切断
 - OS設定復元
 - コンソール再起動後の再現
-- ネットワーク切断状態
+- オンライン`setup`の初回取得、再実行、正常キャッシュ再利用
 - 別PCと別ユーザー
 - リリースZIPの不要物
 - ライセンスとSHA-256
@@ -1136,7 +1137,7 @@ test12のネイティブホストは次を実装する。
 
 macOS 26.5.2の利用者実機で、CW／CCW入力、カーソルサイズ変更、`Ctrl+C`終了時復元が想定どおり動作した。USB切断時復元は未確認である。
 
-参加者向け最終ZIPでは、生成用`runtime/build`、ダウンロードキャッシュ、Xcode Command Line Toolsを要求する手順を含めない。非公開APIのため、別Mac、別ユーザー、最低対応macOS、OS更新後の回帰確認をリリース判定へ含める。
+参加者向け最終ZIPでは、生成用`runtime/build`やXcode Command Line Toolsを要求する手順を含めない。オンライン`setup`用の空または実行時生成されるダウンロードキャッシュ領域は使用してよい。非公開APIのため、別Mac、別ユーザー、macOS 26以降、OS更新後の回帰確認をリリース判定へ含める。
 
 ## 16. Windowsオンライン取得処理の配置
 
@@ -1164,7 +1165,7 @@ runtime/downloads/
 
 `download-file.ps1`はPowerShellの`curl`別名を使用せず、`%SystemRoot%\System32\curl.exe`を優先して実行する。curlの進捗表示はコンソールへ直接出し、セットアップログには開始、成功、終了コード、SHA-256結果だけを記録する。
 
-最終参加者向けオフラインZIPでは、`runtime/downloads`の取得済みアーカイブ、`.part`、`.bad-*`を除外する。オンライン検証版のキャッシュ構成を、そのまま最終配布構成へ流用しない。
+最終参加者向けZIPの初期状態では、`runtime/downloads`の取得済みアーカイブ、`.part`、`.bad-*`を除外する。最終版の`setup`は同ディレクトリを実行時キャッシュとして使用してよい。
 
 ### 16.1 `0.5.0-test13`の範囲
 
@@ -1221,6 +1222,6 @@ workspace/exercises/02_rotary_cursor_size/
 └── host/cursor_size_host.py
 ```
 
-`rv003usb`は`workspace/deps/rv003usb`へ配置する。test17では固定コミットのRaw URLからコア3ファイルとMITライセンスを取得する主催者検証方式とする。最終参加者向け版では、ファイル単位SHA-256を正式固定し、原則としてオフライン同梱する。
+`rv003usb`は`workspace/deps/rv003usb`へ配置する。test17では固定コミットのRaw URLからコア3ファイルとMITライセンスを取得する主催者検証方式とする。最終参加者向け版でも現在のオンライン取得形式を維持し、ファイル単位SHA-256を正式固定する。
 
 実機検証状態は`70_VALIDATION_RESULTS.md`を正本とする。
