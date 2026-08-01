@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+# Windows-specific pointer-size host for the shared encoder HID firmware.
+
 import argparse
 import ctypes
 import json

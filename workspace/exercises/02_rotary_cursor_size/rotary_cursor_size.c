@@ -6,7 +6,6 @@
 #define ENCODER_DIRECTION 1
 #define ENCODER_REPORT_SIZE 2u
 
-/* bmRequestType is stored in the low byte and bRequest in the high byte. */
 #define HID_REQ_GET_REPORT 0x01A1u
 #define HID_REQ_GET_IDLE   0x02A1u
 #define HID_REQ_SET_IDLE   0x0A21u
@@ -42,11 +41,6 @@ void usb_handle_user_in_request(struct usb_endpoint *e, uint8_t *scratchpad,
     }
 }
 
-/*
- * macOS may ask for the current input report and idle state while attaching
- * IOHIDFamily.  rv003usb forwards unhandled endpoint-zero requests here when
- * RV003USB_OTHER_CONTROL is enabled.
- */
 void usb_handle_other_control_message(struct usb_endpoint *e,
                                       struct usb_urb *s,
                                       struct rv003usb_internal *ist)
@@ -86,7 +80,6 @@ int main(void)
                                  funDigitalRead(ENCODER_S2_PIN));
     int8_t quarter_steps = 0;
 
-    /* Static storage initializes current_report to a neutral report. */
     Delay_Ms(1);
     usb_setup();
 

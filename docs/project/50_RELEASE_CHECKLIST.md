@@ -926,6 +926,8 @@ ch32funの具体的な入力値は`15_CH32FUN_SUBSET_RULES.md`を参照し、こ
 - [ ] `01_macro_keyboard`のプレースホルダーがなく、必要ソースが揃っている
 - [ ] `01_macro_keyboard`の`macro_keyboard.c`、`usb_config.h`、`host/hidcheck.py`が演習直下の共通実装である
 - [ ] `01_macro_keyboard`に`win/`、`mac/`の重複ソースが残っていない
+- [ ] `00_onboard_led_blink`と`02_rotary_cursor_size`のファームウェアも演習直下の共通実装である
+- [ ] `02_rotary_cursor_size`のOS固有コードは`host/win`と`host/mac`だけに限定されている
 - [ ] `02_rotary_cursor_size`のプレースホルダーがなく、ホストアプリを演習内`host`へ配置
 - [ ] `UIAP-E240`が演習ツリーに存在しない
 - [ ] rv003usbの取得URLがコミット`75d926abe89a3002020b989015eab97ce5ad0470`を含む

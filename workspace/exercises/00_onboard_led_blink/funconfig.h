@@ -1,3 +1,7 @@
-#pragma once
+#ifndef UIAP_LED_FUNCONFIG_H
+#define UIAP_LED_FUNCONFIG_H
+
 #define FUNCONF_USE_DEBUGPRINTF 0
 #define FUNCONF_SYSTICK_USE_HCLK 1
+
+#endif

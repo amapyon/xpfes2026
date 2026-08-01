@@ -392,7 +392,7 @@ workspace/host/cursor_size_host.py
 2026-07-25に決定した標準配置:
 
 ```text
-workspace/exercises/02_rotary_cursor_size/host/cursor_size_host.py
+workspace/exercises/02_rotary_cursor_size/host/<platform>/cursor_size_host.py
 ```
 
 検証時の実装は旧配置を使用した。標準配置への移設後も、配布環境内のPythonとhidapiを使用する。移設後の`make app`、HID受信、ポインターサイズ変更、設定復元は再検証対象とする。
@@ -1829,3 +1829,21 @@ Restored pointer size: 80
 ### 実機追認
 
 共通化コミット`c261cfa`後、同じ共通ファームウェアをWindowsとmacOSで確認し、両方で想定どおり動作することを利用者実機で確認した。これにより、`01_macro_keyboard`のOS別ソース廃止と単一実装への統合を合格とする。
+
+---
+
+## 2026-08-01 `00`・`02`共通実装の静的確認
+
+### 変更
+
+- `00_onboard_led_blink`のOS別ファームウェアとMakefileを単一実装へ統合
+- `02_rotary_cursor_size`のOS別ファームウェア、USB設定、Makefileを単一実装へ統合
+- `02`の共通HIDレポートを`[delta, sequence]`の2バイトへ統一
+- `02`のOS固有ホストだけを`host/win`、`host/mac`へ移動
+
+### 結果
+
+- 共通`00`ビルド: 合格、FLASH 436 B / 16 KB、RAM 0 B / 2 KB
+- 共通`02`ビルド: 合格、FLASH 2340 B / 16 KB、RAM 200 B / 2 KB
+- 共通`00`のWindows/macOS実機点滅: 再確認待ち
+- 共通`02`のWindows/macOS HID入力・ポインターサイズ変更・復元: 再確認待ち

@@ -213,9 +213,9 @@ Windowsの`SystemParametersInfoW`アクション`0x2029`とmacOSの非公開Core
 
 | 演習 | 目的 | 現在の検証状態 |
 |---|---|---|
-| `00_onboard_led_blink` | 開発環境、ビルド、書き込み、復旧の基本確認 | Windows、macOSで物理動作確認済み |
+| `00_onboard_led_blink` | 開発環境、ビルド、書き込み、復旧の基本確認 | 従来のOS別実装は両OSで物理動作確認済み。共通化後は再確認待ち |
 | `01_macro_keyboard` | エンコーダーモジュールのセンタースイッチとUSB HIDキーボード入力 | 共通化後の単一実装をWindows、macOSとも実機確認済み |
-| `02_rotary_cursor_size` | 同じエンコーダーモジュールとPC側処理の体験 | 新モジュールでWindows、macOSとも想定動作を実機確認済み |
+| `02_rotary_cursor_size` | 同じエンコーダーモジュールとPC側処理の体験 | 従来のOS別実装は両OSで確認済み。共通ファームウェアは再確認待ち |
 
 必須演習の決定は、ワークショップで最終的に制作するUSBデバイスや、公開配布用の正式HID Usage、VID:PIDを決定したことを意味しない。
 
@@ -894,7 +894,7 @@ workspace/exercises/
 
 `00_onboard_led_blink`、`01_macro_keyboard`、`02_rotary_cursor_size`はワークショップ必須演習として採用済みである。`03_pot_cursor_haptic`はWindows実機PoCで、v1.0.8の統合動作とADC安定化を確認済みだが、必須演習には採用していない。
 
-`01_macro_keyboard`はファームウェア、USB設定、列挙確認スクリプトを演習直下へ置き、Windows/macOSで共用する。`00_onboard_led_blink`と`02_rotary_cursor_size`は現時点では`win/`と`mac/`の検証済み実装を保持する。
+3演習のファームウェアとビルド設定は演習直下へ置き、Windows/macOSで共用する。`02_rotary_cursor_size`はOS固有のポインター設定処理だけを`host/win`と`host/mac`へ分ける。
 
 各演習は、原則として次を含む。
 
@@ -2375,10 +2375,17 @@ PC側Pythonプログラムは、対応する演習の`host`ディレクトリへ
 workspace/exercises/<exercise-name>/host/<program>.py
 ```
 
+OS固有の実装だけを分ける場合:
+
+```text
+workspace/exercises/<exercise-name>/host/<platform>/<program>.py
+```
+
 例:
 
 ```text
-workspace/exercises/02_rotary_cursor_size/host/cursor_size_host.py
+workspace/exercises/02_rotary_cursor_size/host/win/cursor_size_host.py
+workspace/exercises/02_rotary_cursor_size/host/mac/cursor_size_host.py
 ```
 
 次を標準とする。
@@ -5023,6 +5030,8 @@ ch32funの具体的な入力値は`15_CH32FUN_SUBSET_RULES.md`を参照し、こ
 - [ ] `01_macro_keyboard`のプレースホルダーがなく、必要ソースが揃っている
 - [ ] `01_macro_keyboard`の`macro_keyboard.c`、`usb_config.h`、`host/hidcheck.py`が演習直下の共通実装である
 - [ ] `01_macro_keyboard`に`win/`、`mac/`の重複ソースが残っていない
+- [ ] `00_onboard_led_blink`と`02_rotary_cursor_size`のファームウェアも演習直下の共通実装である
+- [ ] `02_rotary_cursor_size`のOS固有コードは`host/win`と`host/mac`だけに限定されている
 - [ ] `02_rotary_cursor_size`のプレースホルダーがなく、ホストアプリを演習内`host`へ配置
 - [ ] `UIAP-E240`が演習ツリーに存在しない
 - [ ] rv003usbの取得URLがコミット`75d926abe89a3002020b989015eab97ce5ad0470`を含む
@@ -6070,10 +6079,17 @@ make restore
 workspace/exercises/<exercise-name>/host/<program>.py
 ```
 
+OS固有ホストの場合:
+
+```text
+workspace/exercises/<exercise-name>/host/<platform>/<program>.py
+```
+
 ロータリーエンコーダー演習:
 
 ```text
-workspace/exercises/02_rotary_cursor_size/host/cursor_size_host.py
+workspace/exercises/02_rotary_cursor_size/host/win/cursor_size_host.py
+workspace/exercises/02_rotary_cursor_size/host/mac/cursor_size_host.py
 ```
 
 次の旧パスを実行時の標準として使用しない。
@@ -7576,7 +7592,7 @@ workspace/host/cursor_size_host.py
 2026-07-25に決定した標準配置:
 
 ```text
-workspace/exercises/02_rotary_cursor_size/host/cursor_size_host.py
+workspace/exercises/02_rotary_cursor_size/host/<platform>/cursor_size_host.py
 ```
 
 検証時の実装は旧配置を使用した。標準配置への移設後も、配布環境内のPythonとhidapiを使用する。移設後の`make app`、HID受信、ポインターサイズ変更、設定復元は再検証対象とする。
@@ -9014,6 +9030,24 @@ Restored pointer size: 80
 
 共通化コミット`c261cfa`後、同じ共通ファームウェアをWindowsとmacOSで確認し、両方で想定どおり動作することを利用者実機で確認した。これにより、`01_macro_keyboard`のOS別ソース廃止と単一実装への統合を合格とする。
 
+---
+
+## 2026-08-01 `00`・`02`共通実装の静的確認
+
+### 変更
+
+- `00_onboard_led_blink`のOS別ファームウェアとMakefileを単一実装へ統合
+- `02_rotary_cursor_size`のOS別ファームウェア、USB設定、Makefileを単一実装へ統合
+- `02`の共通HIDレポートを`[delta, sequence]`の2バイトへ統一
+- `02`のOS固有ホストだけを`host/win`、`host/mac`へ移動
+
+### 結果
+
+- 共通`00`ビルド: 合格、FLASH 436 B / 16 KB、RAM 0 B / 2 KB
+- 共通`02`ビルド: 合格、FLASH 2340 B / 16 KB、RAM 200 B / 2 KB
+- 共通`00`のWindows/macOS実機点滅: 再確認待ち
+- 共通`02`のWindows/macOS HID入力・ポインターサイズ変更・復元: 再確認待ち
+
 <!-- Source: 90_DECISIONS.md -->
 
 # 決定履歴
@@ -9353,7 +9387,7 @@ package.json
 - ロータリーエンコーダー演習の標準配置は次とする
 
 ```text
-workspace/exercises/02_rotary_cursor_size/host/cursor_size_host.py
+workspace/exercises/02_rotary_cursor_size/host/<platform>/cursor_size_host.py
 ```
 
 - `10_DEVKIT_STRUCTURE.md`、`20_BUILD_RULES.md`、`40_WORKSHOP_GUIDE_RULES.md`、`50_RELEASE_CHECKLIST.md`、`60_TROUBLESHOOTING.md`、`70_VALIDATION_RESULTS.md`を更新する
@@ -10171,3 +10205,30 @@ Windows test18では`make app-dry-run`が成功し、HID受信まで正常だっ
 - 共通化コミット`c261cfa`後のWindows実機入力: 利用者実機合格
 - 共通化コミット`c261cfa`後のmacOS実機入力: 利用者実機合格
 - `01_macro_keyboard`のWindows/macOS共通化: 合格
+
+---
+
+## 2026-08-01 `00_onboard_led_blink`と`02_rotary_cursor_size`の共通化
+
+### 決定
+
+- `00_onboard_led_blink`の`win/`と`mac/`を廃止し、ファームウェアとMakefileを演習直下へ統合する
+- 基板上LEDはPC0のアクティブLowとして、0.2秒点灯・0.8秒消灯を共通動作とする
+- `02_rotary_cursor_size`のファームウェア、USB設定、Makefileを演習直下へ統合する
+- `02_rotary_cursor_size`の共通HIDレポートはReport IDなしの`[delta, sequence]` 2バイトとする
+- WindowsホストとmacOSホストはいずれも先頭バイトを移動量として読み、2バイト目の診断用連番を無視する
+- OS固有のポインター設定処理だけを`02_rotary_cursor_size/host/win`と`host/mac`へ保持する
+- 共通USB Productを`UIAP Rotary Cursor`、Serialを`TEST7-001`とする。いずれもPoC用一時値とする
+
+### 根拠
+
+- LチカのGPIO処理とファームウェア書き込み方式はOSに依存しない
+- ロータリーエンコーダーのGPIOデコードとVendor-defined HID送信はOSに依存しない
+- WindowsホストはmacOS test13の2バイトレポートを正しく処理できることを実機確認済みである
+- `02`でOS差が必要なのはWindowsとmacOSのポインター設定APIだけである
+
+### 検証状態
+
+- 共通`00`ファームウェアのWindows同梱ツールチェーンによるビルド: 合格
+- 共通`02`ファームウェアのWindows同梱ツールチェーンによるビルド: 合格
+- 共通化後のWindows/macOS実機動作: 再確認待ち

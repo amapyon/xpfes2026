@@ -478,7 +478,7 @@ workspace/exercises/
 
 `00_onboard_led_blink`、`01_macro_keyboard`、`02_rotary_cursor_size`はワークショップ必須演習として採用済みである。`03_pot_cursor_haptic`はWindows実機PoCで、v1.0.8の統合動作とADC安定化を確認済みだが、必須演習には採用していない。
 
-`01_macro_keyboard`はファームウェア、USB設定、列挙確認スクリプトを演習直下へ置き、Windows/macOSで共用する。`00_onboard_led_blink`と`02_rotary_cursor_size`は現時点では`win/`と`mac/`の検証済み実装を保持する。
+3演習のファームウェアとビルド設定は演習直下へ置き、Windows/macOSで共用する。`02_rotary_cursor_size`はOS固有のポインター設定処理だけを`host/win`と`host/mac`へ分ける。
 
 各演習は、原則として次を含む。
 

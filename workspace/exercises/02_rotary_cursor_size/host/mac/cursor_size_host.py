@@ -7,6 +7,8 @@ validation on each supported macOS line.
 """
 from __future__ import annotations
 
+# macOS-specific pointer-size host for the shared encoder HID firmware.
+
 import ctypes
 import math
 import os

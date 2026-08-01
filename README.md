@@ -38,7 +38,7 @@ make app-dry-run
 make app
 ```
 
-`start-uiap.cmd`は`UIAP_PLATFORM=win`、`start-uiap.command`は`UIAP_PLATFORM=mac`を設定します。`00_onboard_led_blink`と`02_rotary_cursor_size`は対応する`win/`または`mac/`の検証済みソースを選択し、`01_macro_keyboard`は両OS共通ソースを使用します。
+`start-uiap.cmd`は`UIAP_PLATFORM=win`、`start-uiap.command`は`UIAP_PLATFORM=mac`を設定します。3演習のファームウェアは両OS共通です。`02_rotary_cursor_size`だけは、OS APIを呼ぶホストアプリケーションを`host/win`と`host/mac`から選択します。
 
 ## ソースの配置
 
@@ -106,6 +106,6 @@ GitHub Actionsの`Build participant kits`は、Windows runnerでWindows版、mac
 
 ## 演習ソースの統合状態
 
-`01_macro_keyboard`はホスト側のOS固有処理がなく、macOSで必要だったHID互換対応をWindowsでも使用できるため、単一の共通実装へ統合しています。OS固有のポインター設定処理を持つ`02_rotary_cursor_size`など、実質的な差がある演習だけ`win/`と`mac/`へ分離します。
+3演習のファームウェアとビルド設定は単一の共通実装へ統合しています。`02_rotary_cursor_size`のポインター設定処理だけはOS APIが異なるため、演習内の`host/win`と`host/mac`へ分離します。
 
 文書の一覧は[docs/README.md](docs/README.md)、詳細な統合仕様は[99_FULL_PROJECT_GUIDE.md](docs/project/99_FULL_PROJECT_GUIDE.md)を参照してください。

@@ -1,9 +1,9 @@
-# macOS Python cursor host — test13
+# macOS Python cursor host
 
 `cursor_size_host.py`は、Devkit内Pythonと`hidapi`で`1209:C004`の入力レポートを受信するmacOS Apple Silicon向けホストアプリです。
 
-- Product: `UIAP Rotary Cursor macOS Test13`
-- Serial: `TEST13-002`
+- Product: `UIAP Rotary Cursor`
+- Serial: `TEST7-001`
 - Python: Devkit内Python 3.10.20（test13オンライン検証版）
 - USB: `hidapi` 0.15.0
 - カーソルAPI: Python `ctypes`から非公開`CGSGetCursorScale` / `CGSSetCursorScale`を参照

@@ -5,4 +5,3 @@
 *.map
 *_ext.bin
 generated__.ld
-__pycache__/

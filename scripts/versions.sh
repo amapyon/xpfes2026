@@ -12,7 +12,7 @@ if grep -q 'UIAP_MINICHLINK_PLACEHOLDER=1' "$UIAP_RUNTIME/bin/minichlink" 2>/dev
 
 if [ -x "${UIAP_PYTHON-}" ]; then
   "$UIAP_PYTHON" "$UIAP_DEVKIT_ROOT/scripts/python/hidapi_probe.py" 2>&1 || true
-  "$UIAP_PYTHON" "$UIAP_WORKSPACE/exercises/02_rotary_cursor_size/mac/host/cursor_size_host.py" --version 2>&1 || true
+  "$UIAP_PYTHON" "$UIAP_WORKSPACE/exercises/02_rotary_cursor_size/host/mac/cursor_size_host.py" --version 2>&1 || true
 else
   printf '%s\n' 'Python/hidapi: not installed (run setup)'
 fi

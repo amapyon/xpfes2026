@@ -4,3 +4,6 @@
 *.lst
 *.map
 *_ext.bin
+generated__.ld
+__pycache__/
+.state/

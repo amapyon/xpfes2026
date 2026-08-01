@@ -335,7 +335,7 @@ package.json
 - ロータリーエンコーダー演習の標準配置は次とする
 
 ```text
-workspace/exercises/02_rotary_cursor_size/host/cursor_size_host.py
+workspace/exercises/02_rotary_cursor_size/host/<platform>/cursor_size_host.py
 ```
 
 - `10_DEVKIT_STRUCTURE.md`、`20_BUILD_RULES.md`、`40_WORKSHOP_GUIDE_RULES.md`、`50_RELEASE_CHECKLIST.md`、`60_TROUBLESHOOTING.md`、`70_VALIDATION_RESULTS.md`を更新する
@@ -1153,4 +1153,31 @@ Windows test18では`make app-dry-run`が成功し、HID受信まで正常だっ
 - 共通化コミット`c261cfa`後のWindows実機入力: 利用者実機合格
 - 共通化コミット`c261cfa`後のmacOS実機入力: 利用者実機合格
 - `01_macro_keyboard`のWindows/macOS共通化: 合格
+
+---
+
+## 2026-08-01 `00_onboard_led_blink`と`02_rotary_cursor_size`の共通化
+
+### 決定
+
+- `00_onboard_led_blink`の`win/`と`mac/`を廃止し、ファームウェアとMakefileを演習直下へ統合する
+- 基板上LEDはPC0のアクティブLowとして、0.2秒点灯・0.8秒消灯を共通動作とする
+- `02_rotary_cursor_size`のファームウェア、USB設定、Makefileを演習直下へ統合する
+- `02_rotary_cursor_size`の共通HIDレポートはReport IDなしの`[delta, sequence]` 2バイトとする
+- WindowsホストとmacOSホストはいずれも先頭バイトを移動量として読み、2バイト目の診断用連番を無視する
+- OS固有のポインター設定処理だけを`02_rotary_cursor_size/host/win`と`host/mac`へ保持する
+- 共通USB Productを`UIAP Rotary Cursor`、Serialを`TEST7-001`とする。いずれもPoC用一時値とする
+
+### 根拠
+
+- LチカのGPIO処理とファームウェア書き込み方式はOSに依存しない
+- ロータリーエンコーダーのGPIOデコードとVendor-defined HID送信はOSに依存しない
+- WindowsホストはmacOS test13の2バイトレポートを正しく処理できることを実機確認済みである
+- `02`でOS差が必要なのはWindowsとmacOSのポインター設定APIだけである
+
+### 検証状態
+
+- 共通`00`ファームウェアのWindows同梱ツールチェーンによるビルド: 合格
+- 共通`02`ファームウェアのWindows同梱ツールチェーンによるビルド: 合格
+- 共通化後のWindows/macOS実機動作: 再確認待ち
 

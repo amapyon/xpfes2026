@@ -379,10 +379,17 @@ PC側Pythonプログラムは、対応する演習の`host`ディレクトリへ
 workspace/exercises/<exercise-name>/host/<program>.py
 ```
 
+OS固有の実装だけを分ける場合:
+
+```text
+workspace/exercises/<exercise-name>/host/<platform>/<program>.py
+```
+
 例:
 
 ```text
-workspace/exercises/02_rotary_cursor_size/host/cursor_size_host.py
+workspace/exercises/02_rotary_cursor_size/host/win/cursor_size_host.py
+workspace/exercises/02_rotary_cursor_size/host/mac/cursor_size_host.py
 ```
 
 次を標準とする。

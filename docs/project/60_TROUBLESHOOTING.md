@@ -999,10 +999,17 @@ make restore
 workspace/exercises/<exercise-name>/host/<program>.py
 ```
 
+OS固有ホストの場合:
+
+```text
+workspace/exercises/<exercise-name>/host/<platform>/<program>.py
+```
+
 ロータリーエンコーダー演習:
 
 ```text
-workspace/exercises/02_rotary_cursor_size/host/cursor_size_host.py
+workspace/exercises/02_rotary_cursor_size/host/win/cursor_size_host.py
+workspace/exercises/02_rotary_cursor_size/host/mac/cursor_size_host.py
 ```
 
 次の旧パスを実行時の標準として使用しない。

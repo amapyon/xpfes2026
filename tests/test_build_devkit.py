@@ -48,16 +48,18 @@ class BuildDevkitTests(unittest.TestCase):
                     self.assertIn(f"uiap-devkit-{architecture}/{launcher}", names)
                     platform = "win" if architecture == "win64" else "mac"
                     other = "mac" if platform == "win" else "win"
-                    for exercise in ("00_onboard_led_blink", "02_rotary_cursor_size"):
+                    common_files = {
+                        "00_onboard_led_blink": ("Makefile", "onboard_led_blink.c"),
+                        "01_macro_keyboard": ("Makefile", "macro_keyboard.c", "usb_config.h", "host/hidcheck.py"),
+                        "02_rotary_cursor_size": ("Makefile", "rotary_cursor_size.c", "usb_config.h"),
+                    }
+                    for exercise, required in common_files.items():
                         base = f"uiap-devkit-{architecture}/workspace/exercises/{exercise}"
-                        self.assertIn(f"{base}/Makefile", names)
-                        self.assertTrue(any(name.startswith(f"{base}/{platform}/") for name in names))
-                        self.assertFalse(any(name.startswith(f"{base}/{other}/") for name in names))
-                    macro_base = f"uiap-devkit-{architecture}/workspace/exercises/01_macro_keyboard"
-                    for relative in ("Makefile", "macro_keyboard.c", "usb_config.h", "host/hidcheck.py"):
-                        self.assertIn(f"{macro_base}/{relative}", names)
-                    self.assertFalse(any(name.startswith(f"{macro_base}/win/") for name in names))
-                    self.assertFalse(any(name.startswith(f"{macro_base}/mac/") for name in names))
+                        for relative in required:
+                            self.assertIn(f"{base}/{relative}", names)
+                    rotary_host = f"uiap-devkit-{architecture}/workspace/exercises/02_rotary_cursor_size/host"
+                    self.assertIn(f"{rotary_host}/{platform}/cursor_size_host.py", names)
+                    self.assertFalse(any(name.startswith(f"{rotary_host}/{other}/") for name in names))
                     self.assertFalse(any("\\" in item for item in names))
 
     def test_checksum_sidecars_match(self) -> None:
@@ -142,20 +144,20 @@ class UnifiedRepositoryTests(unittest.TestCase):
     def test_required_exercises_have_expected_source_layout(self) -> None:
         requirements = {
             "00_onboard_led_blink": ("onboard_led_blink.c",),
-            "02_rotary_cursor_size": ("rotary_cursor_size.c", "usb_config.h", "host/cursor_size_host.py"),
+            "01_macro_keyboard": ("macro_keyboard.c", "usb_config.h", "host/hidcheck.py"),
+            "02_rotary_cursor_size": ("rotary_cursor_size.c", "usb_config.h"),
         }
         for exercise, files in requirements.items():
             root = ROOT / "workspace" / "exercises" / exercise
             self.assertTrue((root / "Makefile").is_file())
-            for platform in ("win", "mac"):
-                for relative in files:
-                    self.assertTrue((root / platform / relative).is_file(), f"{exercise}/{platform}/{relative}")
+            for relative in files:
+                self.assertTrue((root / relative).is_file(), f"{exercise}/{relative}")
+            self.assertFalse((root / "win").exists())
+            self.assertFalse((root / "mac").exists())
 
-        macro = ROOT / "workspace" / "exercises" / "01_macro_keyboard"
-        for relative in ("Makefile", "macro_keyboard.c", "usb_config.h", "host/hidcheck.py"):
-            self.assertTrue((macro / relative).is_file(), f"01_macro_keyboard/{relative}")
-        self.assertFalse((macro / "win").exists())
-        self.assertFalse((macro / "mac").exists())
+        rotary_host = ROOT / "workspace" / "exercises" / "02_rotary_cursor_size" / "host"
+        for platform in ("win", "mac"):
+            self.assertTrue((rotary_host / platform / "cursor_size_host.py").is_file())
 
     def test_macos_setup_builds_write_tool(self) -> None:
         setup = (ROOT / "scripts" / "setup.sh").read_text(encoding="utf-8")

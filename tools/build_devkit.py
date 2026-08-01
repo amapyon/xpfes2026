@@ -62,9 +62,9 @@ def add_files(
 def workspace_file_for_target(relative: PurePosixPath, target: str) -> bool:
     parts = relative.parts
     if len(parts) >= 3 and parts[0] in {"exercises", "poc"}:
-        platform_part = parts[2]
-        if platform_part in {"win", "mac"}:
-            return platform_part == target
+        for platform_part in parts[2:]:
+            if platform_part in {"win", "mac"}:
+                return platform_part == target
     return True
 
 
