@@ -1,0 +1,6 @@
+*.elf
+*.bin
+*.hex
+*.lst
+*.map
+*_ext.bin

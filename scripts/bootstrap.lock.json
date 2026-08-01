@@ -1,0 +1,89 @@
+{
+  "schema": 1,
+  "devkit_version": "0.6.2-test19",
+  "components": [
+    {
+      "id": "build-tools",
+      "name": "xPack Windows Build Tools 4.4.1-3",
+      "file": "xpack-windows-build-tools-4.4.1-3-win32-x64.zip",
+      "url": "https://github.com/xpack-dev-tools/windows-build-tools-xpack/releases/download/v4.4.1-3/xpack-windows-build-tools-4.4.1-3-win32-x64.zip",
+      "sha256": "113d4dfdbbc56dc9b865c9f75d38cd0da82f0d7094187e6f7a803fe6eef1d218",
+      "install_type": "xpack",
+      "destination": "runtime/build-tools",
+      "sha256_scope": "exact-downloaded-file",
+      "archive_format": "zip"
+    },
+    {
+      "id": "toolchain",
+      "name": "xPack GNU RISC-V Embedded GCC 14.2.0-3",
+      "file": "xpack-riscv-none-elf-gcc-14.2.0-3-win32-x64.zip",
+      "url": "https://github.com/xpack-dev-tools/riscv-none-elf-gcc-xpack/releases/download/v14.2.0-3/xpack-riscv-none-elf-gcc-14.2.0-3-win32-x64.zip",
+      "sha256": "9bb15efdeca256532c4a83ce6462c7dc1f9cfebe1f1f43d581b2ad7d077209b6",
+      "install_type": "xpack",
+      "destination": "runtime/toolchain",
+      "sha256_scope": "exact-downloaded-file",
+      "archive_format": "zip"
+    },
+    {
+      "id": "python",
+      "name": "Python 3.14.6 embeddable x64",
+      "file": "python-3.14.6-embed-amd64.zip",
+      "url": "https://www.python.org/ftp/python/3.14.6/python-3.14.6-embed-amd64.zip",
+      "sha256": "df901e84a896ff1ee720ad03377e0c8d8c2244fda79808aeeaff6316df1cb75c",
+      "install_type": "python",
+      "destination": "runtime/python",
+      "sha256_scope": "exact-downloaded-file",
+      "archive_format": "zip"
+    },
+    {
+      "id": "hidapi",
+      "name": "hidapi 0.15.0 for CPython 3.14 Windows x64",
+      "file": "hidapi-0.15.0-cp314-cp314-win_amd64.whl",
+      "url": "https://files.pythonhosted.org/packages/cb/14/3b27516b2867e53545164ebd8ef45d0c36857d2a062036e788e56e2e34ce/hidapi-0.15.0-cp314-cp314-win_amd64.whl",
+      "sha256": "df0dd435562654e27ad0c7d045074eb1e1e016b09167dd48a258dec1ce4b9127",
+      "install_type": "python-wheel",
+      "destination": "runtime/python/Lib/site-packages",
+      "sha256_scope": "exact-downloaded-file",
+      "archive_format": "zip"
+    },
+    {
+      "id": "ch32fun",
+      "name": "ch32fun fixed source archive",
+      "file": "ch32fun-1e4887e11d4bfa739ed5604524b69f5be9f9275b.zip",
+      "url": "https://github.com/cnlohr/ch32fun/archive/1e4887e11d4bfa739ed5604524b69f5be9f9275b.zip",
+      "sha256": "30e13fcf4c123981d0fba99a01a31cda30f57757356057bdce2e6cad026f58b1",
+      "install_type": "ch32fun-test-subset",
+      "destination": "workspace/deps/ch32fun",
+      "upstream_commit": "1e4887e11d4bfa739ed5604524b69f5be9f9275b",
+      "sha256_scope": "exact-downloaded-file",
+      "archive_format": "zip",
+      "hash_provenance": "Windows user download 2026-08-01; GitHub commit ZIP, not macOS tar.gz"
+    },
+    {
+      "id": "rv003usb",
+      "name": "rv003usb pinned source subset",
+      "install_type": "rv003usb-pinned-files",
+      "destination": "workspace/deps/rv003usb",
+      "upstream_commit": "75d926abe89a3002020b989015eab97ce5ad0470",
+      "validation_scope": "commit-pinned-raw-file-urls; final per-file SHA-256 lock pending",
+      "files": [
+        {
+          "path": "rv003usb/rv003usb.S",
+          "url": "https://raw.githubusercontent.com/cnlohr/rv003usb/75d926abe89a3002020b989015eab97ce5ad0470/rv003usb/rv003usb.S"
+        },
+        {
+          "path": "rv003usb/rv003usb.c",
+          "url": "https://raw.githubusercontent.com/cnlohr/rv003usb/75d926abe89a3002020b989015eab97ce5ad0470/rv003usb/rv003usb.c"
+        },
+        {
+          "path": "rv003usb/rv003usb.h",
+          "url": "https://raw.githubusercontent.com/cnlohr/rv003usb/75d926abe89a3002020b989015eab97ce5ad0470/rv003usb/rv003usb.h"
+        },
+        {
+          "path": "LICENSE",
+          "url": "https://raw.githubusercontent.com/cnlohr/rv003usb/75d926abe89a3002020b989015eab97ce5ad0470/LICENSE"
+        }
+      ]
+    }
+  ]
+}

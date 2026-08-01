@@ -1,0 +1,6 @@
+#ifndef UIAP_FUNCONFIG_H
+#define UIAP_FUNCONFIG_H
+
+#define FUNCONF_USE_DEBUGPRINTF 0
+
+#endif
