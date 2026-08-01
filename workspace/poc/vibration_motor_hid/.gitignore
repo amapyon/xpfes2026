@@ -1,0 +1,22 @@
+# Firmware build outputs
+*.bin
+*.elf
+*.hex
+*.lst
+*.map
+*_ext.bin
+firmware.bin
+generated__.ld
+
+# Python
+__pycache__/
+*.pyc
+
+# OS/editor
+.DS_Store
+Thumbs.db
+.vscode/
+*.bak
+*.before-*
+nul
+NUL

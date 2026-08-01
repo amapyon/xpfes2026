@@ -110,6 +110,7 @@ Windowsの詳細ビルド番号、CPU型番、別ユーザー権限は今回の�
 | WIN-HID-ENC-001 | 2026-07-24 | D8/D9エンコーダーHID入力 | 合格 | 未確認 | PoC合格 |
 | WIN-HOST-CURSOR-001 | 2026-07-24 | Pythonホストアプリによるポインターサイズ変更 | 合格 | 未確認 | PoC合格 |
 | WIN-HID-MOTOR-001 | 2026-07-19 | HID Feature Reportによる振動モーター制御 | 合格 | 未確認 | 既存PoC合格 |
+| WIN-HID-MOTOR-002 | 2026-08-01 | 構成変更後の振動モーターHID PoC再検証 | 利用者報告 | 未確認 | ビルド、書き込み、USB HID制御、物理動作をWindows実機で確認 |
 | REL-CH32FUN-SUBSET-001 | 2026-07-25 | ch32fun許可リストサブセット生成・全演習検証 | 未確認 | 未確認 | 方針決定・未実装 |
 | USER-BEEP-DIRECT-001 | 2026-07-25 | 5V・50%・2秒のGPIO直結パッシブブザー発音 | 利用者報告 | 未確認 | PoC物理動作報告・電気測定未実施 |
 | WIN-HID-POT-HAPTIC-001 | 2026-07-26 | RV09 ADC、Vendor HID、ポインターサイズ、振動の統合 | 合格 | 対象外 | Windows PoC合格 |
@@ -471,11 +472,12 @@ scripts/python/hidapi_probe.py
 
 ```text
 WIN-HID-MOTOR-001
+WIN-HID-MOTOR-002
 ```
 
 ### 情報源
 
-既存の`90_DECISIONS.md`から転記した検証結果である。
+`WIN-HID-MOTOR-001`は既存の`90_DECISIONS.md`から転記した検証結果である。`WIN-HID-MOTOR-002`は2026-08-01の構成変更後に行ったビルド再現結果と、利用者によるWindows実機動作報告である。
 
 ### 確認済み
 
@@ -490,6 +492,13 @@ WIN-HID-MOTOR-001
 - 振動強度の変化
 - `status`による設定値取得
 - `off`による停止
+
+構成変更後の`WIN-HID-MOTOR-002`では、次を再確認した。
+
+- Devkit同梱`riscv-none-elf-gcc`によるクリーンビルド
+- `make flash`による書き込み
+- アプリケーションUSB HIDとしての動作
+- PC側からの振動モーター制御と物理動作
 
 配線:
 

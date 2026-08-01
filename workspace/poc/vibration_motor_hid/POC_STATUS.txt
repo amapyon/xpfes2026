@@ -1,0 +1,17 @@
+name=vibration_motor_hid
+board=UIAPduino Pro Micro CH32V003 V1.4
+mcu=CH32V003
+control_pin=D6/A2/PC4/TIM1_CH4
+usb=vendor-defined-hid-feature-report
+vid_pid=1209:D003-temporary
+implementation=created
+host_self_test=pass-local
+firmware_build=pass-windows-after-restructure
+flash=pass-windows-after-restructure-user-validated
+usb_enumeration=pass-windows-after-restructure-user-validated
+physical_motor=pass-windows-after-restructure-user-validated
+windows=validated-after-restructure-2026-08-01
+macos=not-validated
+participant_adoption=undecided
+
+retest_required=macos-only
