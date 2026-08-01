@@ -73,6 +73,8 @@ class BuildDevkitTests(unittest.TestCase):
             (project / "src" / "common.c").write_text("common\n", encoding="utf-8")
             (project / "win" / "host.py").write_text("win\n", encoding="utf-8")
             (project / "mac" / "host.py").write_text("mac\n", encoding="utf-8")
+            (workspace / "deps" / "generated").mkdir(parents=True)
+            (workspace / "deps" / "generated" / "tool.bin").write_bytes(b"generated")
             original = build_devkit.WORKSPACE
             try:
                 build_devkit.WORKSPACE = workspace
@@ -87,6 +89,8 @@ class BuildDevkitTests(unittest.TestCase):
             self.assertIn(base / "src/common.c", macos)
             self.assertIn(base / "mac/host.py", macos)
             self.assertNotIn(base / "win/host.py", macos)
+            self.assertNotIn(PurePosixPath("workspace/deps/generated/tool.bin"), windows)
+            self.assertNotIn(PurePosixPath("workspace/deps/generated/tool.bin"), macos)
 
 
 class NewPocTests(unittest.TestCase):
@@ -107,6 +111,21 @@ class NewPocTests(unittest.TestCase):
 
 
 class UnifiedRepositoryTests(unittest.TestCase):
+    def test_macos_commands_are_git_executable(self) -> None:
+        paths = ["start-uiap.command"]
+        paths.extend(path.relative_to(ROOT).as_posix() for path in (ROOT / "scripts").rglob("*.sh"))
+        paths.extend(path.relative_to(ROOT).as_posix() for path in (ROOT / "scripts" / "bin").iterdir() if path.is_file())
+        result = subprocess.run(
+            ["git", "ls-files", "--stage", "--", *paths],
+            cwd=ROOT,
+            check=True,
+            capture_output=True,
+            text=True,
+        )
+        modes = {line.split(maxsplit=3)[3]: line.split(maxsplit=1)[0] for line in result.stdout.splitlines()}
+        for path in paths:
+            self.assertEqual("100755", modes.get(path), path)
+
     def test_launchers_select_platform_runtime(self) -> None:
         windows = (ROOT / "start-uiap.cmd").read_text(encoding="utf-8-sig")
         macos = (ROOT / "scripts" / "env.sh").read_text(encoding="utf-8")

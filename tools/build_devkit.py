@@ -34,6 +34,8 @@ def relative_files(source: Path) -> dict[PurePosixPath, Path]:
         if not path.is_file() or path.name == ".gitkeep":
             continue
         relative = PurePosixPath(path.relative_to(source).as_posix())
+        if source == WORKSPACE and relative.parts[0] == "deps" and relative != PurePosixPath("deps/README.md"):
+            continue
         if FORBIDDEN_PARTS.intersection(relative.parts):
             continue
         if path.suffix.lower() in FORBIDDEN_SUFFIXES:
