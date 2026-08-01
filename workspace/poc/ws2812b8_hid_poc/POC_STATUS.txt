@@ -1,0 +1,23 @@
+name=ws2812b8_hid_poc
+board=UIAPduino Pro Micro CH32V003 V1.4
+mcu=CH32V003
+data_pin=D8/PC6/SPI1_MOSI
+usb=vendor-defined-hid-feature-report
+vid_pid=1209:D008-temporary
+led_count=8
+implementation=created
+host_self_test=pass-windows
+firmware_build=pass-windows
+flash=pass-windows
+usb_enumeration=pass-windows
+physical_led=pass-windows-after-DMALEDS-32-fix
+windows=validated
+macos=compatibility-implemented-awaiting-hardware-validation
+participant_adoption=undecided
+
+validation_2026-08-01=initial-hardware-test-failed-with-DMALEDS-16
+observed_2026-08-01=on-lit-led1-through-led6;off-left-led1-lit;led1-command-all-off;led2-command-lit-led1-and-led2;led3-through-led6-correct;led7-and-led8-off
+fix_2026-08-01=DMALEDS-increased-from-16-to-32-to-fit-leading-reset-all-8-leds-and-trailing-low-time-in-first-DMA-buffer
+windows_retest_2026-08-01=pass-build-flash-usb-enumeration-and-physical-8-led-control
+macos_readiness_2026-08-01=platform-guard-arm64-hidapi-doctor-and-hid-idle-control-requests-added
+retest_required=macos
