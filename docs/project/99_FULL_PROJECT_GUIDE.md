@@ -214,7 +214,7 @@ Windowsの`SystemParametersInfoW`アクション`0x2029`とmacOSの非公開Core
 | 演習 | 目的 | 現在の検証状態 |
 |---|---|---|
 | `00_onboard_led_blink` | 開発環境、ビルド、書き込み、復旧の基本確認 | Windows、macOSで物理動作確認済み |
-| `01_macro_keyboard` | エンコーダーモジュールのセンタースイッチとUSB HIDキーボード入力 | 新モジュールでWindows、macOSとも想定動作を実機確認済み |
+| `01_macro_keyboard` | エンコーダーモジュールのセンタースイッチとUSB HIDキーボード入力 | 従来のOS別実装は両OSで実機確認済み。共通化後の単一実装は再確認待ち |
 | `02_rotary_cursor_size` | 同じエンコーダーモジュールとPC側処理の体験 | 新モジュールでWindows、macOSとも想定動作を実機確認済み |
 
 必須演習の決定は、ワークショップで最終的に制作するUSBデバイスや、公開配布用の正式HID Usage、VID:PIDを決定したことを意味しない。
@@ -893,6 +893,8 @@ workspace/exercises/
 | `03_pot_cursor_haptic` | PoC。RV09ポテンショメーター、Windowsポインターサイズ、振動フィードバック |
 
 `00_onboard_led_blink`、`01_macro_keyboard`、`02_rotary_cursor_size`はワークショップ必須演習として採用済みである。`03_pot_cursor_haptic`はWindows実機PoCで、v1.0.8の統合動作とADC安定化を確認済みだが、必須演習には採用していない。
+
+`01_macro_keyboard`はファームウェア、USB設定、列挙確認スクリプトを演習直下へ置き、Windows/macOSで共用する。`00_onboard_led_blink`と`02_rotary_cursor_size`は現時点では`win/`と`mac/`の検証済み実装を保持する。
 
 各演習は、原則として次を含む。
 
@@ -5019,6 +5021,8 @@ ch32funの具体的な入力値は`15_CH32FUN_SUBSET_RULES.md`を参照し、こ
 
 - [ ] `VERSION`と`bootstrap.lock.json`が`0.6.0-test17`で一致
 - [ ] `01_macro_keyboard`のプレースホルダーがなく、必要ソースが揃っている
+- [ ] `01_macro_keyboard`の`macro_keyboard.c`、`usb_config.h`、`host/hidcheck.py`が演習直下の共通実装である
+- [ ] `01_macro_keyboard`に`win/`、`mac/`の重複ソースが残っていない
 - [ ] `02_rotary_cursor_size`のプレースホルダーがなく、ホストアプリを演習内`host`へ配置
 - [ ] `UIAP-E240`が演習ツリーに存在しない
 - [ ] rv003usbの取得URLがコミット`75d926abe89a3002020b989015eab97ce5ad0470`を含む
@@ -8987,6 +8991,25 @@ Restored pointer size: 80
 - 独立モメンタリスイッチと3端子ロータリーエンコーダーから、新モジュール1個への置き換え: 合格
 - 5本の共通配線による両演習の切り替え: 合格
 
+---
+
+## 2026-08-01 `01_macro_keyboard`共通実装の静的確認
+
+### 変更
+
+- `win/`と`mac/`の重複実装を削除
+- `macro_keyboard.c`、`usb_config.h`、`funconfig.h`、`host/hidcheck.py`を演習直下へ統合
+- macOS互換のHID DescriptorとHID Boot Keyboard制御要求処理を共通実装へ採用
+- TinyUSBヘッダー依存を除去
+
+### 結果
+
+- Windows同梱RISC-Vツールチェーンによるビルド: 合格
+- FLASH: 2460 B / 16 KB
+- RAM: 220 B / 2 KB
+- 共通ファームウェアのWindows実機入力: 再確認待ち
+- 共通ファームウェアのmacOS実機入力: 再確認待ち
+
 <!-- Source: 90_DECISIONS.md -->
 
 # 決定履歴
@@ -10119,3 +10142,26 @@ Windows test18では`make app-dry-run`が成功し、HID受信まで正常だっ
 
 - 2026-08-01に、新モジュールを共通配線した`01_macro_keyboard`と`02_rotary_cursor_size`がWindows、macOSとも想定どおり動作することを利用者実機で確認した
 - 新モジュールへの入力部品統合: 合格
+
+---
+
+## 2026-08-01 `01_macro_keyboard`のWindows/macOS共通化
+
+### 決定
+
+- `01_macro_keyboard`の`win/`と`mac/`を廃止し、ファームウェア、USB設定、列挙確認スクリプト、Makefileを演習直下の単一実装へ統合する
+- macOS test10で必要になったDevice Descriptorのクラス値0、Interface DescriptorでのHID宣言、HID Boot Keyboard制御要求への応答を共通実装の基準とする
+- 共通USB設定からmacOS側だけに存在したTinyUSBヘッダー依存を除き、配布中のrv003usbとch32funだけで両OSからビルドできるようにする
+- USB Productを`UIAP Macro Keyboard`、Serialを`TEST3-001`へ統一する。いずれもPoC用一時値とする
+- OS差は同一Makefile内の環境変数とツールパスで吸収し、ソースを複製しない
+
+### 根拠
+
+- `01_macro_keyboard`にはOS固有のホストアプリケーションがない
+- 旧`win/host/hidcheck.py`と`mac/host/hidcheck.py`は同一内容だった
+- HIDキーボードのUSBプロトコルとGPIO動作はOS非依存であり、macOS互換DescriptorはWindowsでも規格どおり使用できる
+
+### 検証状態
+
+- 共通ファームウェアのWindows同梱ツールチェーンによるビルド: 合格
+- Windows実機、macOS実機での共通ファームウェア入力: 再確認待ち

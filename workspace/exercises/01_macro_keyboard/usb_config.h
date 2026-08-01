@@ -16,22 +16,17 @@
 #define RV003USB_USE_REBOOT_FEATURE_REPORT 0
 
 #ifndef __ASSEMBLER__
-#include <tinyusb_hid.h>
-#include <tusb_types.h>
+#include <stdint.h>
 #ifdef INSTANCE_DESCRIPTORS
-/*
- * HID class information belongs to the Interface Descriptor.  Keeping the
- * Device Descriptor class fields at zero lets macOS bind IOHIDFamily to the
- * keyboard interface instead of treating the whole USB device as class 0x03.
- */
+
+/* HID is declared on the interface so both Windows and macOS bind correctly. */
 static const uint8_t device_descriptor[] = {
-    18, TUSB_DESC_DEVICE, 0x10, 0x01,
+    18, 0x01, 0x10, 0x01,
     0x00, 0x00, 0x00, 0x08,
     0x09, 0x12, 0x03, 0xC0,
     0x10, 0x00, 1, 2, 3, 1
 };
 
-/* Eight-byte boot-keyboard input report.  No LED output report is declared. */
 static const uint8_t keyboard_hid_desc[] = {
     0x05, 0x01, 0x09, 0x06, 0xA1, 0x01,
     0x05, 0x07, 0x19, 0xE0, 0x29, 0xE7,
@@ -44,21 +39,27 @@ static const uint8_t keyboard_hid_desc[] = {
 };
 
 static const uint8_t config_descriptor[] = {
-    9, TUSB_DESC_CONFIGURATION, 0x22, 0x00, 1, 1, 0, 0x80, 0x32,
-    9, TUSB_DESC_INTERFACE, 0, 0, 1, TUSB_CLASS_HID, HID_SUBCLASS_BOOT, HID_PROTOCOL_KEYBOARD, 0,
-    9, HID_DESC_TYPE_HID, 0x11, 0x01, 0, 1, HID_DESC_TYPE_REPORT, sizeof(keyboard_hid_desc), 0,
-    7, TUSB_DESC_ENDPOINT, 0x81, 0x03, 0x08, 0x00, 10
+    9, 0x02, 0x22, 0x00, 1, 1, 0, 0x80, 0x32,
+    9, 0x04, 0, 0, 1, 0x03, 0x01, 0x01, 0,
+    9, 0x21, 0x11, 0x01, 0, 1, 0x22, sizeof(keyboard_hid_desc), 0,
+    7, 0x05, 0x81, 0x03, 0x08, 0x00, 10
 };
 
 #define STR_MANUFACTURER u"UIAP Workshop"
-#define STR_PRODUCT u"UIAP Macro Keyboard macOS Test10"
-#define STR_SERIAL u"TEST10-001"
-struct usb_string_descriptor_struct { uint8_t bLength; uint8_t bDescriptorType; uint16_t wString[]; };
+#define STR_PRODUCT u"UIAP Macro Keyboard"
+#define STR_SERIAL u"TEST3-001"
+
+struct usb_string_descriptor_struct {
+    uint8_t bLength;
+    uint8_t bDescriptorType;
+    uint16_t wString[];
+};
 static const struct usb_string_descriptor_struct string0 = {4, 3, {0x0409}};
-static const struct usb_string_descriptor_struct string1 = {sizeof(STR_MANUFACTURER), 3, {STR_MANUFACTURER}};
-static const struct usb_string_descriptor_struct string2 = {sizeof(STR_PRODUCT), 3, {STR_PRODUCT}};
-static const struct usb_string_descriptor_struct string3 = {sizeof(STR_SERIAL), 3, {STR_SERIAL}};
-const static struct descriptor_list_struct {
+static const struct usb_string_descriptor_struct string1 = {sizeof(STR_MANUFACTURER), 3, STR_MANUFACTURER};
+static const struct usb_string_descriptor_struct string2 = {sizeof(STR_PRODUCT), 3, STR_PRODUCT};
+static const struct usb_string_descriptor_struct string3 = {sizeof(STR_SERIAL), 3, STR_SERIAL};
+
+static const struct descriptor_list_struct {
     uint32_t lIndexValue;
     const uint8_t *addr;
     uint8_t length;

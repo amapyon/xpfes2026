@@ -1,3 +1,0 @@
-#pragma once
-#define FUNCONF_USE_DEBUGPRINTF 0
-#define FUNCONF_SYSTICK_USE_HCLK 1

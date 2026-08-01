@@ -38,7 +38,7 @@ make app-dry-run
 make app
 ```
 
-`start-uiap.cmd`は`UIAP_PLATFORM=win`、`start-uiap.command`は`UIAP_PLATFORM=mac`を設定します。演習の共通Makefileが対応する`win/`または`mac/`の検証済みソースを選択します。
+`start-uiap.cmd`は`UIAP_PLATFORM=win`、`start-uiap.command`は`UIAP_PLATFORM=mac`を設定します。`00_onboard_led_blink`と`02_rotary_cursor_size`は対応する`win/`または`mac/`の検証済みソースを選択し、`01_macro_keyboard`は両OS共通ソースを使用します。
 
 ## ソースの配置
 
@@ -56,9 +56,10 @@ workspace/
   deps/              # setup生成物（Git管理外）
   exercises/         # 正式演習
     <exercise>/
-      Makefile       # OS選択用の共通入口
-      win/           # Windows検証済みソース
-      mac/           # macOS検証済みソース
+      Makefile       # 共通ビルド入口
+      <source>.c     # 共通化できる場合は直下へ配置
+      win/           # OS差が必要な場合だけ
+      mac/           # OS差が必要な場合だけ
   poc/
     _template/       # PoC作成用テンプレート
     <project>/       # PoCプロジェクト
@@ -71,7 +72,7 @@ tests/
 .github/workflows/
 ```
 
-演習とPoCはリポジトリ直下の`workspace/`を正本とします。演習の共通MakefileがOSを選び、既存の実機検証済みソースは各演習の`win/`と`mac/`へ保持します。
+演習とPoCはリポジトリ直下の`workspace/`を正本とします。OSによる実装差がないソースは演習直下へ置き、実装差が必要な場合だけ`win/`と`mac/`へ分けます。
 
 PoCは`workspace/poc/<project-name>/`へ追加します。プロジェクト内の共通ファイルは直下へ置き、どうしても異なる実装だけを`win/`、`mac/`へ分けます。配布時は対象OS側のディレクトリだけがそのDevkitへ入ります。
 
@@ -105,6 +106,6 @@ GitHub Actionsの`Build participant kits`は、Windows runnerでWindows版、mac
 
 ## 演習ソースの統合状態
 
-既存のWindows test19とMac test13は演習ソースに実質的な差があるため、各演習の`win/`と`mac/`へ分離して保持しています。一方を未検証のまま共通実装へ置き換えていません。今後、両OSで同一ソースの実機確認が取れたファイルから共通化します。
+`01_macro_keyboard`はホスト側のOS固有処理がなく、macOSで必要だったHID互換対応をWindowsでも使用できるため、単一の共通実装へ統合しています。OS固有のポインター設定処理を持つ`02_rotary_cursor_size`など、実質的な差がある演習だけ`win/`と`mac/`へ分離します。
 
 文書の一覧は[docs/README.md](docs/README.md)、詳細な統合仕様は[99_FULL_PROJECT_GUIDE.md](docs/project/99_FULL_PROJECT_GUIDE.md)を参照してください。

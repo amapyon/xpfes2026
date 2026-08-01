@@ -48,11 +48,16 @@ class BuildDevkitTests(unittest.TestCase):
                     self.assertIn(f"uiap-devkit-{architecture}/{launcher}", names)
                     platform = "win" if architecture == "win64" else "mac"
                     other = "mac" if platform == "win" else "win"
-                    for exercise in ("00_onboard_led_blink", "01_macro_keyboard", "02_rotary_cursor_size"):
+                    for exercise in ("00_onboard_led_blink", "02_rotary_cursor_size"):
                         base = f"uiap-devkit-{architecture}/workspace/exercises/{exercise}"
                         self.assertIn(f"{base}/Makefile", names)
                         self.assertTrue(any(name.startswith(f"{base}/{platform}/") for name in names))
                         self.assertFalse(any(name.startswith(f"{base}/{other}/") for name in names))
+                    macro_base = f"uiap-devkit-{architecture}/workspace/exercises/01_macro_keyboard"
+                    for relative in ("Makefile", "macro_keyboard.c", "usb_config.h", "host/hidcheck.py"):
+                        self.assertIn(f"{macro_base}/{relative}", names)
+                    self.assertFalse(any(name.startswith(f"{macro_base}/win/") for name in names))
+                    self.assertFalse(any(name.startswith(f"{macro_base}/mac/") for name in names))
                     self.assertFalse(any("\\" in item for item in names))
 
     def test_checksum_sidecars_match(self) -> None:
@@ -134,10 +139,9 @@ class UnifiedRepositoryTests(unittest.TestCase):
         self.assertIn('UIAP_PLATFORM=mac', macos)
         self.assertIn('runtime/mac', macos)
 
-    def test_required_exercises_have_both_platform_sources(self) -> None:
+    def test_required_exercises_have_expected_source_layout(self) -> None:
         requirements = {
             "00_onboard_led_blink": ("onboard_led_blink.c",),
-            "01_macro_keyboard": ("macro_keyboard.c", "usb_config.h", "host/hidcheck.py"),
             "02_rotary_cursor_size": ("rotary_cursor_size.c", "usb_config.h", "host/cursor_size_host.py"),
         }
         for exercise, files in requirements.items():
@@ -146,6 +150,12 @@ class UnifiedRepositoryTests(unittest.TestCase):
             for platform in ("win", "mac"):
                 for relative in files:
                     self.assertTrue((root / platform / relative).is_file(), f"{exercise}/{platform}/{relative}")
+
+        macro = ROOT / "workspace" / "exercises" / "01_macro_keyboard"
+        for relative in ("Makefile", "macro_keyboard.c", "usb_config.h", "host/hidcheck.py"):
+            self.assertTrue((macro / relative).is_file(), f"01_macro_keyboard/{relative}")
+        self.assertFalse((macro / "win").exists())
+        self.assertFalse((macro / "mac").exists())
 
     def test_macos_setup_builds_write_tool(self) -> None:
         setup = (ROOT / "scripts" / "setup.sh").read_text(encoding="utf-8")

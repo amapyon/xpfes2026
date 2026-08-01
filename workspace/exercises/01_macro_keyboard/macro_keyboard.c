@@ -17,7 +17,7 @@ static volatile uint8_t sequence_active;
 static volatile uint8_t sequence_index;
 static uint8_t current_report[KEYBOARD_REPORT_SIZE];
 static uint8_t idle_rate;
-static uint8_t keyboard_protocol = 1u; /* Report protocol is the HID default. */
+static uint8_t keyboard_protocol = 1u;
 
 static const uint8_t key_sequence[][KEYBOARD_REPORT_SIZE] = {
     {KEY_LEFT_SHIFT, 0, 0x04, 0, 0, 0, 0, 0}, {0},
@@ -63,11 +63,7 @@ void usb_handle_user_in_request(struct usb_endpoint *e, uint8_t *scratchpad,
     }
 }
 
-/*
- * rv003usb forwards unhandled endpoint-zero requests here when
- * RV003USB_OTHER_CONTROL is enabled.  macOS requests these HID boot-keyboard
- * states while attaching IOHIDFamily.
- */
+/* macOS requests these HID boot-keyboard states while attaching IOHIDFamily. */
 void usb_handle_other_control_message(struct usb_endpoint *e,
                                       struct usb_urb *s,
                                       struct rv003usb_internal *ist)
@@ -108,7 +104,6 @@ int main(void)
     funPinMode(ENCODER_KEY_PIN, GPIO_CFGLR_IN_PUPD);
     funDigitalWrite(ENCODER_KEY_PIN, FUN_HIGH);
 
-    /* Static storage initializes current_report to the all-keys-released state. */
     Delay_Ms(1);
     usb_setup();
 

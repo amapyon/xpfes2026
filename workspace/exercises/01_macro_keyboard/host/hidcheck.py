@@ -38,5 +38,6 @@ def main() -> int:
     print('HID keyboard enumeration: PASS')
     return 0
 
+
 if __name__ == '__main__':
     raise SystemExit(main())

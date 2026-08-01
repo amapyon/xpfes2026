@@ -203,7 +203,7 @@ Windowsの`SystemParametersInfoW`アクション`0x2029`とmacOSの非公開Core
 | 演習 | 目的 | 現在の検証状態 |
 |---|---|---|
 | `00_onboard_led_blink` | 開発環境、ビルド、書き込み、復旧の基本確認 | Windows、macOSで物理動作確認済み |
-| `01_macro_keyboard` | エンコーダーモジュールのセンタースイッチとUSB HIDキーボード入力 | 新モジュールでWindows、macOSとも想定動作を実機確認済み |
+| `01_macro_keyboard` | エンコーダーモジュールのセンタースイッチとUSB HIDキーボード入力 | 従来のOS別実装は両OSで実機確認済み。共通化後の単一実装は再確認待ち |
 | `02_rotary_cursor_size` | 同じエンコーダーモジュールとPC側処理の体験 | 新モジュールでWindows、macOSとも想定動作を実機確認済み |
 
 必須演習の決定は、ワークショップで最終的に制作するUSBデバイスや、公開配布用の正式HID Usage、VID:PIDを決定したことを意味しない。

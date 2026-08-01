@@ -1806,3 +1806,22 @@ Restored pointer size: 80
 
 - 独立モメンタリスイッチと3端子ロータリーエンコーダーから、新モジュール1個への置き換え: 合格
 - 5本の共通配線による両演習の切り替え: 合格
+
+---
+
+## 2026-08-01 `01_macro_keyboard`共通実装の静的確認
+
+### 変更
+
+- `win/`と`mac/`の重複実装を削除
+- `macro_keyboard.c`、`usb_config.h`、`funconfig.h`、`host/hidcheck.py`を演習直下へ統合
+- macOS互換のHID DescriptorとHID Boot Keyboard制御要求処理を共通実装へ採用
+- TinyUSBヘッダー依存を除去
+
+### 結果
+
+- Windows同梱RISC-Vツールチェーンによるビルド: 合格
+- FLASH: 2460 B / 16 KB
+- RAM: 220 B / 2 KB
+- 共通ファームウェアのWindows実機入力: 再確認待ち
+- 共通ファームウェアのmacOS実機入力: 再確認待ち

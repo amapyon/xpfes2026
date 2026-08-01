@@ -24,8 +24,13 @@ printf '%s\n' 'UIAP unified repository doctor (macOS)'
 
 for exercise in 00_onboard_led_blink 01_macro_keyboard 02_rotary_cursor_size; do
     directory="$UIAP_WORKSPACE/exercises/$exercise"
-    [ -f "$directory/Makefile" ] && ok "$exercise dispatcher Makefile" || bad "$exercise dispatcher Makefile is missing"
-    [ -d "$directory/mac" ] && ok "$exercise macOS source" || bad "$exercise macOS source is missing"
+    [ -f "$directory/Makefile" ] && ok "$exercise Makefile" || bad "$exercise Makefile is missing"
+    if [ "$exercise" = 01_macro_keyboard ]; then
+        [ -f "$directory/macro_keyboard.c" ] && ok "$exercise common firmware" || bad "$exercise common firmware is missing"
+        [ -f "$directory/usb_config.h" ] && ok "$exercise common USB configuration" || bad "$exercise common USB configuration is missing"
+    else
+        [ -d "$directory/mac" ] && ok "$exercise macOS source" || bad "$exercise macOS source is missing"
+    fi
     if [ -x "$UIAP_RUNTIME/build-tools/bin/gmake" ]; then
         (cd "$directory" && "$UIAP_RUNTIME/build-tools/bin/gmake" -n all >/dev/null 2>&1) && ok "$exercise make -n" || bad "$exercise make -n"
         (cd "$directory" && "$UIAP_RUNTIME/build-tools/bin/gmake" -n flash >/dev/null 2>&1) && ok "$exercise make -n flash" || bad "$exercise make -n flash"
@@ -33,7 +38,7 @@ for exercise in 00_onboard_led_blink 01_macro_keyboard 02_rotary_cursor_size; do
 done
 
 if [ -x "$UIAP_PYTHON" ]; then
-    "$UIAP_PYTHON" "$UIAP_WORKSPACE/exercises/01_macro_keyboard/mac/host/hidcheck.py" --self-test >/dev/null 2>&1 && ok 'Macro keyboard host self-test' || bad 'Macro keyboard host self-test'
+    "$UIAP_PYTHON" "$UIAP_WORKSPACE/exercises/01_macro_keyboard/host/hidcheck.py" --self-test >/dev/null 2>&1 && ok 'Macro keyboard host self-test' || bad 'Macro keyboard host self-test'
     "$UIAP_PYTHON" "$UIAP_WORKSPACE/exercises/02_rotary_cursor_size/mac/host/cursor_size_host.py" --self-test >/dev/null 2>&1 && ok 'Rotary cursor host self-test' || bad 'Rotary cursor host self-test'
 fi
 
