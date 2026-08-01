@@ -2,7 +2,7 @@
 #include "rv003usb.h"
 #include <stdint.h>
 
-#define BUTTON_PIN PC3
+#define ENCODER_KEY_PIN PC3
 #define DEBOUNCE_MS 20
 
 static volatile uint8_t macro_step;
@@ -26,17 +26,17 @@ int main(void)
 {
     SystemInit();
     funGpioInitAll();
-    funPinMode(BUTTON_PIN, GPIO_CFGLR_IN_PUPD);
-    funDigitalWrite(BUTTON_PIN, FUN_HIGH);
+    funPinMode(ENCODER_KEY_PIN, GPIO_CFGLR_IN_PUPD);
+    funDigitalWrite(ENCODER_KEY_PIN, FUN_HIGH);
     Delay_Ms(10);
     usb_setup();
 
-    uint8_t stable = (uint8_t)funDigitalRead(BUTTON_PIN);
+    uint8_t stable = (uint8_t)funDigitalRead(ENCODER_KEY_PIN);
     uint8_t sample = stable;
     uint8_t count = 0;
 
     while (1) {
-        uint8_t now = (uint8_t)funDigitalRead(BUTTON_PIN);
+        uint8_t now = (uint8_t)funDigitalRead(ENCODER_KEY_PIN);
         if (now == sample) {
             if (count < DEBOUNCE_MS) ++count;
         } else {

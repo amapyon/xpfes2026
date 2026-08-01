@@ -1783,3 +1783,26 @@ Restored pointer size: 80
 - 長時間連続操作
 - 別のWindows 11 PC、別ユーザー
 - 最終オフライン参加者向けZIP
+
+---
+
+## 2026-08-01 センタースイッチ付きロータリーエンコーダーモジュール実機確認
+
+### 対象
+
+- 部品: `GND / S1 / S2 / KEY / 5V`表記のセンタースイッチ付きロータリーエンコーダーモジュール
+- 共通配線: GND→GND、S1→D8 / PC6、S2→D9 / PC7、KEY→D5 / PC3、5V→5V
+- 演習: `01_macro_keyboard`、`02_rotary_cursor_size`
+- OS: Windows、macOS
+
+### 利用者実機結果
+
+- Windowsの`01_macro_keyboard`: 想定どおり動作
+- Windowsの`02_rotary_cursor_size`: 想定どおり動作
+- macOSの`01_macro_keyboard`: 想定どおり動作
+- macOSの`02_rotary_cursor_size`: 想定どおり動作
+
+### 判定
+
+- 独立モメンタリスイッチと3端子ロータリーエンコーダーから、新モジュール1個への置き換え: 合格
+- 5本の共通配線による両演習の切り替え: 合格

@@ -1,6 +1,6 @@
 # 02_rotary_cursor_size
 
-D8 / D9へ接続した3端子ロータリーエンコーダーの回転をVendor-defined HIDでMacへ送り、PythonホストアプリでmacOSのポインターサイズを変更します。
+センタースイッチ付きロータリーエンコーダーモジュールの回転をVendor-defined HIDでMacへ送り、PythonホストアプリでmacOSのポインターサイズを変更します。
 
 ## test13の変更
 
@@ -17,17 +17,19 @@ host/cursor_size_host.py
 - Product: `UIAP Rotary Cursor macOS Test13`
 - Serial: `TEST13-002`
 
-test12ネイティブ版の実機合格は履歴として保持しますが、Python版test13のHID受信・サイズ変更・復元は別途実機再検証します。
+test12ネイティブ版の実機合格は履歴として保持します。現在の新モジュール構成は、Python版を含め想定動作を利用者実機確認済みです。
 
 ## 配線
 
-| UIAPduino | エンコーダー |
+| UIAPduino | モジュール |
 |---|---|
-| D8 / PC6 | A |
-| GND | C（共通端子） |
-| D9 / PC7 | B |
+| GND | GND |
+| D8 / PC6 | S1 |
+| D9 / PC7 | S2 |
+| D5 / PC3 | KEY |
+| 5V | 5V |
 
-3.3Vまたは5Vへ接続しません。固定用金属タブを信号端子と混同しないでください。配線前にUSBを外します。
+販売ページで指定されている動作電圧は5Vです。この演習では`S1`と`S2`を読み、`KEY`は使用しませんが、`01_macro_keyboard`と共通の5本を配線します。配線前にUSBを外します。
 
 ## ファームウェア
 

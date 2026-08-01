@@ -1,8 +1,8 @@
 #include "ch32fun.h"
 #include "rv003usb.h"
 
-#define ENCODER_A_PIN PC6
-#define ENCODER_B_PIN PC7
+#define ENCODER_S1_PIN PC6
+#define ENCODER_S2_PIN PC7
 #define ENCODER_DIRECTION 1
 #define ENCODER_REPORT_SIZE 2u
 
@@ -77,13 +77,13 @@ int main(void)
 {
     SystemInit();
     funGpioInitAll();
-    funPinMode(ENCODER_A_PIN, GPIO_CFGLR_IN_PUPD);
-    funPinMode(ENCODER_B_PIN, GPIO_CFGLR_IN_PUPD);
-    funDigitalWrite(ENCODER_A_PIN, FUN_HIGH);
-    funDigitalWrite(ENCODER_B_PIN, FUN_HIGH);
+    funPinMode(ENCODER_S1_PIN, GPIO_CFGLR_IN_PUPD);
+    funPinMode(ENCODER_S2_PIN, GPIO_CFGLR_IN_PUPD);
+    funDigitalWrite(ENCODER_S1_PIN, FUN_HIGH);
+    funDigitalWrite(ENCODER_S2_PIN, FUN_HIGH);
 
-    uint8_t previous = (uint8_t)((funDigitalRead(ENCODER_A_PIN) << 1) |
-                                 funDigitalRead(ENCODER_B_PIN));
+    uint8_t previous = (uint8_t)((funDigitalRead(ENCODER_S1_PIN) << 1) |
+                                 funDigitalRead(ENCODER_S2_PIN));
     int8_t quarter_steps = 0;
 
     /* Static storage initializes current_report to a neutral report. */
@@ -91,8 +91,8 @@ int main(void)
     usb_setup();
 
     for (;;) {
-        uint8_t current = (uint8_t)((funDigitalRead(ENCODER_A_PIN) << 1) |
-                                    funDigitalRead(ENCODER_B_PIN));
+        uint8_t current = (uint8_t)((funDigitalRead(ENCODER_S1_PIN) << 1) |
+                                    funDigitalRead(ENCODER_S2_PIN));
         if (current != previous) {
             int8_t movement = transition_table[(previous << 2) | current];
             previous = current;

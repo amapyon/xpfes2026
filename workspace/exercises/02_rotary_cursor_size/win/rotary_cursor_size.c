@@ -2,8 +2,8 @@
 #include "rv003usb.h"
 #include <stdint.h>
 
-#define ENCODER_A_PIN PC6
-#define ENCODER_B_PIN PC7
+#define ENCODER_S1_PIN PC6
+#define ENCODER_S2_PIN PC7
 
 static volatile int8_t pending_delta;
 
@@ -22,20 +22,20 @@ int main(void)
 {
     SystemInit();
     funGpioInitAll();
-    funPinMode(ENCODER_A_PIN, GPIO_CFGLR_IN_PUPD);
-    funPinMode(ENCODER_B_PIN, GPIO_CFGLR_IN_PUPD);
-    funDigitalWrite(ENCODER_A_PIN, FUN_HIGH);
-    funDigitalWrite(ENCODER_B_PIN, FUN_HIGH);
+    funPinMode(ENCODER_S1_PIN, GPIO_CFGLR_IN_PUPD);
+    funPinMode(ENCODER_S2_PIN, GPIO_CFGLR_IN_PUPD);
+    funDigitalWrite(ENCODER_S1_PIN, FUN_HIGH);
+    funDigitalWrite(ENCODER_S2_PIN, FUN_HIGH);
     Delay_Ms(10);
     usb_setup();
 
-    uint8_t previous = (uint8_t)((funDigitalRead(ENCODER_A_PIN) << 1) |
-                                 funDigitalRead(ENCODER_B_PIN));
+    uint8_t previous = (uint8_t)((funDigitalRead(ENCODER_S1_PIN) << 1) |
+                                 funDigitalRead(ENCODER_S2_PIN));
     int8_t accumulator = 0;
 
     while (1) {
-        uint8_t current = (uint8_t)((funDigitalRead(ENCODER_A_PIN) << 1) |
-                                    funDigitalRead(ENCODER_B_PIN));
+        uint8_t current = (uint8_t)((funDigitalRead(ENCODER_S1_PIN) << 1) |
+                                    funDigitalRead(ENCODER_S2_PIN));
         if (current != previous) {
             accumulator += transition_delta(previous, current);
             previous = current;

@@ -1,6 +1,8 @@
 # 02_rotary_cursor_size
 
-ロータリーエンコーダのHID入力でOSのポインターサイズを変更する演習です。ホスト側処理はOS APIが異なるため、`win/`と`mac/`に分けています。
+[指定のセンタースイッチ付きロータリーエンコーダーモジュール](https://electronicwork.shop/items/64b9e54b9dd503007bc60458)の回転入力でOSのポインターサイズを変更する演習です。`01_macro_keyboard`と同じ5本の配線を使用します。ホスト側処理はOS APIが異なるため、`win/`と`mac/`に分けています。
+
+このモジュールを使用した想定動作をWindows、macOSの両方で実機確認済みです。
 
 ```console
 make

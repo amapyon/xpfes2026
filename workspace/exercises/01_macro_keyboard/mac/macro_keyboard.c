@@ -1,7 +1,7 @@
 #include "ch32fun.h"
 #include "rv003usb.h"
 
-#define SWITCH_PIN PC3
+#define ENCODER_KEY_PIN PC3
 #define DEBOUNCE_MS 20u
 #define KEY_LEFT_SHIFT 0x02u
 #define KEYBOARD_REPORT_SIZE 8u
@@ -105,19 +105,19 @@ int main(void)
 {
     SystemInit();
     funGpioInitAll();
-    funPinMode(SWITCH_PIN, GPIO_CFGLR_IN_PUPD);
-    funDigitalWrite(SWITCH_PIN, FUN_HIGH);
+    funPinMode(ENCODER_KEY_PIN, GPIO_CFGLR_IN_PUPD);
+    funDigitalWrite(ENCODER_KEY_PIN, FUN_HIGH);
 
     /* Static storage initializes current_report to the all-keys-released state. */
     Delay_Ms(1);
     usb_setup();
 
-    uint8_t last_raw = (uint8_t)funDigitalRead(SWITCH_PIN);
+    uint8_t last_raw = (uint8_t)funDigitalRead(ENCODER_KEY_PIN);
     uint8_t stable = last_raw;
     uint8_t stable_count = 0;
 
     for (;;) {
-        uint8_t raw = (uint8_t)funDigitalRead(SWITCH_PIN);
+        uint8_t raw = (uint8_t)funDigitalRead(ENCODER_KEY_PIN);
         if (raw == last_raw) {
             if (stable_count < DEBOUNCE_MS) {
                 stable_count++;
