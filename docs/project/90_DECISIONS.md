@@ -123,6 +123,28 @@ macOS Apple Silicon向けのPC側ソースコードとMakefileは存在するが
 
 ---
 
+## 2026-08-02 振動モーターHID PoCのmacOS検証
+
+### 確認済み
+
+`workspace/poc/vibration_motor_hid`の構成変更後の実装について、利用者のmacOS Apple Silicon実機で次を確認した。
+
+- ファームウェアのビルド
+- `1209:B803`ブートローダーによる書き込み
+- アプリケーションUSB HIDとしての動作
+- PC側からの振動モーター制御
+- 振動モーターの物理動作
+
+検証IDは`MAC-HID-MOTOR-001`とする。Windows検証済みの状態と合わせ、このPoCの両対象OSにおける基本動作確認を完了とする。
+
+### 変更しない決定
+
+- ワークショップの最終制作物または必須演習としての採用は未決定
+- Vendor-defined HID Feature Report、Report ID、振動レベル範囲の最終採用は未決定
+- `1209:D003`はPoC用暫定値のままとする
+
+---
+
 ## 移行状況
 
 ### 確認済み

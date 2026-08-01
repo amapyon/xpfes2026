@@ -27,10 +27,16 @@
 
 ## macOS Apple Silicon
 
-この振動モーターHID PoC自体の実機検証は未実施です。
+### 2026-08-02 実機検証
 
-DevkitとしてPython/hidapiを使える構成は存在しますが、このPoCの
-ビルド、書き込み、Feature Report、モーター動作を別途確認してください。
+利用者のmacOS Apple Silicon実機で、構成変更後のPoCについて次を確認しました。
+
+- Devkit環境でのファームウェアビルド成功
+- `make flash`による書き込み成功
+- アプリケーションUSB HIDとしての動作確認
+- PC側からの振動モーター制御と物理動作を確認
+
+検証IDは`MAC-HID-MOTOR-001`です。実機結果は利用者報告です。
 
 ## 今回追加したもの
 
@@ -47,4 +53,4 @@ DevkitとしてPython/hidapiを使える構成は存在しますが、このPoC�
 
 構成変更後のWindows版ファームウェアは、Devkit同梱の`riscv-none-elf-gcc`でクリーンビルド済みです。Flash使用量は2,920 bytes（17.82%）、RAM使用量は216 bytes（10.55%）でした。
 
-構成変更後のWindows版について、書き込み、USB HID制御、モーター動作を実機確認済みです。macOS版のビルド、書き込み、列挙、HID送受信、モーター動作は未検証です。
+構成変更後のWindows版とmacOS Apple Silicon版について、ビルド、書き込み、USB HID制御、モーター動作を実機確認済みです。

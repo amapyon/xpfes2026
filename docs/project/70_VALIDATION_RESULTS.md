@@ -111,6 +111,7 @@ Windowsの詳細ビルド番号、CPU型番、別ユーザー権限は今回の�
 | WIN-HOST-CURSOR-001 | 2026-07-24 | Pythonホストアプリによるポインターサイズ変更 | 合格 | 未確認 | PoC合格 |
 | WIN-HID-MOTOR-001 | 2026-07-19 | HID Feature Reportによる振動モーター制御 | 合格 | 未確認 | 既存PoC合格 |
 | WIN-HID-MOTOR-002 | 2026-08-01 | 構成変更後の振動モーターHID PoC再検証 | 利用者報告 | 未確認 | ビルド、書き込み、USB HID制御、物理動作をWindows実機で確認 |
+| MAC-HID-MOTOR-001 | 2026-08-02 | 構成変更後の振動モーターHID PoC実機検証 | 合格済み | 利用者報告 | ビルド、書き込み、USB HID制御、物理動作をApple Silicon実機で確認 |
 | REL-CH32FUN-SUBSET-001 | 2026-07-25 | ch32fun許可リストサブセット生成・全演習検証 | 未確認 | 未確認 | 方針決定・未実装 |
 | USER-BEEP-DIRECT-001 | 2026-07-25 | 5V・50%・2秒のGPIO直結パッシブブザー発音 | 利用者報告 | 未確認 | PoC物理動作報告・電気測定未実施 |
 | WIN-HID-POT-HAPTIC-001 | 2026-07-26 | RV09 ADC、Vendor HID、ポインターサイズ、振動の統合 | 合格 | 対象外 | Windows PoC合格 |
@@ -473,11 +474,12 @@ scripts/python/hidapi_probe.py
 ```text
 WIN-HID-MOTOR-001
 WIN-HID-MOTOR-002
+MAC-HID-MOTOR-001
 ```
 
 ### 情報源
 
-`WIN-HID-MOTOR-001`は既存の`90_DECISIONS.md`から転記した検証結果である。`WIN-HID-MOTOR-002`は2026-08-01の構成変更後に行ったビルド再現結果と、利用者によるWindows実機動作報告である。
+`WIN-HID-MOTOR-001`は既存の`90_DECISIONS.md`から転記した検証結果である。`WIN-HID-MOTOR-002`は2026-08-01の構成変更後に行ったビルド再現結果と、利用者によるWindows実機動作報告である。`MAC-HID-MOTOR-001`は2026-08-02の利用者によるmacOS Apple Silicon実機動作報告である。
 
 ### 確認済み
 
@@ -500,6 +502,13 @@ WIN-HID-MOTOR-002
 - アプリケーションUSB HIDとしての動作
 - PC側からの振動モーター制御と物理動作
 
+`MAC-HID-MOTOR-001`では、macOS Apple Silicon実機で次を確認した。
+
+- Devkit環境でのファームウェアビルド
+- `make flash`による書き込み
+- アプリケーションUSB HIDとしての動作
+- PC側からの振動モーター制御と物理動作
+
 配線:
 
 ```text
@@ -510,7 +519,6 @@ D6/A2 → PC4 → TIM1_CH4
 
 ### 未確認
 
-- macOS Apple Silicon実機
 - 参加者向け必須演習としての採用
 - 正式VID:PID
 - 長時間動作とUSB電源ノイズの最終評価
@@ -610,7 +618,7 @@ TEST7-001
 | Windowsポテンショメーター＋振動統合PoC v1.0.8 | 主要動作合格 |
 | ch32fun許可リストサブセット | 方針決定・未実装 |
 | 最終オフライン参加者向けZIP | 未確認 |
-| macOS Apple Silicon | 必須演習3本合格。ロータリーカーソルはCW／CCW、サイズ変更、`Ctrl+C`復元を確認 |
+| macOS Apple Silicon | 必須演習3本合格。ロータリーカーソル統合動作と振動モーターHID PoCの基本動作を確認 |
 | ワークショップ必須演習としての採用 | `00`、`01`、`02`を採用済み |
 
 PoC合格を、そのまま最終リリース合格または参加者向け採用済みとして扱わない。
