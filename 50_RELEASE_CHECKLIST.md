@@ -1,6 +1,6 @@
 # 配布パッケージ作成・リリースチェックリスト
 
-更新日: 2026-07-31
+更新日: 2026-08-01
 
 ## 1. 対象成果物
 
@@ -846,3 +846,125 @@ Devkit `0.4.3-test11`は、有効な`C:\pj\xpfes2026\uiap-devkit-win64`を拒否
 有効パスで`UIAP-E103`が発生した場合、フォルダー移動で回避して合格扱いにしない。判定処理を修正し、全パターンを再検証する。
 
 任意パス対応を合格条件にしない。現行方針では、有効なASCII・空白なし複数階層パスを許可し、非対応パスだけを早期かつ明確に拒否できることを合格条件とする。
+
+## 17. Windowsダウンロード進捗機能の検査
+
+オンライン初期化型Windows版では、次をすべて確認する。
+
+### 固定情報
+
+- `bootstrap.lock.json`の各SHA-256が64桁の16進数
+- URL、版、ファイル名、SHA-256が公式配布情報と一致
+- PowerShellの`curl`別名を使用していない
+- `%SystemRoot%\System32\curl.exe`または`curl.exe`実体を使用する
+- 認証トークンや個人用URLがない
+
+### 正常系
+
+- 大容量xPack GCCで進捗が更新される
+- 進捗バーと完了割合が表示される
+- HTTPリダイレクトを追跡できる
+- 完了後にSHA-256を検証する
+- 検証成功後だけ`.part`から正式名へ変更する
+- 2回目の`setup`で検証済みキャッシュを再利用する
+- 展開済みコンポーネントを不要に再展開しない
+
+### 中断・復旧
+
+- `Ctrl+C`中断後に`.part`が残る
+- 再実行でRange再開を試みる
+- 再開非対応時のcurl終了コード33で先頭から自動再取得する
+- DNS失敗、接続失敗、タイムアウト、TLS失敗を別のcurl終了コードとして表示する
+- 失敗時に正式キャッシュ名を作らない
+- `.part`を利用者へ手動編集させない
+
+### 完全性
+
+- 正しい長さでSHA-256不一致のテストファイルを`.bad-*`へ隔離する
+- 既存の正式キャッシュが不一致の場合も再利用しない
+- SHA-256期待値をエラー回避目的で現場変更しない
+- エラー修正後に同じ`setup`を再実行できる
+
+### ログ
+
+- 進捗バーの制御文字や同一行更新をログへ保存しない
+- 開始、再開、終了コード、SHA-256、成功・失敗だけを記録する
+- ログにユーザー名、不要な絶対パス、認証情報を含めない
+
+`uiap-devkit-win64` `0.5.0-test13`は2026-08-01時点で静的検査のみであり、この節のWindows実機項目は未合格である。
+
+## 18. Windows起動シェル検査
+
+- `start-uiap.cmd`が`cmd.exe`を相対名だけで実行していない
+- `start-uiap.cmd`と`scripts/cmd/*.cmd`がWindows PowerShellを相対名だけで実行していない
+- `%SystemRoot%\System32\cmd.exe`が存在することを起動前に確認する
+- `%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe`が存在することを確認する
+- Devkit用PATHにSystem32、Wbem、Windows PowerShellが含まれる
+- ダブルクリック後、案内表示から専用Command Promptの入力待ちへ移行する
+- 起動失敗時は`pause`相当でメッセージを読める
+- PowerShellから起動した場合だけ成功する状態を合格にしない
+
+`0.5.1-test14`は相対名`cmd.exe`の解決に失敗したため、リリース候補として使用しない。
+
+## 19. 取得アーカイブロックの整合性
+
+オンライン取得物ごとに次を確認する。
+
+- ロックにURL、保存ファイル名、アーカイブ形式、SHA-256がある
+- URLと保存ファイル名の拡張子がアーカイブ形式と一致する
+- SHA-256が、そのURLから取得する実ファイル全体の値である
+- 同じコミットのZIPとtar.gzでSHA-256を共有していない
+- `VERSION`とロック内のDevkit版が一致する
+- ロック変更後に正常取得、キャッシュ再利用、不一致隔離を再検証した
+
+ch32funの具体的な入力値は`15_CH32FUN_SUBSET_RULES.md`を参照し、このチェックリストへ重複記載しない。
+
+## 2026-08-01 Windows test17追加検査
+
+`uiap-devkit-win64` `0.6.0-test17`では、次を確認する。
+
+- [ ] `VERSION`と`bootstrap.lock.json`が`0.6.0-test17`で一致
+- [ ] `01_macro_keyboard`のプレースホルダーがなく、必要ソースが揃っている
+- [ ] `02_rotary_cursor_size`のプレースホルダーがなく、ホストアプリを演習内`host`へ配置
+- [ ] `UIAP-E240`が演習ツリーに存在しない
+- [ ] rv003usbの取得URLがコミット`75d926abe89a3002020b989015eab97ce5ad0470`を含む
+- [ ] rv003usb取得時の実測SHA-256を`SOURCE_FILES.sha256`へ記録
+- [ ] 3演習で`make -n build`が成功
+- [ ] `01_macro_keyboard`でビルド、書き込み、`1209:C003`列挙、`AbCdE`入力を実機確認
+- [ ] `02_rotary_cursor_size`でビルド、書き込み、`1209:C004`列挙、CW／CCW、サイズ変更、`Ctrl+C`復元を実機確認
+- [ ] PoC用VID:PIDとシリアル番号を正式識別子として扱っていない
+- [ ] rv003usbファイル単位SHA-256を最終リリース用期待値として固定
+
+最後の4つの実機・正式固定項目が未完了の間、test17を参加者向け最終版として扱わない。
+
+## 2026-08-01 Windows test18書き込みコマンド回帰検査
+
+必須演習3本について、セットアップ後に次を確認する。
+
+- [ ] Makefileの`FLASH_COMMAND`が、自動変数`$<`を含む場合は遅延評価`=`である
+- [ ] `make -n flash`が終了コード0になる
+- [ ] `00_onboard_led_blink`は`-w onboard_led_blink.bin flash -b`を含む
+- [ ] `01_macro_keyboard`は`-w macro_keyboard.bin flash -b`を含む
+- [ ] `02_rotary_cursor_size`は`-w rotary_cursor_size.bin flash -b`を含む
+- [ ] `-w`の直後が`-b`または空になっていない
+- [ ] `doctor`のNewlib判定は`make -n build`の実効コマンドを使用する
+- [ ] 参加者向けMarkdownにNUL、SOH、STXなどの制御文字がない
+- [ ] Windowsパスのバックスラッシュが改行または制御文字へ変換されていない
+
+`0.6.0-test17`は、マクロキーボードのビルドには成功したが書き込みファイル名が空になったため、リリース候補として使用しない。`0.6.1-test18`は静的回帰検査済みであり、Windows実機の書き込みとHID動作を確認するまで参加者向け最終版として扱わない。詳細結果は`70_VALIDATION_RESULTS.md`を参照する。
+
+## 2026-08-01 Windowsポインターサイズ反映の回帰検査
+
+`02_rotary_cursor_size`のリリース候補では、HID受信とWindows設定変更を分離して確認する。
+
+- [ ] `make app-dry-run`でCW／CCWを受信できる
+- [ ] ホスト実装に`SPI_SETCURSORS`定数または同アクションの呼出しがない
+- [ ] Windows即時反映方式が、現行検証基準の`SystemParametersInfoW`アクション`0x2029`を使用する
+- [ ] `CursorBaseSize`と`Software\Microsoft\Accessibility\CursorSize`の両方を保存・復元する
+- [ ] 前版形式の復元状態ファイルを移行できる
+- [ ] `make cursor-test`でサイズ変更と復元が成功する
+- [ ] `make app`でCW／CCWに応じてサイズが変化する
+- [ ] `Ctrl+C`終了時に起動前サイズへ復元する
+- [ ] USB切断または異常終了後に`make restore`で復元できる
+
+`0x2029`は未文書化動作であるため、静的検査だけで合格にせず、Windows更新後を含む各リリース候補で実機確認する。具体的な不具合と復旧は`60_TROUBLESHOOTING.md`、検証事実は`70_VALIDATION_RESULTS.md`を正本とする。

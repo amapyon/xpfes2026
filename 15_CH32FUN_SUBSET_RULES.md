@@ -1,6 +1,6 @@
 # ch32fun参加者向けサブセット規約
 
-更新日: 2026-07-31
+更新日: 2026-08-01
 
 ## 1. 目的
 
@@ -328,3 +328,19 @@ libusb 1.0.29 archive: 5977fc950f8d1395ccea9bd48c06b3f808fd3c2c961b44b0c2e6e29fc
 macOS実機では、test10で`00_onboard_led_blink`と`01_macro_keyboard`が動作した。test11／test12では同じテストサブセットを使用して`02_rotary_cursor_size`のビルド、書き込み、USB・IOHID列挙、CW／CCW受信、カーソルサイズ変更、`Ctrl+C`終了時復元を確認した。実際のコンパイル行に`-I/usr/include/newlib`がないことも確認した。
 
 この結果は、現行テストサブセットがmacOS上の必須演習3本に足りたことを示すが、最終レビュー済み許可リストであること、Windowsと同一の生成規則で再生成できること、対応ソース、SBOM、オフライン性を保証しない。参加者向け最終リリースでは、最終許可リストを両OSで検証し、対応ソース、SBOM、再生成性を確定する。
+
+## 18. ch32fun入力アーカイブの形式とSHA-256
+
+同じ上流コミットでも、ZIPとtar.gzは別の入力ファイルとして管理する。SHA-256は展開後のソースツリーではなく、実際に取得したアーカイブ全体へ対応させる。
+
+現行の検証値:
+
+| 用途 | 形式 | SHA-256 |
+|---|---|---|
+| Windowsオンライン検証版 | ZIP | `30e13fcf4c123981d0fba99a01a31cda30f57757356057bdce2e6cad026f58b1` |
+| macOS test8主催者ビルド | tar.gz | `37a507fa58710a14dbd3e959def57b02a6b0b1d410c9e307653e22aeb081ba9f` |
+
+ロック情報には、少なくともコミット、取得URL、保存ファイル名、`archive_format`、SHA-256を記録する。形式が異なるハッシュを流用しない。一般的な取得物の固定規則は`20_BUILD_RULES.md`、リリース検査は`50_RELEASE_CHECKLIST.md`を正本とする。
+
+`uiap-devkit-win64` `0.5.2-test15`はZIPを取得しながらtar.gzのSHA-256を期待したため、`UIAP-E122`で停止した。`0.5.3-test16`ではWindows用ZIPのロックを修正し、隔離済みファイルを新しい期待値で再検証できるようにした。実機観測と検証状態は`70_VALIDATION_RESULTS.md`に記録する。
+

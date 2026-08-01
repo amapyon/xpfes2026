@@ -1,6 +1,6 @@
 # 開発環境とディレクトリ構成
 
-更新日: 2026-07-31
+更新日: 2026-08-01
 
 ## 1. この文書の目的
 
@@ -1137,3 +1137,90 @@ test12のネイティブホストは次を実装する。
 macOS 26.5.2の利用者実機で、CW／CCW入力、カーソルサイズ変更、`Ctrl+C`終了時復元が想定どおり動作した。USB切断時復元は未確認である。
 
 参加者向け最終ZIPでは、生成用`runtime/build`、ダウンロードキャッシュ、Xcode Command Line Toolsを要求する手順を含めない。非公開APIのため、別Mac、別ユーザー、最低対応macOS、OS更新後の回帰確認をリリース判定へ含める。
+
+## 16. Windowsオンライン取得処理の配置
+
+Windowsオンライン初期化型Devkitでは、ダウンロード責務を次へ分離する。
+
+```text
+scripts/
+├── bootstrap.lock.json
+├── download-file.ps1
+└── setup.ps1
+
+runtime/downloads/
+├── <archive>
+├── <archive>.part
+└── <archive>.bad-YYYYMMDD-HHMMSS
+```
+
+| 項目 | 責務 |
+|---|---|
+| `bootstrap.lock.json` | コンポーネント名、固定URL、SHA-256、インストール種別、展開先 |
+| `download-file.ps1` | `curl.exe`実行、進捗、再試行、再開、ハッシュ検証、キャッシュ採用 |
+| `setup.ps1` | 固定ロックの順次処理、展開、サブセット生成、インストール状態記録 |
+| `runtime/downloads/*.part` | 中断・失敗した未完了データ。再実行時の再開候補 |
+| `runtime/downloads/*.bad-*` | SHA-256不一致として隔離したデータ |
+
+`download-file.ps1`はPowerShellの`curl`別名を使用せず、`%SystemRoot%\System32\curl.exe`を優先して実行する。curlの進捗表示はコンソールへ直接出し、セットアップログには開始、成功、終了コード、SHA-256結果だけを記録する。
+
+最終参加者向けオフラインZIPでは、`runtime/downloads`の取得済みアーカイブ、`.part`、`.bad-*`を除外する。オンライン検証版のキャッシュ構成を、そのまま最終配布構成へ流用しない。
+
+### 16.1 `0.5.0-test13`の範囲
+
+`uiap-devkit-win64` `0.5.0-test13`は、ダウンロード進捗方式を統合した主催者検証版である。
+
+含むもの:
+
+- xPack Windows Build Tools、xPack RISC-V GCC、Python、hidapi、ch32funの固定取得定義
+- `setup`、`doctor`、`versions`、`report`
+- `00_onboard_led_blink`のソースとMakefile
+
+未統合:
+
+- 固定済み`rv003usb`
+- 既存の検証済み`01_macro_keyboard`実装
+- 既存の検証済み`02_rotary_cursor_size`実装
+
+必須演習の決定は変更しない。test13の未統合状態を最終参加者向け構成として採用しない。
+
+## 23. Windows起動シェルの配置と呼出し
+
+`start-uiap.cmd`はDevkit内ツールをPATHの先頭へ追加するが、Windows標準システムディレクトリを失ってはならない。
+
+標準実体:
+
+```text
+%SystemRoot%\System32\cmd.exe
+%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe
+```
+
+起動ファイルと`scripts/cmd/*.cmd`は、上記を絶対パスで呼び出す。PATHには少なくともSystem32、Wbem、Windows PowerShellを保持する。`cmd.exe /K`起動失敗時は`UIAP-E105`と終了コードを表示し、ダブルクリックしたウィンドウを即時終了させない。
+
+## 2026-08-01 Windows test17 HID演習再統合
+
+`uiap-devkit-win64` `0.6.0-test17`では、`01_macro_keyboard`と`02_rotary_cursor_size`のプレースホルダーを実装済みソースへ置き換える。
+
+追加する構成:
+
+```text
+workspace/exercises/01_macro_keyboard/
+├── Makefile
+├── README.md
+├── macro_keyboard.c
+├── funconfig.h
+├── usb_config.h
+└── host/hidcheck.py
+
+workspace/exercises/02_rotary_cursor_size/
+├── Makefile
+├── README.md
+├── rotary_cursor_size.c
+├── funconfig.h
+├── usb_config.h
+└── host/cursor_size_host.py
+```
+
+`rv003usb`は`workspace/deps/rv003usb`へ配置する。test17では固定コミットのRaw URLからコア3ファイルとMITライセンスを取得する主催者検証方式とする。最終参加者向け版では、ファイル単位SHA-256を正式固定し、原則としてオフライン同梱する。
+
+実機検証状態は`70_VALIDATION_RESULTS.md`を正本とする。

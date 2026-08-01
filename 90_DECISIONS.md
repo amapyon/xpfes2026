@@ -894,3 +894,183 @@ minichlink binary: 56515fb09d3d3f5d44f747f37bee6aee004e65e3cc4c41ab2dedae0cd7381
 ### 却下・未採用
 - 
 ```
+
+## 2026-08-01 Windows大容量ダウンロード進捗方式
+
+### 決定
+
+- Windowsオンライン初期化型Devkitの標準ダウンロード方式を、PowerShell補助スクリプトからWindows標準の`curl.exe`を明示的に実行する方式とする
+- PowerShellの`curl`別名は使用しない
+- 標準引数は`--fail`、`--location`、`--retry 3`、`--retry-delay 2`、`--connect-timeout 30`、`--progress-bar`とする
+- ダウンロード中は`runtime/downloads/<archive>.part`へ保存する
+- `.part`がある場合は`--continue-at -`で再開を試みる
+- curl終了コード33の場合は再開非対応として`.part`を削除し、先頭から1回取得し直す
+- curl終了コード0かつSHA-256一致をダウンロード完了条件とする
+- SHA-256一致後だけ正式キャッシュ名へ変更する
+- SHA-256不一致ファイルは`.bad-<timestamp>`へ隔離する
+- ダウンロード定義は固定ロックファイルへ集約する
+- 進捗バーの制御文字をセットアップログへ保存しない
+- 最終参加者向けオフライン版では大容量ダウンロードを発生させない方針を維持する
+
+### 理由
+
+- xPack GNU RISC-V Embedded GCCなどの取得中に、停止しているのか進行しているのかを初心者が判断できる
+- macOSのcurl方式との差異を小さくできる
+- Windows 11標準機能で実現し、追加バイナリとライセンス監査対象を増やさない
+- 再試行、再開、リダイレクト、終了コードを小さい実装で扱える
+- `.part`とSHA-256検証により、不完全アーカイブを正式キャッシュとして展開しない
+
+### 実装
+
+- `uiap-devkit-win64` `0.5.0-test13`をオンライン初期化型の主催者検証版として生成した
+- test13は`setup`、`doctor`、`versions`、`report`、固定ロック、ダウンロード共通関数、Lチカ演習骨格を含む
+- test13の`ch32fun`は最終許可リストではなくテスト用サブセットである
+- 入力Devkitの検証済みUSB演習ソースが提供されていないため、`01_macro_keyboard`と`02_rotary_cursor_size`は未検証コードを生成せず、`UIAP-E240`で停止するプレースホルダーとした
+- 必須演習3本の決定は変更しない
+
+### 検証状態
+
+- パッケージ静的検査: 合格
+- Windows 11 x64実機でのダウンロードと進捗表示: 未確認
+- 中断再開、ハッシュ不一致、プロキシ環境: 未確認
+- Lチカのビルド、書き込み、物理動作: 未確認
+- 必須HID演習2本の統合: 未確認
+- 参加者向け最終オフラインZIP: 未確認
+
+### 未採用
+
+- `Invoke-WebRequest`を標準ダウンローダーにする案
+- BITSを標準方式にする案
+- `aria2c`をDevkitへ追加同梱する案
+- ブラウザ手動保存を通常セットアップ手順にする案
+
+これらは追加の版差、Windows専用状態管理、バイナリ追加、保存先誤操作などが増えるため、標準方式には採用しない。ブラウザ手動取得は、将来必要になった場合も明示的な復旧手順として別途検証する。
+
+## 2026-08-01 Windows起動シェルの絶対パス化
+
+### 決定
+
+- Windows版Devkitは、専用Command Promptを`%SystemRoot%\System32\cmd.exe`の絶対パスで起動する
+- Windows PowerShell 5.1は`%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe`の絶対パスで起動する
+- Devkit用PATHへSystem32、Wbem、Windows PowerShellを明示的に保持する
+- 起動失敗時はエラーを表示して一時停止し、ダブルクリックしたウィンドウを即時終了させない
+- `doctor`はシステムシェル実体とPATH保持を検査する
+
+### 理由
+
+`0.5.1-test14`で、パス検査と案内表示後に相対名`cmd.exe`を解決できず、専用Command Promptへ移行できないことを利用者実機で確認したため。
+
+### 実装
+
+`uiap-devkit-win64` `0.5.2-test15`へ反映した。
+
+### 検証状態
+
+- test14不具合: 利用者実機確認済み
+- test15静的検査: 合格
+- test15ダブルクリック継続起動、`setup`、ダウンロード、ビルド、書き込み: 未確認
+
+## 2026-08-01 取得アーカイブ形式とSHA-256の一体管理
+
+### 決定
+
+- 外部取得物は、版またはコミットだけでなく、URL、保存ファイル名、アーカイブ形式、SHA-256の組として固定する
+- 同じコミットのZIPとtar.gzでSHA-256を共有しない
+- ロックの形式またはハッシュを変更した場合は、新しいDevkit版として検証する
+- `0.5.2-test15`はch32funのロック不整合があるため使用しない
+- 修正版を`0.5.3-test16`とする
+
+### 根拠と参照先
+
+- 一般規則: `20_BUILD_RULES.md`
+- ch32fun固有値: `15_CH32FUN_SUBSET_RULES.md`
+- 実機結果: `70_VALIDATION_RESULTS.md`
+- 復旧手順: `60_TROUBLESHOOTING.md`
+- リリース検査: `50_RELEASE_CHECKLIST.md`
+
+### 検証状態
+
+- test15の不具合と不一致隔離: 利用者実機確認済み
+- test16静的検査: 合格
+- test16のWindows実機setup完走以降: 未確認
+
+## 2026-08-01 Windows test17への必須HID演習再統合
+
+### 決定
+
+- Windowsオンライン初期化型の次版を`uiap-devkit-win64` `0.6.0-test17`とする
+- `01_macro_keyboard`と`02_rotary_cursor_size`の`UIAP-E240`プレースホルダーを削除し、実装済みソースを配置する
+- `01_macro_keyboard`はD5 / PC3とGNDのスイッチで`AbCdE`を入力する
+- `02_rotary_cursor_size`はD8 / PC6、GND、D9 / PC7のエンコーダー入力をVendor-defined HIDでWindowsホストへ送る
+- ホストアプリは`workspace/exercises/02_rotary_cursor_size/host`へ配置する
+- rv003usbはコミット`75d926abe89a3002020b989015eab97ce5ad0470`へ固定する
+- test17では固定コミットRaw URLから必要なコアファイルを取得し、実測SHA-256を記録する
+- 最終参加者向け版ではrv003usbの期待SHA-256を固定し、原則としてオフライン同梱する
+
+### 維持する未決定事項
+
+- `1209:C003`、`1209:C004`を正式な公開配布用VID:PIDとして採用すること
+- `TEST3-001`、`TEST7-001`を正式なシリアル番号として採用すること
+- test17を参加者向け最終版とすること
+
+### 検証状態
+
+- パッケージ・ソース統合の静的検査: 合格
+- Windows実機のビルド、書き込み、USB列挙、HID動作: 未確認
+- 過去のWindows PoCとmacOS test10/test12の実機結果は参考履歴として保持するが、test17の合格判定には流用しない
+
+## 2026-08-01 Windows test18書き込みコマンド修正
+
+### 決定
+
+- `uiap-devkit-win64` `0.6.0-test17`は、HID演習のビルド検証用履歴として保持するが、書き込み可能なリリース候補として使用しない
+- 修正版を`0.6.1-test18`とする
+- ch32funの`cv_flash`へ渡す`FLASH_COMMAND`は、自動変数`$<`を使用する場合、遅延評価`=`で定義する
+- `doctor`は必須演習3本の`make -n flash`を検査し、対象BINと`flash -b`が揃わない場合はFAILとする
+- Newlib依存は未使用変数定義ではなく、`make -n build`の実効コンパイル行で判定する
+- 参加者向けテキストの制御文字検査をリリース検査へ追加する
+
+### 根拠
+
+Windows実機で`01_macro_keyboard`はFLASH 2484 B、RAM 228 Bまでビルドできたが、書き込みコマンドが`-w -b`相当となり、minichlinkがUsageを表示して終了した。原因は`FLASH_COMMAND :=`による`$<`の早期展開である。
+
+同じ実機ログではコンパイル行にNewlibインクルードがないにもかかわらず、`doctor`が未使用の既定値を検出してFAILにした。
+
+### 検証状態
+
+- test17ビルドと不具合再現: 利用者実機確認済み
+- test18の3演習書き込みコマンドdry-run: 静的検査合格
+- test18のWindows実書き込み、USB列挙、HID動作: 未確認
+- test18を参加者向け最終版とすること: 未決定
+
+## 2026-08-01 Windows test19ポインターサイズ反映修正
+
+### 決定
+
+- `uiap-devkit-win64` `0.6.1-test18`は、`02_rotary_cursor_size`のWindowsポインターサイズ変更機能に使用しない
+- 修正版を`0.6.2-test19`とする
+- Windowsポインターサイズ変更で`SPI_SETCURSORS (0x0057)`を使用しない
+- 現行PoCでは、Windows 11 x64で過去に実機確認した`SystemParametersInfoW`アクション`0x2029`を使用する
+- 起動前の`CursorBaseSize`と`Software\Microsoft\Accessibility\CursorSize`を保存し、正常終了と`make restore`で復元する
+- 旧版の保存状態を移行し、異常終了後のstale stateを次回起動前に復元する
+- HID入力とWindows設定変更を分離する`make cursor-test`を標準確認ターゲットへ追加する
+- `doctor`とリリース検査で`SPI_SETCURSORS`の再導入をFAILにする
+
+### 根拠
+
+Windows test18では`make app-dry-run`が成功し、HID受信まで正常だったが、`make app`の最初のサイズ適用で`WinError 6`となった。プロジェクト内には、`03_pot_cursor_haptic` v1.0.6で同じ不具合を確認し、v1.0.7で修正した履歴がある。
+
+### 制約
+
+`0x2029`はMicrosoft公開仕様に記載されていない未文書化動作である。正式な公開APIとして保証せず、Windows 11 x64向けPoCに限定する。Windows更新、別PC、別ユーザーごとに`make cursor-test`を実行する。将来、公開APIだけで同等の即時変更を実現できる方法が確認できた場合は置き換えを再検討する。
+
+### 検証状態
+
+- test18 HID受信と不具合再現: 利用者実機確認済み
+- test19実装と静的検査: 合格
+- test19 `02_rotary_cursor_size`のビルド、`1209:B803`経由書き込み、`1209:C004`列挙、CW／CCW受信、Windowsポインターサイズ変更: 利用者実機確認済み
+- test19 `Ctrl+C`終了時の起動前ポインターサイズ復元: 利用者実機確認済み
+- test18で発生した`SPI_SETCURSORS`由来の`WinError 6`は、test19で解消確認済み
+- Windows版の必須HID演習`01_macro_keyboard`と`02_rotary_cursor_size`は、現行test18/test19系で基本動作を利用者実機確認済み
+- `make restore`単独確認、`make cursor-test`単独確認、USB切断・強制終了時復元、別Windows PC、最終オフラインZIP: 未確認
+- test19を参加者向け最終版とすること: 未決定

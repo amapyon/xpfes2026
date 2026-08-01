@@ -1,7 +1,7 @@
 # XP祭り2026 物理UIワークショップ
 # プロジェクト概要
 
-更新日: 2026-07-31
+更新日: 2026-08-01
 
 ## 1. 目的
 
@@ -372,3 +372,28 @@ TEST7-001
 | `99_FULL_PROJECT_GUIDE.md` | 分割文書を統合した参照用完全版 |
 
 `99_FULL_PROJECT_GUIDE.md`は、分割文書を更新した後に再生成する。
+
+## 13. 2026-08-01 Windowsオンライン初期化型Devkitのダウンロード表示
+
+Windows版の最終参加者向け配布はオフライン同梱を目標とする。一方、主催者検証版およびオンライン初期化型Devkitでは、xPack GNU RISC-V Embedded GCCなどの大容量アーカイブ取得中に状態を確認できるようにする。
+
+標準方式:
+
+- Windows標準の`curl.exe`をPowerShell補助スクリプトから明示的に実行する
+- 進捗バーと完了割合をcurlの進捗表示で確認可能にする
+- `.part`、再試行、条件付き再開、SHA-256検証、キャッシュ再利用を共通処理へ集約する
+- ダウンロードURL、SHA-256、展開先、コンポーネント種別を固定ロックファイルへ記録する
+- ダウンロード処理の失敗を、展開、インストール、ビルドの失敗と区別する
+
+`uiap-devkit-win64` `0.5.2-test15`は、この方式にPowerShell文字コード修正とWindows起動シェル絶対パス化を加えた主催者検証版である。2026-08-01時点ではtest15のパッケージ静的検査までで、Windows 11 x64実機確認済みとは扱わない。
+
+## 14. 2026-08-01 Windows起動シェルの解決規則
+
+Windows版Devkitは、専用Command PromptおよびWindows PowerShellをPATH検索だけに依存して起動しない。
+
+- Command Prompt: `%SystemRoot%\System32\cmd.exe`
+- Windows PowerShell 5.1: `%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe`
+- Devkit用PATHへSystem32、Wbem、Windows PowerShellを明示的に保持する
+- 起動シェルが存在しない場合は、ウィンドウを即時終了せずエラーコードと実体パスを表示する
+
+`0.5.1-test14`では相対名`cmd.exe`の解決失敗を利用者実機で確認した。`0.5.2-test15`で修正し、実機再確認待ちとする。

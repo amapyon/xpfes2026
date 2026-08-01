@@ -1,6 +1,6 @@
 # 検証結果
 
-更新日: 2026-07-31
+更新日: 2026-08-01
 
 ## 1. この文書の目的
 
@@ -67,6 +67,9 @@ Windowsの詳細ビルド番号、CPU型番、別ユーザー権限は今回の�
 | ID | 日付 | 検証内容 | Windows | macOS | 状態 |
 |---|---|---|---|---|---|
 | WIN-ENV-001 | 2026-07-24 | Devkit起動、セットアップ、再起動後再現 | 合格 | 未確認 | PoC合格 |
+| WIN-DOWNLOAD-TEST15-001 | 2026-08-01 | test15オンラインsetupの進捗表示と主要4取得物 | 利用者報告で合格 | 対象外 | Build Tools、GCC、Python、hidapiの取得・SHA-256・配置合格 |
+| WIN-CH32FUN-HASH-TEST15-001 | 2026-08-01 | test15 ch32fun入力アーカイブSHA-256 | 利用者報告で不合格 | 対象外 | ZIP取得にtar.gzの期待値を使用 |
+| WIN-CH32FUN-TEST16-STATIC-001 | 2026-08-01 | test16ロック修正と隔離ファイル再検証 | 静的検査合格 | 対象外 | Windows実機setup完走は未確認 |
 | WIN-PATH-001 | 2026-07-26 | 空白・全角文字を含む展開先で`UIAP-E103`表示 | 利用者報告 | 対象外 | 非対応パスでの停止表示を確認 |
 | WIN-PATH-002 | 2026-07-26 | 有効な複数階層ASCIIパスをtest11が誤って拒否 | 利用者報告 | 対象外 | 回帰不具合・原因特定・修正版未検証 |
 | DOC-NAV-001 | 2026-07-29 | 演習移動用トップレベルコマンド廃止と明示的`cd`方針 | 文書更新 | Lチカで合格 | 全演習のDevkit実装・実機検証待ち |
@@ -1324,3 +1327,413 @@ Original pointer scale: 0.00
 - 将来のmacOS更新後の互換性
 - 最終オフラインZIP
 
+## 24. Windowsダウンロード進捗統合 test13
+
+### 検証ID
+
+```text
+WIN-DOWNLOAD-STATIC-001
+```
+
+### 対象
+
+```text
+uiap-devkit-win64 0.5.0-test13
+日付: 2026-08-01
+```
+
+### 実装済み
+
+- PowerShellから`curl.exe`を明示的に実行
+- `--fail`、`--location`、`--retry 3`、`--retry-delay 2`、`--connect-timeout 30`、`--progress-bar`
+- `.part`への取得
+- 既存`.part`からの`--continue-at -`
+- curl終了コード33時の先頭再取得
+- SHA-256一致後の正式名変更
+- 不一致ファイルの`.bad-*`隔離
+- キャッシュ再利用
+- 進捗バーと要約ログの分離
+- 固定コンポーネントロック
+
+### 静的検査結果
+
+- ZIPの標準ディレクトリ構造: 合格
+- `VERSION`と検証状態表示: 合格
+- JSON構文とSHA-256形式: 合格
+- 廃止済みトップレベル演習別名がないこと: 合格
+- `.cmd`のCRLF、主要ソースのLF: 合格
+- `manifest.sha256`整合性: 合格
+- 不要な`.git`、ログ、通常ビルド生成物がないこと: 合格
+
+### 未確認
+
+- Windows PowerShell 5.1での実行構文
+- Windows 11 x64での実ダウンロード
+- xPack GCCの進捗表示
+- `Ctrl+C`中断と再開
+- curl終了コード33の実動作
+- SHA-256不一致隔離の実動作
+- 展開済みツールの起動
+- `00_onboard_led_blink`のビルド、書き込み、物理点滅
+- `01_macro_keyboard`と`02_rotary_cursor_size`の統合
+- 別PC、別ユーザー、プロキシ、Windows Defender
+
+したがって、状態は「実装済み・パッケージ静的検査合格・Windows実機未確認」とする。参加者向けリリース合格ではない。
+
+## 25. Windows test14起動不具合とtest15修正
+
+### 検証ID
+
+```text
+WIN-START-TEST14-001
+WIN-START-TEST15-STATIC-001
+```
+
+### test14利用者実機結果
+
+- `path-check.ps1`: PASS
+- Devkit版、初期コマンド、初期ディレクトリの案内表示: 成功
+- 専用Command Prompt起動: 不合格
+- 表示: `'cmd.exe' is not recognized as an internal or external command`
+- ダブルクリック時: ウィンドウが一瞬表示されて閉じる
+
+原因は、`start-uiap.cmd`がDevkit用PATH設定後に相対名`cmd.exe`を実行したことと判定した。
+
+### test15実装
+
+- `%SystemRoot%\System32\cmd.exe`を絶対パスで実行
+- Windows PowerShell 5.1を絶対パスで実行
+- PATHへSystem32、Wbem、Windows PowerShellを明示的に保持
+- `doctor`へシステムシェルとPATH保持の検査を追加
+- 起動失敗時に`UIAP-E105`、終了コード、実行パスを表示
+
+### 状態
+
+- test14の不具合再現: 利用者実機確認済み
+- test15パッケージ静的検査: 合格
+- test15ダブルクリック継続起動: 未確認
+- test15の`setup`以降: 未確認
+
+## 26. Windows test15 ch32fun SHA-256不一致とtest16修正
+
+### 検証ID
+
+```text
+WIN-DOWNLOAD-TEST15-001
+WIN-CH32FUN-HASH-TEST15-001
+WIN-CH32FUN-TEST16-STATIC-001
+```
+
+### test15利用者実機結果
+
+`start-uiap.cmd`から専用Command Promptを継続起動し、`setup`を実行できた。次の取得物は、curl進捗表示、SHA-256検証、展開または配置まで合格した。
+
+- xPack Windows Build Tools 4.4.1-3
+- xPack GNU RISC-V Embedded GCC 14.2.0-3
+- Python 3.14.6 embeddable x64
+- hidapi 0.15.0 for CPython 3.14 Windows x64
+
+ch32funではダウンロード後に`UIAP-E122`となり、次を観測した。
+
+```text
+期待値: 37a507fa58710a14dbd3e959def57b02a6b0b1d410c9e307653e22aeb081ba9f
+実測値: 30e13fcf4c123981d0fba99a01a31cda30f57757356057bdce2e6cad026f58b1
+```
+
+不一致ファイルが`.part.bad-20260801-125444`へ隔離されたため、SHA-256不一致時に正式キャッシュを採用しない処理は実機で確認できた。`setup`全体は未完了である。
+
+### 原因とtest16
+
+Windows版はch32funのZIPを取得していたが、ロックにはmacOS test8で使用したtar.gzのSHA-256が設定されていた。`0.5.3-test16`ではWindows用ZIPの期待値へ修正し、隔離済みファイルを再検証して再利用する処理を追加した。
+
+### 現在状態
+
+- test15の起動継続、curl進捗、主要4取得物: 利用者実機合格
+- test15のch32funロック: 不合格
+- SHA-256不一致隔離: 利用者実機合格
+- test16パッケージ静的検査: 合格
+- test16での隔離ファイル再利用、setup完走、doctor、ビルド、書き込み: 未確認
+
+## 2026-08-01 Windows test15 setup完走とtest17 HID演習再統合
+
+### 追加検証記録
+
+| ID | 対象 | 結果 | 状態 |
+|---|---|---|---|
+| `WIN-SETUP-TEST15-002` | `0.5.2-test15`の起動、Build Tools、GCC、Python、hidapi、ch32fun取得、SHA-256、配置 | 利用者実機で合格 | オンライン`setup`完走を確認 |
+| `WIN-HID-PLACEHOLDER-TEST15-001` | `02_rotary_cursor_size`の`make flash` | 利用者実機で不合格 | `UIAP-E240`プレースホルダーにより意図的停止 |
+| `WIN-HID-INTEGRATION-TEST17-STATIC-001` | `0.6.0-test17`への演習01・02、ホストアプリ、rv003usb取得定義の統合 | 静的検査合格 | Windows実機のビルド・書き込み・HID動作待ち |
+
+### test15で確認済みの範囲
+
+- `start-uiap.cmd`からCommand Promptが閉じずに起動
+- xPack Windows Build Tools 4.4.1-3の取得、SHA-256、展開
+- xPack GNU RISC-V Embedded GCC 14.2.0-3の取得、SHA-256、展開
+- Python 3.14.6 embeddable x64の取得、SHA-256、展開
+- hidapi 0.15.0の取得、SHA-256、配置、import
+- ch32fun固定コミットZIPの取得とSHA-256検証
+- `setup`完走
+
+### test17の実装範囲
+
+- `01_macro_keyboard`: D5 / PC3、内部プルアップ、押下1回で`AbCdE`、長押し抑止
+- `02_rotary_cursor_size`: D8 / PC6=A、GND=C、D9 / PC7=B、Vendor-defined HID、Windowsホストアプリ
+- `rv003usb`: コミット`75d926abe89a3002020b989015eab97ce5ad0470`のコア3ファイルとMITライセンス
+- 演習内の`make`、`make flash`、`make hidcheck`、`make app-dry-run`、`make app`、`make restore`
+
+### test17で未確認
+
+- Windows実機でのrv003usb取得完走
+- 3演習の実コンパイルとリンク
+- UIAPduinoへの書き込み
+- `01_macro_keyboard`のUSB列挙と文字入力
+- `02_rotary_cursor_size`のHID受信、カーソルサイズ変更、終了時復元
+- rv003usbファイル単位SHA-256の正式固定
+
+過去PoCの合格結果を、test17再統合版の合格として転記しない。
+
+## 2026-08-01 Windows test17マクロビルドと書き込みコマンド不具合
+
+### 検証ID
+
+```text
+WIN-DOCTOR-TEST17-001
+WIN-MACRO-BUILD-TEST17-001
+WIN-FLASH-COMMAND-TEST17-001
+WIN-FLASH-COMMAND-TEST18-STATIC-001
+```
+
+### test17利用者実機結果
+
+`uiap-devkit-win64` `0.6.0-test17`で`doctor`を実行し、次を確認した。
+
+- `PASS=37 WARN=3 FAIL=1`
+- Build Tools、RISC-V GCC、Python、hidapi、ch32fun、rv003usb、必須演習ファイルを検出
+- 3演習の`make -n build`がPASS
+- ロータリーカーソルホスト自己診断がPASS
+- FAILは`ch32fun.mk`のNewlib判定1件
+
+実際のマクロキーボードのコンパイル行には`-I/usr/include/newlib`がなかった。このFAILは未使用の`NEWLIB?=/usr/include/newlib`定義を検出した診断誤判定とする。
+
+`01_macro_keyboard`の`make flash`では、コンパイルとリンクに成功した。
+
+```text
+FLASH: 2484 B / 16 KB
+RAM:    228 B / 2 KB
+```
+
+生成物としてELF、BIN、外部領域BIN、HEX、LST、MAPを作成した。rv003usbの`#warning "CH32V003"`は既知警告であり、ビルド失敗ではない。
+
+minichlinkは次を確認した。
+
+- VID:PID `1209:B803`
+- CH32V003検出
+- Flash Storage 16 kB
+- Read protection disabled
+
+ただし実行コマンドは次の状態だった。
+
+```text
+minichlink -c 0x1209b803 -w   -b
+```
+
+書き込みファイルと書き込み領域が欠落したため、minichlinkがUsageを表示し、終了コード255で停止した。`Image written.`と`Booting`は表示されておらず、書き込み成功として扱わない。
+
+### 原因
+
+3演習のMakefileが、自動変数`$<`を含む`FLASH_COMMAND`を`:=`で定義したため、Makefile読込み時に空へ展開された。
+
+### test18修正と静的結果
+
+`0.6.1-test18`では次を行った。
+
+- `FLASH_COMMAND =`へ変更し、`$<`をレシピ実行時に展開
+- 3演習の`make -n flash`で対象BINと`flash -b`を確認
+- Newlib診断を`make -n build`の実効コンパイル行へ変更
+- test17のMarkdownに含まれた制御文字と壊れたWindowsパスを修正
+- ZIP、manifest、JSON、UTF-8 BOM、改行、制御文字を静的検査
+
+静的dry-runでは次を確認した。
+
+```text
+-w onboard_led_blink.bin flash -b
+-w macro_keyboard.bin flash -b
+-w rotary_cursor_size.bin flash -b
+```
+
+### 現在状態
+
+- test17マクロキーボードのビルド: 利用者実機合格
+- test17書き込みコマンド: 利用者実機不合格
+- test17 Newlib診断: 誤判定
+- test18書き込みコマンドと診断修正: 静的検査合格
+- test18の実書き込み、USB列挙、`AbCdE`入力: 未確認
+- test18のロータリーHIDとカーソル変更: 未確認
+
+## 2026-08-01 Windows test18必須演習とカーソル適用不具合
+
+### 検証ID
+
+```text
+WIN-MACRO-TEST18-001
+WIN-ROTARY-HID-TEST18-001
+WIN-CURSOR-APPLY-TEST18-001
+WIN-CURSOR-APPLY-TEST19-STATIC-001
+```
+
+### 利用者実機結果
+
+`uiap-devkit-win64` `0.6.1-test18`について、Windows 11 x64で次の報告を得た。
+
+#### `01_macro_keyboard`
+
+```text
+結果: OK
+```
+
+ビルド、書き込み、USB HIDキーボード入力を合格として記録する。期待文字列、長押し抑止、再押下などの個別ログは今回未取得のため、過去の検証結果を超えて断定しない。
+
+#### `02_rotary_cursor_size`
+
+`make app-dry-run`は合格した。対象`1209:C004`を1台検出し、エンコーダーのCW／CCW入力を受信できた。
+
+`make app`は次まで成功した。
+
+```text
+Matching devices: 1
+VID:PID=1209:C004
+Product: UIAP RE12000 Cursor Test
+Serial: TEST7-001
+Original pointer size: 80
+Mode: apply
+```
+
+最初のサイズ適用時に次で停止した。
+
+```text
+[WinError 6] ハンドルが無効です。
+make: *** [Makefile:38: app] Error 1
+```
+
+この結果から、USB列挙、hidapiオープン、HID受信は合格、Windowsポインターサイズ適用は不合格とする。
+
+### 原因
+
+test18は`CursorBaseSize`更新後に`SystemParametersInfoW(SPI_SETCURSORS, ...)`を呼び出していた。プロジェクトの過去の`03_pot_cursor_haptic` v1.0.6でも同じ`WinError 6`を確認し、v1.0.7で同呼出しを除去していた。test18は既知不具合の回帰である。
+
+### test19修正と静的結果
+
+`0.6.2-test19`では次を実装した。
+
+- `SPI_SETCURSORS (0x0057)`の呼出しを除去
+- 過去のWindows 11 x64実機PoCで確認した`0x2029`方式へ変更
+- `CursorBaseSize`とアクセシビリティ側`CursorSize`のスナップショット保存・復元
+- test17／test18形式の保存状態移行
+- stale stateの起動前自動復元
+- `make cursor-test`追加
+- ホスト自己診断へサイズ段階、スライダー変換、旧状態移行検査を追加
+- doctorへ`0x2029`、`SPI_SETCURSORS`回帰、2系統保存対象の静的検査を追加
+
+Python構文、ホスト自己診断、manifest、ZIP整合性、UTF-8、改行を静的確認した。
+
+### 現在状態
+
+- test18 `01_macro_keyboard`: 利用者実機合格
+- test18 `02_rotary_cursor_size`のHID列挙と`make app-dry-run`: 利用者実機合格
+- test18 `make app` Windowsサイズ適用: 利用者実機不合格
+- test19修正: 静的検査合格
+- test19 `02_rotary_cursor_size`のビルド、書き込み、HID列挙、CW／CCW、Windowsサイズ変更、`Ctrl+C`復元: 利用者実機合格
+- test19の`make restore`単独確認、`make cursor-test`単独確認、USB切断時復元、強制終了後復元: 未確認
+
+## 2026-08-01 Windows test19ロータリーカーソル統合動作
+
+### 検証ID
+
+```text
+WIN-ROTARY-CURSOR-TEST19-001
+```
+
+### 対象
+
+```text
+uiap-devkit-win64 0.6.2-test19
+workspace/exercises/02_rotary_cursor_size
+Windows 11 x64
+```
+
+### 利用者実機結果
+
+`make flash`でファームウェアのコンパイル、リンク、BIN生成、USBブートローダー経由の書き込みが成功した。
+
+```text
+FLASH: 2248 B / 16 KB
+RAM:    208 B / 2 KB
+VID:0x1209, PID:0xb803
+Detected CH32V003
+Image written.
+Booting
+```
+
+`rv003usb.S`の`#warning "CH32V003"`は表示されたが、リンク、書き込み、実動作が成功しているため既知警告として扱う。
+
+`make app`では次を確認した。
+
+```text
+Matching devices: 1
+VID:PID=1209:C004
+Product: UIAP RE12000 Cursor Test
+Serial: TEST7-001
+Original pointer size: 80
+Mode: apply
+```
+
+エンコーダー操作に応じ、ポインターサイズが16単位で増減した。今回のログでは64～176の範囲でCW／CCWの両方向を確認した。
+
+```text
+CW: 96
+CW: 112
+CW: 128
+CW: 144
+CW: 160
+CW: 176
+CCW: 160
+CCW: 144
+CCW: 128
+CCW: 112
+CCW: 96
+CCW: 80
+CCW: 64
+```
+
+`Ctrl+C`終了時には起動前のサイズ80へ復元した。
+
+```text
+Stopping.
+Restored pointer size: 80
+```
+
+### 判定
+
+- ファームウェアビルド: 合格
+- `1209:B803`経由の書き込み: 合格
+- `1209:C004`アプリケーション列挙: 合格
+- hidapiによるデバイスオープン: 合格
+- CW受信: 合格
+- CCW受信: 合格
+- Windowsポインターサイズ変更: 合格
+- `Ctrl+C`終了時の起動前サイズ復元: 合格
+- test18の`WinError 6`回帰修正: test19で利用者実機合格
+
+`1209:C004`、`TEST7-001`はPoC用一時値であり、正式な公開配布用識別子としての採用を意味しない。
+
+### 引き続き未確認
+
+- `make restore`単独実行による異常終了後復元
+- `make cursor-test`単独実行
+- USB切断時の終了と復元
+- 強制終了後の復元
+- USB再接続後の再起動
+- 高速回転時の取りこぼし
+- 長時間連続操作
+- 別のWindows 11 PC、別ユーザー
+- 最終オフライン参加者向けZIP

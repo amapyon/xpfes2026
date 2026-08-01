@@ -1,6 +1,6 @@
 # ビルド、Makefile、ファイル規約
 
-更新日: 2026-07-31
+更新日: 2026-08-01
 
 ## 1. 基本方針
 
@@ -987,3 +987,131 @@ OS設定を変更する前に起動前値をDevkit内`.state`へ保存する。�
 
 公開APIだけで実現できる代替方式の検討は継続する。
 
+## 28. Windowsオンラインダウンロード規約
+
+### 28.1 標準実装
+
+PowerShell補助スクリプトから、Windows標準の実行ファイルを明示する。
+
+```powershell
+$CurlPath = Join-Path $env:SystemRoot 'System32\curl.exe'
+& $CurlPath @Arguments
+```
+
+`curl`だけを記述しない。Windows PowerShell 5.1では`curl`が`Invoke-WebRequest`の別名として解決される場合があり、curlオプションと互換にならない。
+
+標準引数:
+
+```text
+--fail
+--location
+--retry 3
+--retry-delay 2
+--connect-timeout 30
+--progress-bar
+--output <archive>.part
+```
+
+未完了ファイルが存在する場合だけ次を追加する。
+
+```text
+--continue-at -
+```
+
+外部プログラムは文字列連結したコマンドとして実行せず、引数配列で実行する。curl終了コードを`$LASTEXITCODE`で取得し、PowerShellの成功状態だけで判定しない。
+
+### 28.2 完了条件
+
+1. curl終了コードが0
+2. `.part`のSHA-256が固定値と一致
+3. 正式なキャッシュ名へ同一ボリューム内で変更
+4. 展開またはインストール処理が成功
+5. コンポーネントSHA-256をインストールマーカーへ記録
+
+SHA-256が一致する前に正式名へ変更しない。既存の正式キャッシュが不一致の場合は上書き再利用せず、`.bad-<timestamp>`へ隔離する。
+
+### 28.3 再開と再試行
+
+- curlの内部再試行は3回とする
+- `.part`がある場合はRange再開を試みる
+- curl終了コード33の場合は再開非対応として`.part`を削除し、1回だけ先頭から取得し直す
+- その他の失敗では`.part`を保持し、利用者が`setup`を再実行できるようにする
+- SHA-256不一致の`.part`は再開候補として残さない
+
+### 28.4 ログ
+
+curlの進捗メーターはコンソールへ直接表示し、ログファイルへリダイレクトしない。ログには次だけを残す。
+
+- コンポーネント名
+- URL
+- 再開の有無
+- curl終了コード
+- SHA-256期待値と実測値
+- キャッシュ採用、成功、失敗
+
+URLにトークン、認証情報、個人情報を含めない。
+
+## 29. Windows標準実行ファイルの呼出し
+
+DevkitがPATHを再構成する処理では、Windows標準実行ファイルを相対名だけで呼び出さない。
+
+```text
+%SystemRoot%\System32\cmd.exe
+%SystemRoot%\System32\WindowsPowerShell\v1.0\powershell.exe
+%SystemRoot%\System32\curl.exe
+```
+
+Devkit内ツールはPATHの先頭へ置いてよいが、System32、Wbem、Windows PowerShellをPATHへ保持する。起動スクリプト、共通コマンドラッパー、PowerShellからの再呼出しで同じ規則を使用する。
+
+## 30. 外部取得物の識別とSHA-256
+
+SHA-256は、版やコミットだけでなく、実際に取得するファイルのバイト列へ結び付ける。同じソースコミットから生成されたZIP、tar.gz、その他のアーカイブは、展開内容が同等でも別の取得物として扱う。
+
+固定ロックには、少なくとも次を含める。
+
+- コンポーネント名と版またはコミット
+- 取得URL
+- 保存ファイル名
+- アーカイブ形式
+- SHA-256
+
+URL、保存ファイル名、アーカイブ形式、SHA-256は相互に整合していなければならない。いずれかを変更した場合はロックを更新し、新しいDevkit版として再検証する。SHA-256不一致時に、取得した実測値だけを根拠として期待値を書き換えない。
+
+ch32fun固有の入力値は`15_CH32FUN_SUBSET_RULES.md`、リリース判定は`50_RELEASE_CHECKLIST.md`、利用者向け復旧は`60_TROUBLESHOOTING.md`、実機結果は`70_VALIDATION_RESULTS.md`へ分離する。
+
+## 2026-08-01 必須演習の実装完全性
+
+参加者向けまたは主催者検証用Devkitに必須演習ディレクトリを含める場合、実装を停止するだけのプレースホルダーを含めない。
+
+リリース検査では、少なくとも次を行う。
+
+- `01_macro_keyboard`に主ソース、`usb_config.h`、Makefileが存在する
+- `02_rotary_cursor_size`に主ソース、`usb_config.h`、ホストアプリ、Makefileが存在する
+- 演習ツリーに`UIAP-E240`が残っていない
+- 両Makefileが`$(UIAP_WORKSPACE)/deps/rv003usb`を参照する
+- `make -n build`が3演習で成功する
+- 実機結果を伴わない再実装は「静的検査済み」と「Windows実機確認済み」を分けて記録する
+
+オンライン主催者検証版で固定コミットのRaw URLからソースを取得する場合、URLへ完全コミットIDを含め、取得した各ファイルのSHA-256を記録する。最終リリースでは、その実測値を期待値として固定し、取得後検証またはオフライン同梱へ移行する。
+
+## 2026-08-01 Make自動変数を含む書き込みコマンド
+
+`$<`、`$@`などのGNU Make自動変数は、対象ルールのレシピ実行時にだけ値を持つ。自動変数を含むコマンド変数を単純展開代入`:=`で定義しない。
+
+不適切な例:
+
+```make
+FLASH_COMMAND := "$(MINICHLINK)/minichlink" -c 0x1209b803 -w $< $(WRITE_SECTION) -b
+```
+
+`:=`の評価時点では`$<`が空になるため、`cv_flash`実行時に書き込みファイルが欠落する。
+
+採用する形式:
+
+```make
+FLASH_COMMAND = "$(MINICHLINK)/minichlink" -c 0x1209b803 -w $< $(WRITE_SECTION) -b
+```
+
+または、対象ルールのレシピへ`$(TARGET).bin`を明示する。リリース検査では`make -n flash`を実行し、`-w`直後に対象BIN、その後に書き込み領域`flash`と`-b`が存在することを確認する。
+
+Newlib依存の診断は、`NEWLIB?=/usr/include/newlib`のような未使用既定値の存在だけでFAILにしない。必須演習の`make -n build`に現れる実効コンパイル行を判定対象とする。実機事実は`70_VALIDATION_RESULTS.md`、復旧方法は`60_TROUBLESHOOTING.md`を参照する。

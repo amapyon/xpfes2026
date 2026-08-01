@@ -1,6 +1,6 @@
 # トラブルシューティング指針
 
-更新日: 2026-07-31
+更新日: 2026-08-01
 
 この文書は、UIAPduino Pro Micro CH32V003 V1.4を使用するXP祭り2026向け開発環境、ファームウェア、USB HID、回路、PC側アプリケーションの問題を切り分けるための指針である。
 
@@ -1862,3 +1862,219 @@ make restore
 
 macOS 26.5.2では`Ctrl+C`終了時復元を利用者実機確認済みである。USB切断時復元は未確認なので、問題が発生した場合はログを保存し、手動でシステム設定のポインターサイズを確認する。
 
+## 32. Windowsの大容量ダウンロード
+
+### 32.1 進捗バーが表示されない
+
+確認:
+
+- `start-uiap.cmd`から起動した専用Command Promptか
+- `setup`コマンドを実行したか
+- PowerShellで`curl`や`Invoke-WebRequest`を直接実行していないか
+- `%SystemRoot%\System32\curl.exe`が存在するか
+- `doctor`でcurl.exeがPASSか
+
+Devkitの内部URLをブラウザへコピーして手動取得する前に、`report`でログを保存する。
+
+### 32.2 `[UIAP-E120] Windows標準のcurl.exeが見つかりません`
+
+Windows 11 x64のサポート対象環境か確認し、Windows Updateを適用する。別サイトから任意のcurl.exeをダウンロードしてDevkitへ置かない。主催者は対象Windowsビルドとセキュリティポリシーを記録する。
+
+### 32.3 `[UIAP-E121] ダウンロードに失敗しました`
+
+表示されたcurl終了コードで切り分ける。
+
+| 終了コード | 主な意味 | 確認 |
+|---:|---|---|
+| 6 | ホスト名を解決できない | DNS、ネットワーク、URL |
+| 7 | 接続できない | ファイアウォール、プロキシ、配布元障害 |
+| 28 | タイムアウト | 回線、VPN、プロキシ、再実行 |
+| 33 | Range再開に非対応 | Devkitが`.part`を削除して先頭再取得するか |
+| 35 | TLS接続失敗 | TLS検査、プロキシ、日時 |
+| 60 | 証明書検証失敗 | OS証明書、日時、企業プロキシ |
+
+終了コード6、7、28、35、60では`.part`を保持し、原因解消後に同じDevkitで`setup`を再実行する。
+
+### 32.4 `[UIAP-E122] SHA-256が一致しません`
+
+不一致ファイルは`.bad-<timestamp>`へ隔離される。正式キャッシュへ手動改名しない。
+
+確認順序:
+
+1. Devkit版と対象コンポーネントを確認する
+2. URL、保存ファイル名、アーカイブ形式、期待SHA-256の組を確認する
+3. HTMLエラーページ、プロキシ書換え、ディスク異常を除外する
+4. ロックの誤りが判明した場合は、修正版Devkitまたは正式ホットフィックスを使用する
+
+`0.5.2-test15`でch32fun取得時に発生する場合は、ZIPとtar.gzのSHA-256混用による既知不具合である。`0.5.3-test16`またはtest16ホットフィックスを適用し、隔離済みファイルを削除せずに`setup`を再実行する。test16は隔離ファイルを現在の期待値で再検証し、一致する場合だけ採用する。
+
+ハッシュ固定の規則は`20_BUILD_RULES.md`、ch32fun固有値は`15_CH32FUN_SUBSET_RULES.md`、実機記録は`70_VALIDATION_RESULTS.md`を参照する。
+
+### 32.5 `.part`が残っている
+
+中断または通信失敗を示す。正常な復旧手順:
+
+```text
+setup
+```
+
+`.part`を正式ZIPへ手動改名しない。複数版Devkit間で`.part`をコピーしない。再開後も繰り返し失敗する場合は`report`を作成し、curl終了コード、ファイルサイズ、ネットワーク条件を記録する。
+
+## 33. `start-uiap.cmd`の案内後に`cmd.exe`が見つからず閉じる
+
+代表表示:
+
+```text
+'cmd.exe' is not recognized as an internal or external command,
+operable program or batch file.
+```
+
+### 原因
+
+`0.5.1-test14`は、Devkit用PATHを設定した後に相対名`cmd.exe`を実行していた。System32をPATHから解決できない環境では、パス検査と案内表示は成功しても専用Command Promptへ移行できない。
+
+### 対応
+
+1. test14のウィンドウを閉じる
+2. test14へファイルを上書きしない
+3. `0.5.2-test15`を新しい空フォルダーへ展開する
+4. `start-uiap.cmd`をダブルクリックする
+5. 案内後もウィンドウが残ることを確認する
+6. `doctor`を実行し、`cmd.exe`、Windows PowerShell、PATHのSystem32保持がPASSになることを確認する
+
+PowerShellから直接Devkitを継続利用することを参加者向け標準回避策にしない。
+
+## 2026-08-01 `[UIAP-E240]`が表示される
+
+`0.5.x-test15/test16`の`01_macro_keyboard`と`02_rotary_cursor_size`は、未統合コードを誤配布しないためのプレースホルダーだった。
+
+`0.6.0-test17`ではプレースホルダーを除去する。test17を使用しているのに`UIAP-E240`が表示される場合は、旧版との混在を疑う。
+
+対応:
+
+1. `VERSION`を確認する
+2. 現在のコンソールを閉じる
+3. test17を新しい空フォルダーへ完全に展開する
+4. `start-uiap.cmd`から起動する
+5. `setup`、`doctor`を実行する
+6. 対象演習で`make clean`、`make`を実行する
+
+## rv003usbソース取得で停止する
+
+test17では固定コミットのRaw URLから次を取得する。
+
+```text
+rv003usb/rv003usb.S
+rv003usb/rv003usb.c
+rv003usb/rv003usb.h
+LICENSE
+```
+
+確認項目:
+
+- GitHubのRawドメインへHTTPS接続できる
+- セキュリティソフトが`.S`、`.c`、`.h`を隔離していない
+- `workspace/deps/rv003usb/UPSTREAM_COMMIT`が期待コミットと一致する
+- `SOURCE_FILES.sha256`が生成されている
+
+取得途中で失敗した場合は、他の正常なランタイムを削除せず`setup`を再実行する。
+
+## 2026-08-01 `make flash`でminichlinkのUsageが表示される
+
+代表例:
+
+```text
+...minichlink -c 0x1209b803 -w   -b
+Usage: minichlink [args]
+make: *** [...: cv_flash] Error 255
+```
+
+### 判定
+
+ビルドがFLASH/RAM表示とBIN生成まで完了し、minichlinkが`1209:B803`とCH32V003を検出している場合、コンパイラ、rv003usb、USBブートローダー検出の失敗ではない。`-w`へ渡す書き込みファイル名が欠落している。
+
+`0.6.0-test17`では、`FLASH_COMMAND := ... $< ...`の単純展開代入により、自動変数`$<`がルール実行前に空へ展開された。
+
+### 対応
+
+1. test17で同じ`make flash`を繰り返さない
+2. `0.6.1-test18`へ更新する
+3. `doctor`で3演習の`make -n flash`検査がPASSになることを確認する
+4. 対象演習で`make clean`、`make flash`を再実行する
+
+正常なdry-run例:
+
+```text
+minichlink -c 0x1209b803 -w macro_keyboard.bin flash -b
+```
+
+## 2026-08-01 Newlib診断の誤判定
+
+`doctor`が次を表示しても、実際のコンパイル行に`-I/usr/include/newlib`がない場合は、test17の診断誤判定である。
+
+```text
+[FAIL] ch32fun.mkに実効Newlib依存が残っています
+```
+
+原因は、実効CFLAGSではなく未使用の`NEWLIB?=/usr/include/newlib`定義まで検索したことにある。test18では必須演習の`make -n build`出力だけを判定する。上流`ch32fun.mk`の既定値を手作業で削除して回避しない。
+
+## 2026-08-01 test18の`make app`で`[WinError 6] ハンドルが無効です`
+
+### 観測結果
+
+`uiap-devkit-win64` `0.6.1-test18`の`02_rotary_cursor_size`で次を確認した。
+
+- 書き込みと`1209:C004`列挙: 成功
+- `make app-dry-run`のCW／CCW受信: 成功
+- `make app`: 対象デバイス1台と起動前サイズ80を表示
+- 最初のポインターサイズ反映時に`[WinError 6] ハンドルが無効です`で終了
+
+この条件では、USB HID、hidapi、エンコーダー入力ではなくWindows設定変更処理を切り分ける。
+
+### 原因
+
+test18のホストアプリが、レジストリ更新後のカーソル再読込に`SPI_SETCURSORS (0x0057)`を使用した。プロジェクト内の`03_pot_cursor_haptic` v1.0.6でも同じエラーを確認しており、v1.0.7で同呼出しを除去して修正済みだった。test18はこの既知不具合を再導入した回帰とする。
+
+### 修正版
+
+`0.6.2-test19`では次を行う。
+
+- `SPI_SETCURSORS`を使用しない
+- 過去のWindows 11 x64実機PoCで確認した未文書化アクション`0x2029`を使用する
+- `CursorBaseSize`と`Software\Microsoft\Accessibility\CursorSize`を保存・復元する
+- test17／test18形式の保存状態を読み取る
+- 前回異常終了の保存状態をアプリ起動前に自動復元する
+- HID入力と分離した`make cursor-test`を提供する
+
+### test19適用後の確認順
+
+```text
+cd /d "%UIAP_WORKSPACE%\exercises\02_rotary_cursor_size"
+make restore
+make cursor-test
+make app
+```
+
+`make restore`が保存状態なしを表示した場合は、`make cursor-test`へ進む。保存状態ファイルを手作業で削除しない。
+
+### test19での解消確認
+
+Windows 11 x64の利用者実機で`0.6.2-test19`を確認し、次が成功した。
+
+- `make flash`で`rotary_cursor_size.bin`を書き込み
+- `1209:C004`を1台検出
+- CW／CCWを受信
+- ポインターサイズを16単位で増減
+- `Ctrl+C`で終了
+- 起動前サイズ80へ復元
+
+正常終了時の代表表示:
+
+```text
+Stopping.
+Restored pointer size: 80
+```
+
+したがって、test18の`[WinError 6] ハンドルが無効です`はtest19で解消確認済みとする。test19で同じエラーが再発する場合は、旧test18ファイルとの混在、`VERSION`、`host/cursor_size_host.py`の更新状態を確認する。
+
+なお、USB切断、強制終了後の`make restore`、別Windows PCでは引き続き別途検証する。
