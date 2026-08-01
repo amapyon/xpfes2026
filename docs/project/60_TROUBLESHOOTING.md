@@ -2078,3 +2078,27 @@ Restored pointer size: 80
 したがって、test18の`[WinError 6] ハンドルが無効です`はtest19で解消確認済みとする。test19で同じエラーが再発する場合は、旧test18ファイルとの混在、`VERSION`、`host/cursor_size_host.py`の更新状態を確認する。
 
 なお、USB切断、強制終了後の`make restore`、別Windows PCでは引き続き別途検証する。
+
+## 2026-08-01 Mac版02ファームウェアをWindowsで読むと静止中も値が変化する
+
+### 症状
+
+Mac test13で書き込んだ`02_rotary_cursor_size`をWindowsへ接続し、`make app-dry-run`を実行すると、エンコーダーを動かしていないのに次のような連続値が表示される。
+
+```text
+CCW delta=-35
+CCW delta=-34
+CCW delta=-33
+```
+
+### 原因
+
+Mac test13ファームウェアは`[delta, sequence]`の2バイトを送信する。HID Report DescriptorはReport IDを宣言していないため、Windowsのhidapiが返す先頭バイトもそのまま`delta`である。
+
+旧Windowsホストは、先頭バイトが静止値0のとき、その0をReport IDと誤認して2バイト目の`sequence`を移動量として読んでいた。連続値はエンコーダーのノイズではなく、診断用連番を符号付き8ビット値として表示した結果である。
+
+### 修正と確認
+
+Windowsホストの`decode_delta`は、常に先頭バイトを移動量として読む。`[0, sequence]`が0、`[1, sequence]`が1、`[255, sequence]`が-1になる自己診断ケースを保持する。
+
+修正後、同じMac test13ファームウェアをWindowsへ接続し、静止中は値が表示されず、回転時だけ期待するCW／CCWが表示されることを利用者実機で確認した。ファームウェアの再書き込みは不要である。

@@ -846,6 +846,7 @@ v1.0.7ではADC値が境界付近で揺れ、ポインターサイズが隣接�
 - スリープ復帰
 - 複数個体、別Windows PC、長時間動作
 - 最終オフライン参加者向けZIP
+
 - ワークショップ必須演習としての採用
 
 ### 判定
@@ -854,6 +855,37 @@ v1.0.7ではADC値が境界付近で揺れ、ポインターサイズが隣接�
 - ADC安定化v1.0.8: 利用者実機合格
 - 参加者向け採用: 未決定
 - macOS対応: 未実装
+
+## 2026-08-01 統合環境のMacファームウェア／Windowsホスト互換確認
+
+### 条件
+
+- デバイスファームウェア: macOS test13の`02_rotary_cursor_size`
+- USB識別: VID:PID `1209:C004`
+- Product: `UIAP Rotary Cursor macOS Test13`
+- Serial: `TEST13-002`
+- ホスト: 統合リポジトリのWindows版`cursor_size_host.py`
+- コマンド: `make app-dry-run`
+
+### 修正前
+
+エンコーダー静止中にも`CCW delta=-35, -34, -33, ...`を連続受信した。Macファームウェアの2バイトレポート`[delta, sequence]`の2バイト目を、Windowsホストが移動量として誤読していた。
+
+### 修正後
+
+Report IDを使用しないDescriptorに合わせ、Windowsホストが常に先頭バイトを`delta`として読むよう修正した。
+
+利用者実機で次を確認した。
+
+- 静止中は値を表示しない
+- エンコーダー操作時だけCW／CCWを表示する
+- Mac test13ファームウェアの再書き込みは不要
+- ホストプロトコル自己診断は合格
+
+### 判定
+
+- Mac test13ファームウェアとWindows dry-runホストの互換動作: 合格
+- Windows `make app`による設定変更と終了時復元: この確認では未実施
 
 
 ## 16. Windows展開先パス互換性

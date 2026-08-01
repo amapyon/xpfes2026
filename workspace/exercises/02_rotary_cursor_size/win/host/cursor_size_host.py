@@ -197,7 +197,11 @@ def recover_stale_state() -> None:
 def decode_delta(data: list[int]) -> int:
     if not data:
         return 0
-    raw = data[1] if len(data) > 1 and data[0] == 0 else data[0]
+    # This device has no HID Report ID. hidapi therefore returns the payload
+    # as-is on Windows. The macOS test13 firmware uses byte 0 for delta and
+    # byte 1 for a diagnostic sequence counter. A neutral delta must not be
+    # mistaken for a leading Report ID, or the counter looks like movement.
+    raw = data[0]
     return raw - 256 if raw >= 128 else raw
 
 
@@ -278,7 +282,14 @@ def cursor_test() -> int:
 
 
 def self_test() -> int:
-    cases = [([1], 1), ([255], -1), ([0, 1], 1), ([0, 255], -1), ([], 0)]
+    cases = [
+        ([1], 1),
+        ([255], -1),
+        ([0, 221], 0),
+        ([1, 222], 1),
+        ([255, 223], -1),
+        ([], 0),
+    ]
     for data, expected in cases:
         actual = decode_delta(data)
         if actual != expected:
