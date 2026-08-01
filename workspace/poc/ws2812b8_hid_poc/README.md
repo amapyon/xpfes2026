@@ -14,7 +14,7 @@ PCからVendor-defined USB HID Feature Reportで8灯分のRGB値を送り、CH32
 - WS2812B物理点灯: Windowsで修正版を確認済み
 - Windows 11 x64実機: 確認済み
 - macOS Apple Silicon対応実装: 済み
-- macOS Apple Silicon実機: 確認待ち
+- macOS Apple Silicon実機: 確認済み
 - 参加者向け演習としての採用: 未決定
 
 一段階の成功を後続段階の成功として扱わないでください。
@@ -154,7 +154,8 @@ make app off
 - `make app status`が最後に送信したRGB状態を返す
 - USBを抜き差ししても再列挙できる
 
-macOS実機でこの一連の確認が完了するまでは、macOS確認済みとは扱いません。
+macOS Apple Silicon実機で、この一連のビルド、書き込み、USB HID列挙、
+8灯の個別・一括制御、状態取得、再接続を確認済みです。
 
 ## 書き込み
 
@@ -307,7 +308,7 @@ B = 0～255
 #define DMALEDS 32
 ```
 
-これにより16枠を確保し、リセット2枠、LED 1～8、末尾のLow期間を同一の初回DMAバッファへ収めます。Windows 11 x64では、この変更後の実機動作を確認済みです。macOS Apple Siliconでは未確認です。
+これにより16枠を確保し、リセット2枠、LED 1～8、末尾のLow期間を同一の初回DMAバッファへ収めます。Windows 11 x64とmacOS Apple Siliconの両方で、この変更後の実機動作を確認済みです。
 
 ### 修正版の再試験
 
