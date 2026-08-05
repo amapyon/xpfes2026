@@ -7242,7 +7242,7 @@ Windowsホストの`decode_delta`は、常に先頭バイトを移動量とし�
 
 # 検証結果
 
-更新日: 2026-08-01
+更新日: 2026-08-05
 
 ## 1. この文書の目的
 
@@ -9106,6 +9106,67 @@ Restored pointer size: 80
 - 共通`02`ビルド: 合格、FLASH 2340 B / 16 KB、RAM 200 B / 2 KB
 - 共通`00`のWindows/macOS実機点滅: 再確認待ち
 - 共通`02`のWindows/macOS HID入力・ポインターサイズ変更・復元: 再確認待ち
+
+---
+
+## 2026-08-05 USB HID事前診断のWindows実機確認
+
+### 検証ID
+
+`WIN-PREFLIGHT-HID-001`
+
+### 対象
+
+- ソース: `workspace/preflight`
+- ソーススナップショット: コミット`1dbff6d`
+- ボード: UIAPduino Pro Micro CH32V003 V1.4
+- ホストOS: Windows（詳細な版とビルド番号は未記録）
+- minichlink: `38e653f8354ea8fc19da5f2595cf9958d26738e7`
+- プロトコル: `1.2`
+- ファームウェア: `1.0.2`
+
+### 利用者実機結果
+
+`make flash`でビルドとUSBブートローダー経由の書き込みに成功した。
+
+- FLASH: 2724 B / 16 KB（16.63%）
+- RAM: 216 B / 2 KB（10.55%）
+- ブートローダー: VID `1209`、PID `B803`
+- MCU検出: CH32V003
+- 書き込み結果: `Image written.`、`Booting`
+- minichlink Part UUID: `e7-ea-ab-cd-50-0c-bc-55`
+
+`rv003usb.S`の`#warning "CH32V003"`は表示されたが、コンパイル、リンク、書き込みは正常に完了した。
+
+続けて`make preflight`を実行し、次の全項目が`PASS`した。
+
+- USB HID列挙: `1209:D003`、`UIAP HID Preflight`
+- PCからデバイスへのランダムnonce送信
+- デバイスからPCへの同一nonce応答
+- プロトコルバージョン: `1.2`
+- ファームウェアバージョン: `1.0.2`
+- ボード名: `UIAPduino Pro Micro CH32V003 V1.4`
+- MCU ID: `e7-ea-ab-cd-50-0c-bc-55`
+- 最終結果: `RESULT: PASS`
+
+nonceは実行時に生成された`0xF86A3629`が往復で一致した。HID経由で取得したMCU IDはminichlinkのPart UUIDと一致した。
+
+### 判定
+
+- Windowsでの診断用ファームウェアビルド: 合格
+- `1209:B803`経由の書き込み: 合格
+- `1209:D003` Vendor-defined HIDへの再列挙: 合格
+- PCとUIAPduinoの双方向Feature Report通信: 合格
+- プロトコル、ファームウェア、ボード名の整合性検査: 合格
+- MCU IDの取得とminichlink表示との一致: 合格
+- Windows実機のUSB HID事前診断: 合格
+
+### 引き続き未確認
+
+- macOS実機でのビルド、書き込み、HID列挙、事前診断
+- 別のWindows PCおよび別ユーザー
+- USBハブ経由
+- 長時間または反復実行
 
 <!-- Source: 90_DECISIONS.md -->
 
