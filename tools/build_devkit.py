@@ -9,6 +9,7 @@ from pathlib import Path, PurePosixPath
 import stat
 import sys
 import zipfile
+import re
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -150,8 +151,8 @@ def main() -> int:
                 version = line.split(":", 1)[1].strip()
                 break
     version = (version or "").strip()
-    if not version or any(character not in "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789._-" for character in version):
-        print("版番号には英数字、ピリオド、ハイフン、アンダースコアだけを使用してください。", file=sys.stderr)
+    if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
+        print("版番号はMAJOR.MINOR.PATCH形式で指定してください。例: 0.1.0", file=sys.stderr)
         return 2
     output = args.output.resolve()
     clean_known_outputs(output)

@@ -20,7 +20,7 @@ BUILDER = ROOT / "tools" / "build_devkit.py"
 class BuildDevkitTests(unittest.TestCase):
     def build(self, output: Path) -> None:
         subprocess.run(
-            [sys.executable, str(BUILDER), "--target", "all", "--version", "test", "--output", str(output)],
+            [sys.executable, str(BUILDER), "--target", "all", "--version", "0.0.0", "--output", str(output)],
             cwd=ROOT,
             check=True,
         )
@@ -32,7 +32,7 @@ class BuildDevkitTests(unittest.TestCase):
             self.build(first)
             self.build(second)
             for architecture in ("win64", "macarm64"):
-                name = f"uiap-devkit-{architecture}-test.zip"
+                name = f"uiap-devkit-{architecture}-0.0.0.zip"
                 archive = first / name
                 self.assertTrue(archive.is_file())
                 self.assertEqual(
