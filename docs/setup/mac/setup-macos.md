@@ -41,3 +41,5 @@ make host-doctor
 make app-dry-run
 make app
 ```
+
+`workspace/preflight`の事前診断は、2026-08-05にmacOS実機で動作確認済みです。

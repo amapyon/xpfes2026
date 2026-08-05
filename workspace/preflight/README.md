@@ -16,7 +16,7 @@ UIAPduino Pro Micro CH32V003 V1.4のUSB通信を、演習開始前に確認す�
 
 2026-08-05にWindows実機で、ビルド、USBブートローダー経由の書き込み、診断用HIDへの再列挙、PCとの双方向通信、バージョン、ボード名、MCU IDを確認済みです。すべての検査が`PASS`し、minichlinkとHID診断が表示したMCU IDも一致しました。
 
-macOS実機では未確認です。
+同日、macOS実機でも事前診断が正常に動作することを確認済みです。これにより、WindowsとmacOSの両方で実機確認済みです。詳細は[検証結果](../../docs/project/70_VALIDATION_RESULTS.md)を参照してください。
 
 ## 実行方法
 

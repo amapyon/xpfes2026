@@ -9161,10 +9161,45 @@ nonceは実行時に生成された`0xF86A3629`が往復で一致した。HID経
 - MCU IDの取得とminichlink表示との一致: 合格
 - Windows実機のUSB HID事前診断: 合格
 
-### 引き続き未確認
+### 当該報告時点で未確認
 
 - macOS実機でのビルド、書き込み、HID列挙、事前診断
 - 別のWindows PCおよび別ユーザー
+- USBハブ経由
+- 長時間または反復実行
+
+macOS実機については、後続の`MAC-PREFLIGHT-HID-001`で動作確認した。
+
+---
+
+## 2026-08-05 USB HID事前診断のmacOS実機確認
+
+### 検証ID
+
+`MAC-PREFLIGHT-HID-001`
+
+### 対象
+
+- ソース: `workspace/preflight`
+- ファームウェアソーススナップショット: コミット`1dbff6d`
+- ボード: UIAPduino Pro Micro CH32V003 V1.4
+- ホストOS: macOS（詳細な版、ビルド番号、Macの機種は未記録）
+
+### 利用者実機結果
+
+利用者から、macOS実機でもUSB HID事前診断が正常に動作したとの報告を受けた。Windowsと同じ`workspace/preflight`のファームウェアおよびホスト診断を使用している。
+
+今回は実行ログを収録していないため、個別のnonce、MCU ID、メモリ使用量、minichlink版は記録しない。
+
+### 判定
+
+- macOS実機でのUSB HID事前診断: 利用者実機合格
+- Windows/macOS共通のpreflight実装: 両OSで実機確認済み
+
+### 引き続き未確認
+
+- 別のMacおよび別ユーザー
+- macOSの最低対応版と最新対象版を分けた確認
 - USBハブ経由
 - 長時間または反復実行
 
