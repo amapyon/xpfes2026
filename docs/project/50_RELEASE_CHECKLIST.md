@@ -1,6 +1,6 @@
 # 配布パッケージ作成・リリースチェックリスト
 
-更新日: 2026-08-01
+更新日: 2026-08-05
 
 ## 1. 対象成果物
 
@@ -281,6 +281,19 @@ make size
 - 通常生成物がリリースZIPへ混入していない
 
 `doctor`またはCIで`make -n`によるパス互換性検査を実施する。
+
+### 8.1 USB HID事前診断
+
+`workspace/preflight`について、Windows版とmacOS版の両方で次を確認する。
+
+- README、Makefile、`preflight_hid.c`、`usb_config.h`、`host/preflight_hid.py`が配布ZIPに存在
+- `.bin`、`.elf`、`.hex`、`.lst`、`.map`、生成された`funconfig.h`が配布元と配布ZIPに存在しない
+- `make clean`、`make`、`make size`が成功
+- `make flash`後にVID `1209`、PID `D003`、製品名`UIAP HID Preflight`として列挙
+- `make preflight`がUSB列挙、双方向通信、プロトコル、ファームウェア、ボード名、MCU IDを確認
+- 成功時の終了コードが`0`、失敗時が非ゼロ
+- ファームウェアとホスト診断の期待バージョンが一致
+- 診断用UIAPduinoが0台または複数台の場合に、明確なエラーで終了
 
 ## 9. UIAPduino V1.4書き込み確認
 

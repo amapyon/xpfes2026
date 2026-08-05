@@ -6,6 +6,8 @@
 
 統合後の実機確認は[validation/2026-08-01-unified-clone.md](validation/2026-08-01-unified-clone.md)へ記録しています。
 
+演習開始前のUSB HID事前診断は[workspace/preflight/README.md](../workspace/preflight/README.md)を参照してください。
+
 | 文書 | 内容 |
 |---|---|
 | [00_PROJECT_OVERVIEW.md](project/00_PROJECT_OVERVIEW.md) | 目的、対象、前提、優先順位 |

@@ -4,6 +4,7 @@
 
 | 対象 | 正本 |
 |---|---|
+| USB HID事前診断 | `workspace/preflight/` |
 | 正式演習 | `workspace/exercises/` |
 | PoC | `workspace/poc/` |
 | Windows起動・依存定義 | `start-uiap.cmd`、`config/win/` |
@@ -12,7 +13,7 @@
 | 設計・検証文書 | `docs/project/` |
 | 生成ZIP | `dist/`（Git管理外） |
 
-`workspace/`はWindows版とmacOS版の両方へ収録します。正式演習は共通Makefileを入口にし、現在の実機検証済み実装を`win/`と`mac/`へ分けて保持します。
+`workspace/`はWindows版とmacOS版の両方へ収録します。`preflight/`は両OS共通のファームウェアとhidapiホスト診断を収録します。正式演習は共通Makefileを入口にし、現在の実機検証済み実装を`win/`と`mac/`へ分けて保持します。
 
 ## PoCの開始
 
@@ -38,5 +39,7 @@ python tools/build_devkit.py --target all
 4. PoC内の反対OS用ディレクトリを除外する
 5. ビルド生成物の混入を検査する
 6. 再現可能なZIPとSHA-256を`dist/`へ生成する
+
+`workspace/preflight/`は両OS版へ共通収録します。配布検査では、README、ファームウェアソース、USB設定、Makefile、ホスト診断が揃っていることを確認します。
 
 GitHub Actionsでも同じコマンドを使用します。リポジトリの生成処理とCI専用の生成処理を分けません。

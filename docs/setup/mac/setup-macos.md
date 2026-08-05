@@ -20,6 +20,11 @@ versions
 ## 検証順
 
 ```sh
+cd "$UIAP_WORKSPACE/preflight"
+make clean
+make flash
+make preflight
+
 cd "$UIAP_WORKSPACE/exercises/00_onboard_led_blink"
 make clean
 make flash

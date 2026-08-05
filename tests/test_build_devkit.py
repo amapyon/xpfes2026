@@ -44,6 +44,9 @@ class BuildDevkitTests(unittest.TestCase):
                     self.assertIn(f"uiap-devkit-{architecture}/README.md", names)
                     self.assertIn(f"uiap-devkit-{architecture}/workspace/poc/README.md", names)
                     self.assertIn(f"uiap-devkit-{architecture}/workspace/poc/_template/README.md", names)
+                    preflight = f"uiap-devkit-{architecture}/workspace/preflight"
+                    for relative in ("README.md", "Makefile", "preflight_hid.c", "usb_config.h", "host/preflight_hid.py"):
+                        self.assertIn(f"{preflight}/{relative}", names)
                     launcher = "start-uiap.cmd" if architecture == "win64" else "start-uiap.command"
                     self.assertIn(f"uiap-devkit-{architecture}/{launcher}", names)
                     platform = "win" if architecture == "win64" else "mac"

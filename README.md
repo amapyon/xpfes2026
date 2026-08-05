@@ -22,7 +22,12 @@ doctor
 セットアップ後は、両OSで同じコマンドを使用します。
 
 ```console
-cd workspace/exercises/00_onboard_led_blink
+cd preflight
+make
+make flash
+make preflight
+
+cd ../exercises/00_onboard_led_blink
 make
 make flash
 
@@ -40,6 +45,8 @@ make app
 
 `start-uiap.cmd`は`UIAP_PLATFORM=win`、`start-uiap.command`は`UIAP_PLATFORM=mac`を設定します。3演習のファームウェアは両OS共通です。`02_rotary_cursor_size`だけは、OS APIを呼ぶホストアプリケーションを`host/win`と`host/mac`から選択します。
 
+最初に`workspace/preflight`を実行すると、USB HIDの列挙、PCとの往復通信、対象ボード、ファームウェアバージョン、MCU IDを演習前に確認できます。詳しくは[preflightのREADME](workspace/preflight/README.md)を参照してください。
+
 ## ソースの配置
 
 ```text
@@ -54,6 +61,7 @@ runtime/
   mac/              # macOS setup生成物（Git管理外）
 workspace/
   deps/              # setup生成物（Git管理外）
+  preflight/         # UIAPduino USB HID事前診断
   exercises/         # 正式演習
     <exercise>/
       Makefile       # 共通ビルド入口

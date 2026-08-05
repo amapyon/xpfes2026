@@ -1,6 +1,6 @@
 # 開発環境とディレクトリ構成
 
-更新日: 2026-08-01
+更新日: 2026-08-05
 
 ## 1. この文書の目的
 
@@ -102,6 +102,7 @@ uiap-devkit-win64/
     ├── deps/
     │   ├── ch32fun/
     │   └── rv003usb/
+    ├── preflight/
     └── exercises/
         ├── 00_onboard_led_blink/
         ├── 01_macro_keyboard/
@@ -128,7 +129,7 @@ PC側ホストプログラムは、対応する演習の`host`ディレクトリ
 | `start-uiap.cmd` | Windowsネイティブ開発コンソールの起動 |
 | `runtime` | Make、シェル互換ツール、RISC-V GCC、Pythonなど |
 | `scripts` | セットアップ、診断、書き込み、HID確認、復旧 |
-| `workspace` | 固定依存、参加者向け演習、および各演習内のホスト側ソース |
+| `workspace` | 固定依存、USB HID事前診断、参加者向け演習、および各演習内のホスト側ソース |
 | `docs` | セットアップ、演習、配線、既知問題 |
 | `firmware` | ブートローダー、復旧用などの配布済みバイナリ |
 | `licenses` | ライセンス、第三者通知、対応ソース情報 |
@@ -366,12 +367,15 @@ cd "$UIAP_WORKSPACE/exercises/03_pot_cursor_haptic"
 ```text
 workspace/
 ├── deps/
+├── preflight/
 └── exercises/
     └── <exercise-name>/
         └── host/    # PC側プログラムがある演習だけ
 ```
 
 `workspace/host`は使用しない。ホストプログラムを演習と同じ単位で配布、検証、削除できる構成とする。
+
+`workspace/preflight`は演習開始前のDevkit共通診断としてWindows版とmacOS版の両方へ収録する。診断用ファームウェアと対応するホスト診断は同じディレクトリで管理し、`make preflight`を実行入口とする。ビルド生成物は配布元へ含めない。
 
 ### 8.1 `workspace/deps`
 
@@ -453,7 +457,31 @@ package.json
 
 `rv003usb`など他の依存関係をサブセット化する場合も、同じ許可リスト、来歴、ライセンス、再生成、検証の原則を適用する。
 
-### 8.2 `workspace/exercises`
+### 8.2 `workspace/preflight`
+
+UIAPduino Pro Micro CH32V003 V1.4をVendor-defined USB HIDとして動作させ、次を演習開始前に確認する。
+
+- USB HID列挙
+- ランダムな値を使った双方向通信
+- プロトコルとファームウェアのバージョン
+- 対象ボード名
+- MCU ID
+
+標準構成:
+
+```text
+workspace/preflight/
+├── README.md
+├── Makefile
+├── preflight_hid.c
+├── usb_config.h
+└── host/
+    └── preflight_hid.py
+```
+
+WindowsとmacOSでファームウェアおよびPythonホスト診断を共用する。ホスト診断はDevkit同梱Pythonとhidapiを使用し、システムPythonや追加の`pip install`を要求しない。
+
+### 8.3 `workspace/exercises`
 
 参加者向けまたは実機検証用の演習を格納する。
 
@@ -520,7 +548,7 @@ workspace/exercises/03_pot_cursor_haptic/
 
 この演習はWindows 11 x64向けPoCであり、参加者向け必須演習としての採用は未決定である。
 
-### 8.3 各演習の`host`
+### 8.4 各演習の`host`
 
 PC側ホストプログラムは、対応する演習ディレクトリの直下にある`host`へ格納する。
 
@@ -550,7 +578,7 @@ workspace/exercises/02_rotary_cursor_size/
 - macOS版DevkitにもPython・hidapiを含める。ただし`02_rotary_cursor_size`の現行ホストはネイティブarm64 CLIであり、当該演習の実行自体はPython・hidapiへ依存しない
 - OS固有コードが必要な場合も、当該演習の`host`配下で共通処理と分離する
 
-### 8.4 `workspace/poc`
+### 8.5 `workspace/poc`
 
 現行の参加者向けツリーには存在しない。
 
@@ -877,6 +905,7 @@ uiap-devkit-macarm64/
     ├── deps/
     │   ├── ch32fun/
     │   └── rv003usb/
+    ├── preflight/
     └── exercises/
         └── 00_onboard_led_blink/
 ```

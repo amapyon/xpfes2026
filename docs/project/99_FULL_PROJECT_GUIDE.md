@@ -1,7 +1,7 @@
 # XP祭り2026 物理UIワークショップ
 # 完全版プロジェクトガイド
 
-更新日: 2026-08-01
+更新日: 2026-08-05
 
 この文書は、分割された詳細指示を1つに統合した参照用完全版である。
 
@@ -416,7 +416,7 @@ Windows版Devkitは、専用Command PromptおよびWindows PowerShellをPATH検�
 
 # 開発環境とディレクトリ構成
 
-更新日: 2026-08-01
+更新日: 2026-08-05
 
 ## 1. この文書の目的
 
@@ -518,6 +518,7 @@ uiap-devkit-win64/
     ├── deps/
     │   ├── ch32fun/
     │   └── rv003usb/
+    ├── preflight/
     └── exercises/
         ├── 00_onboard_led_blink/
         ├── 01_macro_keyboard/
@@ -544,7 +545,7 @@ PC側ホストプログラムは、対応する演習の`host`ディレクトリ
 | `start-uiap.cmd` | Windowsネイティブ開発コンソールの起動 |
 | `runtime` | Make、シェル互換ツール、RISC-V GCC、Pythonなど |
 | `scripts` | セットアップ、診断、書き込み、HID確認、復旧 |
-| `workspace` | 固定依存、参加者向け演習、および各演習内のホスト側ソース |
+| `workspace` | 固定依存、USB HID事前診断、参加者向け演習、および各演習内のホスト側ソース |
 | `docs` | セットアップ、演習、配線、既知問題 |
 | `firmware` | ブートローダー、復旧用などの配布済みバイナリ |
 | `licenses` | ライセンス、第三者通知、対応ソース情報 |
@@ -782,12 +783,15 @@ cd "$UIAP_WORKSPACE/exercises/03_pot_cursor_haptic"
 ```text
 workspace/
 ├── deps/
+├── preflight/
 └── exercises/
     └── <exercise-name>/
         └── host/    # PC側プログラムがある演習だけ
 ```
 
 `workspace/host`は使用しない。ホストプログラムを演習と同じ単位で配布、検証、削除できる構成とする。
+
+`workspace/preflight`は演習開始前のDevkit共通診断としてWindows版とmacOS版の両方へ収録する。診断用ファームウェアと対応するホスト診断は同じディレクトリで管理し、`make preflight`を実行入口とする。ビルド生成物は配布元へ含めない。
 
 ### 8.1 `workspace/deps`
 
@@ -869,7 +873,31 @@ package.json
 
 `rv003usb`など他の依存関係をサブセット化する場合も、同じ許可リスト、来歴、ライセンス、再生成、検証の原則を適用する。
 
-### 8.2 `workspace/exercises`
+### 8.2 `workspace/preflight`
+
+UIAPduino Pro Micro CH32V003 V1.4をVendor-defined USB HIDとして動作させ、次を演習開始前に確認する。
+
+- USB HID列挙
+- ランダムな値を使った双方向通信
+- プロトコルとファームウェアのバージョン
+- 対象ボード名
+- MCU ID
+
+標準構成:
+
+```text
+workspace/preflight/
+├── README.md
+├── Makefile
+├── preflight_hid.c
+├── usb_config.h
+└── host/
+    └── preflight_hid.py
+```
+
+WindowsとmacOSでファームウェアおよびPythonホスト診断を共用する。ホスト診断はDevkit同梱Pythonとhidapiを使用し、システムPythonや追加の`pip install`を要求しない。
+
+### 8.3 `workspace/exercises`
 
 参加者向けまたは実機検証用の演習を格納する。
 
@@ -936,7 +964,7 @@ workspace/exercises/03_pot_cursor_haptic/
 
 この演習はWindows 11 x64向けPoCであり、参加者向け必須演習としての採用は未決定である。
 
-### 8.3 各演習の`host`
+### 8.4 各演習の`host`
 
 PC側ホストプログラムは、対応する演習ディレクトリの直下にある`host`へ格納する。
 
@@ -966,7 +994,7 @@ workspace/exercises/02_rotary_cursor_size/
 - macOS版DevkitにもPython・hidapiを含める。ただし`02_rotary_cursor_size`の現行ホストはネイティブarm64 CLIであり、当該演習の実行自体はPython・hidapiへ依存しない
 - OS固有コードが必要な場合も、当該演習の`host`配下で共通処理と分離する
 
-### 8.4 `workspace/poc`
+### 8.5 `workspace/poc`
 
 現行の参加者向けツリーには存在しない。
 
@@ -1293,6 +1321,7 @@ uiap-devkit-macarm64/
     ├── deps/
     │   ├── ch32fun/
     │   └── rv003usb/
+    ├── preflight/
     └── exercises/
         └── 00_onboard_led_blink/
 ```
@@ -4104,7 +4133,7 @@ versions
 
 # 配布パッケージ作成・リリースチェックリスト
 
-更新日: 2026-08-01
+更新日: 2026-08-05
 
 ## 1. 対象成果物
 
@@ -4385,6 +4414,19 @@ make size
 - 通常生成物がリリースZIPへ混入していない
 
 `doctor`またはCIで`make -n`によるパス互換性検査を実施する。
+
+### 8.1 USB HID事前診断
+
+`workspace/preflight`について、Windows版とmacOS版の両方で次を確認する。
+
+- README、Makefile、`preflight_hid.c`、`usb_config.h`、`host/preflight_hid.py`が配布ZIPに存在
+- `.bin`、`.elf`、`.hex`、`.lst`、`.map`、生成された`funconfig.h`が配布元と配布ZIPに存在しない
+- `make clean`、`make`、`make size`が成功
+- `make flash`後にVID `1209`、PID `D003`、製品名`UIAP HID Preflight`として列挙
+- `make preflight`がUSB列挙、双方向通信、プロトコル、ファームウェア、ボード名、MCU IDを確認
+- 成功時の終了コードが`0`、失敗時が非ゼロ
+- ファームウェアとホスト診断の期待バージョンが一致
+- 診断用UIAPduinoが0台または複数台の場合に、明確なエラーで終了
 
 ## 9. UIAPduino V1.4書き込み確認
 
@@ -7310,6 +7352,8 @@ Windowsの詳細ビルド番号、CPU型番、別ユーザー権限は今回の�
 | WIN-HID-ENC-001 | 2026-07-24 | D8/D9エンコーダーHID入力 | 合格 | 未確認 | PoC合格 |
 | WIN-HOST-CURSOR-001 | 2026-07-24 | Pythonホストアプリによるポインターサイズ変更 | 合格 | 未確認 | PoC合格 |
 | WIN-HID-MOTOR-001 | 2026-07-19 | HID Feature Reportによる振動モーター制御 | 合格 | 未確認 | 既存PoC合格 |
+| WIN-HID-MOTOR-002 | 2026-08-01 | 構成変更後の振動モーターHID PoC再検証 | 利用者報告 | 未確認 | ビルド、書き込み、USB HID制御、物理動作をWindows実機で確認 |
+| MAC-HID-MOTOR-001 | 2026-08-02 | 構成変更後の振動モーターHID PoC実機検証 | 合格済み | 利用者報告 | ビルド、書き込み、USB HID制御、物理動作をApple Silicon実機で確認 |
 | REL-CH32FUN-SUBSET-001 | 2026-07-25 | ch32fun許可リストサブセット生成・全演習検証 | 未確認 | 未確認 | 方針決定・未実装 |
 | USER-BEEP-DIRECT-001 | 2026-07-25 | 5V・50%・2秒のGPIO直結パッシブブザー発音 | 利用者報告 | 未確認 | PoC物理動作報告・電気測定未実施 |
 | WIN-HID-POT-HAPTIC-001 | 2026-07-26 | RV09 ADC、Vendor HID、ポインターサイズ、振動の統合 | 合格 | 対象外 | Windows PoC合格 |
@@ -7671,11 +7715,13 @@ scripts/python/hidapi_probe.py
 
 ```text
 WIN-HID-MOTOR-001
+WIN-HID-MOTOR-002
+MAC-HID-MOTOR-001
 ```
 
 ### 情報源
 
-既存の`90_DECISIONS.md`から転記した検証結果である。
+`WIN-HID-MOTOR-001`は既存の`90_DECISIONS.md`から転記した検証結果である。`WIN-HID-MOTOR-002`は2026-08-01の構成変更後に行ったビルド再現結果と、利用者によるWindows実機動作報告である。`MAC-HID-MOTOR-001`は2026-08-02の利用者によるmacOS Apple Silicon実機動作報告である。
 
 ### 確認済み
 
@@ -7691,6 +7737,20 @@ WIN-HID-MOTOR-001
 - `status`による設定値取得
 - `off`による停止
 
+構成変更後の`WIN-HID-MOTOR-002`では、次を再確認した。
+
+- Devkit同梱`riscv-none-elf-gcc`によるクリーンビルド
+- `make flash`による書き込み
+- アプリケーションUSB HIDとしての動作
+- PC側からの振動モーター制御と物理動作
+
+`MAC-HID-MOTOR-001`では、macOS Apple Silicon実機で次を確認した。
+
+- Devkit環境でのファームウェアビルド
+- `make flash`による書き込み
+- アプリケーションUSB HIDとしての動作
+- PC側からの振動モーター制御と物理動作
+
 配線:
 
 ```text
@@ -7701,7 +7761,6 @@ D6/A2 → PC4 → TIM1_CH4
 
 ### 未確認
 
-- macOS Apple Silicon実機
 - 参加者向け必須演習としての採用
 - 正式VID:PID
 - 長時間動作とUSB電源ノイズの最終評価
@@ -7801,7 +7860,7 @@ TEST7-001
 | Windowsポテンショメーター＋振動統合PoC v1.0.8 | 主要動作合格 |
 | ch32fun許可リストサブセット | 方針決定・未実装 |
 | 最終オフライン参加者向けZIP | 未確認 |
-| macOS Apple Silicon | 必須演習3本合格。ロータリーカーソルはCW／CCW、サイズ変更、`Ctrl+C`復元を確認 |
+| macOS Apple Silicon | 必須演習3本合格。ロータリーカーソル統合動作と振動モーターHID PoCの基本動作を確認 |
 | ワークショップ必須演習としての採用 | `00`、`01`、`02`を採用済み |
 
 PoC合格を、そのまま最終リリース合格または参加者向け採用済みとして扱わない。
@@ -9172,6 +9231,28 @@ macOS Apple Silicon向けのPC側ソースコードとMakefileは存在するが
 - 振動モーターHID制御PoCはWindows向けPoCとして完了
 - ワークショップの最終制作物または必須演習としての採用は未決定
 - Vendor-defined HID Feature Report、Report ID、振動レベル範囲を最終仕様へ採用するかは未決定
+
+---
+
+## 2026-08-02 振動モーターHID PoCのmacOS検証
+
+### 確認済み
+
+`workspace/poc/vibration_motor_hid`の構成変更後の実装について、利用者のmacOS Apple Silicon実機で次を確認した。
+
+- ファームウェアのビルド
+- `1209:B803`ブートローダーによる書き込み
+- アプリケーションUSB HIDとしての動作
+- PC側からの振動モーター制御
+- 振動モーターの物理動作
+
+検証IDは`MAC-HID-MOTOR-001`とする。Windows検証済みの状態と合わせ、このPoCの両対象OSにおける基本動作確認を完了とする。
+
+### 変更しない決定
+
+- ワークショップの最終制作物または必須演習としての採用は未決定
+- Vendor-defined HID Feature Report、Report ID、振動レベル範囲の最終採用は未決定
+- `1209:D003`はPoC用暫定値のままとする
 
 ---
 
