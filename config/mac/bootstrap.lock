@@ -1,4 +1,5 @@
 # UIAP Devkit macarm64 0.2.2-test13 bootstrap inputs
+devkit_version=0.1.1
 
 [xpack-riscv-none-elf-gcc]
 version=14.2.0-3

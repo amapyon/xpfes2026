@@ -1,6 +1,6 @@
 {
   "schema": 1,
-  "devkit_version": "0.1.0-dev",
+  "devkit_version": "0.1.1",
   "components": [
     {
       "id": "build-tools",

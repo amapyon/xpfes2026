@@ -103,14 +103,14 @@ python tools/build_devkit.py --target all
 - 各ZIPの`.sha256`
 - `SHA256SUMS`
 
-個別に作る場合は`--target win`または`--target mac`を指定します。版番号はルートの`VERSION`を更新するか、検証用に`--version`で指定します。
+個別に作る場合は`--target win`または`--target mac`を指定します。版番号はルートの`VERSION`、`config/win/bootstrap.lock.json`、`config/mac/bootstrap.lock`で同じ値に更新します。`--version`を指定する場合も`VERSION`と同じ値でなければビルドは停止します。
 
 ```console
-python tools/build_devkit.py --target win --version 0.7.0
-python tools/build_devkit.py --target mac --version 0.3.0
+python tools/build_devkit.py --target win
+python tools/build_devkit.py --target mac
 ```
 
-GitHub Actionsの`Build participant kits`は、Windows runnerでWindows版、macOS runnerでMac版を検査・生成します。`VERSION`と一致する`v<version>`タグをpushするとGitHub Releaseを作成し、受講者がZIP、各ZIPの`.sha256`、`SHA256SUMS`をダウンロードできる状態で公開します。通常のpush、Pull Request、手動実行では、生成物を14日間のArtifactとして保存します。
+GitHub Actionsの`Build participant kits`は、Windows runnerでWindows版、macOS runnerでMac版を検査・生成します。各runnerでは、ZIP作成前に`VERSION`と対象OSのbootstrap lockが一致することも検査します。`VERSION`と一致する`v<version>`タグをpushするとGitHub Releaseを作成し、受講者がZIP、各ZIPの`.sha256`、`SHA256SUMS`をダウンロードできる状態で公開します。通常のpush、Pull Request、手動実行では、生成物を14日間のArtifactとして保存します。
 
 ## 演習ソースの統合状態
 

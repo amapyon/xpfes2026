@@ -18,9 +18,11 @@ BUILDER = ROOT / "tools" / "build_devkit.py"
 
 
 class BuildDevkitTests(unittest.TestCase):
+    VERSION = build_devkit.read_package_version()
+
     def build(self, output: Path) -> None:
         subprocess.run(
-            [sys.executable, str(BUILDER), "--target", "all", "--version", "0.0.0", "--output", str(output)],
+            [sys.executable, str(BUILDER), "--target", "all", "--output", str(output)],
             cwd=ROOT,
             check=True,
         )
@@ -32,7 +34,7 @@ class BuildDevkitTests(unittest.TestCase):
             self.build(first)
             self.build(second)
             for architecture in ("win64", "macarm64"):
-                name = f"uiap-devkit-{architecture}-0.0.0.zip"
+                name = f"uiap-devkit-{architecture}-{self.VERSION}.zip"
                 archive = first / name
                 self.assertTrue(archive.is_file())
                 self.assertEqual(
@@ -64,6 +66,39 @@ class BuildDevkitTests(unittest.TestCase):
                     self.assertIn(f"{rotary_host}/{platform}/cursor_size_host.py", names)
                     self.assertFalse(any(name.startswith(f"{rotary_host}/{other}/") for name in names))
                     self.assertFalse(any("\\" in item for item in names))
+
+    def test_distribution_version_metadata_matches(self) -> None:
+        build_devkit.validate_version_metadata(("win", "mac"), self.VERSION)
+
+    def test_rejects_mismatched_lock_version(self) -> None:
+        with tempfile.TemporaryDirectory() as root_raw:
+            root = Path(root_raw)
+            lock = root / "config" / "win" / "bootstrap.lock.json"
+            lock.parent.mkdir(parents=True)
+            lock.write_text('{"devkit_version":"0.1.0-dev"}\n', encoding="utf-8")
+            with self.assertRaises(build_devkit.BuildError):
+                build_devkit.validate_version_metadata(("win",), "0.1.1", root)
+
+    def test_rejects_filename_version_override(self) -> None:
+        with tempfile.TemporaryDirectory() as output_raw:
+            result = subprocess.run(
+                [
+                    sys.executable,
+                    str(BUILDER),
+                    "--target",
+                    "win",
+                    "--version",
+                    "9.9.9",
+                    "--output",
+                    output_raw,
+                ],
+                cwd=ROOT,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(2, result.returncode)
+            self.assertIn("VERSION=", result.stderr)
+            self.assertFalse(list(Path(output_raw).glob("*.zip")))
 
     def test_checksum_sidecars_match(self) -> None:
         with tempfile.TemporaryDirectory() as output_raw:

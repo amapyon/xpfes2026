@@ -1,6 +1,6 @@
 # Windows 11 x64 セットアップ
 
-対象: UIAP Devkit `0.6.2-test19`
+対象: UIAP Devkit `0.1.1`（Windows-Source `0.6.2-test19`）
 
 1. ZIPを新しい空フォルダーへ完全に展開する。
 2. `start-uiap.cmd`をダブルクリックする。

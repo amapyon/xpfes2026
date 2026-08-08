@@ -1,5 +1,11 @@
 # トラブルシューティング
 
+## `setup`が`UIAP-E133`で停止する
+
+`VERSION`と`config\win\bootstrap.lock.json`のDevkit版が異なる配布物です。`0.1.0`のWindows版には`VERSION=0.1.0`と`lock=0.1.0-dev`の不整合があり、セットアップは依存ファイルを取得する前に停止します。
+
+展開済みファイルを直接書き換えず、`0.1.1`以降の修正版ZIPを新しい空フォルダーへ展開してください。再実行後も停止する場合は、`logs\win\setup-*.log`と`VERSION`を管理者へ共有してください。
+
 ## `make app`で`[WinError 6] ハンドルが無効です`
 
 `0.6.1-test18`の既知不具合です。HID受信ではなく、Windowsポインターサイズ反映処理で失敗しています。

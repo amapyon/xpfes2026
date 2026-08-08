@@ -5,6 +5,7 @@ from __future__ import annotations
 
 import argparse
 import hashlib
+import json
 from pathlib import Path, PurePosixPath
 import stat
 import sys
@@ -25,6 +26,42 @@ ZIP_TIME = (2026, 1, 1, 0, 0, 0)
 
 class BuildError(RuntimeError):
     pass
+
+
+def read_package_version(version_file: Path = ROOT / "VERSION") -> str:
+    for line in version_file.read_text(encoding="utf-8").splitlines():
+        if line.startswith("Version:"):
+            return line.split(":", 1)[1].strip()
+    raise BuildError(f"VERSIONに版番号がありません: {version_file}")
+
+
+def read_lock_version(target: str, root: Path = ROOT) -> str:
+    if target == "win":
+        lock_path = root / "config" / "win" / "bootstrap.lock.json"
+        try:
+            version = json.loads(lock_path.read_text(encoding="utf-8"))["devkit_version"]
+        except (OSError, KeyError, TypeError, json.JSONDecodeError) as exc:
+            raise BuildError(f"Windows bootstrap lockの版番号を読めません: {lock_path}") from exc
+        return str(version).strip()
+
+    lock_path = root / "config" / "mac" / "bootstrap.lock"
+    try:
+        for line in lock_path.read_text(encoding="utf-8").splitlines():
+            if line.startswith("devkit_version="):
+                return line.split("=", 1)[1].strip()
+    except OSError as exc:
+        raise BuildError(f"macOS bootstrap lockを読めません: {lock_path}") from exc
+    raise BuildError(f"macOS bootstrap lockに版番号がありません: {lock_path}")
+
+
+def validate_version_metadata(targets: tuple[str, ...], version: str, root: Path = ROOT) -> None:
+    for target in targets:
+        lock_version = read_lock_version(target, root)
+        if lock_version != version:
+            raise BuildError(
+                f"VERSIONと{target} bootstrap lockの版番号が一致しません: "
+                f"VERSION={version} lock={lock_version}"
+            )
 
 
 def relative_files(source: Path) -> dict[PurePosixPath, Path]:
@@ -144,19 +181,30 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> int:
     args = parse_args()
-    version = args.version
-    if version is None:
-        for line in (ROOT / "VERSION").read_text(encoding="utf-8").splitlines():
-            if line.startswith("Version:"):
-                version = line.split(":", 1)[1].strip()
-                break
-    version = (version or "").strip()
+    try:
+        package_version = read_package_version()
+    except BuildError as exc:
+        print(f"build error: {exc}", file=sys.stderr)
+        return 1
+    version = (args.version or package_version).strip()
     if not re.fullmatch(r"[0-9]+\.[0-9]+\.[0-9]+", version):
         print("版番号はMAJOR.MINOR.PATCH形式で指定してください。例: 0.1.0", file=sys.stderr)
         return 2
+    targets = TARGETS if args.target == "all" else (args.target,)
+    if version != package_version:
+        print(
+            f"build error: --versionはVERSIONと一致させてください: "
+            f"VERSION={package_version} --version={version}",
+            file=sys.stderr,
+        )
+        return 2
+    try:
+        validate_version_metadata(tuple(targets), version)
+    except BuildError as exc:
+        print(f"build error: {exc}", file=sys.stderr)
+        return 1
     output = args.output.resolve()
     clean_known_outputs(output)
-    targets = TARGETS if args.target == "all" else (args.target,)
     checksums: list[tuple[str, str]] = []
     try:
         for target in targets:

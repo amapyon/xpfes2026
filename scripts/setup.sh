@@ -31,6 +31,12 @@ HIDAPI_WHEEL='hidapi-0.15.0-cp310-cp310-macosx_11_0_arm64.whl'
 HIDAPI_URL='https://files.pythonhosted.org/packages/2d/97/bcbcb89f9461c29d3b12dd32affd29e6312fd521154ee7f394496d0039a9/hidapi-0.15.0-cp310-cp310-macosx_11_0_arm64.whl'
 HIDAPI_SHA256='1fa3e792987d4b7ed66d785491307e23d4f09d3636f8a23665a9694c43e92409'
 
+PACKAGE_VERSION=$(/usr/bin/sed -n 's/^Version:[[:space:]]*//p' "$UIAP_DEVKIT_ROOT/VERSION" | /usr/bin/head -n 1)
+LOCK_VERSION=$(/usr/bin/sed -n 's/^devkit_version=//p' "$UIAP_DEVKIT_ROOT/config/mac/bootstrap.lock" | /usr/bin/head -n 1)
+[ -n "$PACKAGE_VERSION" ] || uiap_die 133 'VERSIONにDevkit版がありません。'
+[ -n "$LOCK_VERSION" ] || uiap_die 133 'bootstrap lockにDevkit版がありません。'
+[ "$PACKAGE_VERSION" = "$LOCK_VERSION" ] || uiap_die 133 "VERSIONとbootstrap lockのバージョンが一致しません。VERSION=$PACKAGE_VERSION lock=$LOCK_VERSION"
+
 uiap_require_arm64
 major=$(uiap_macos_major)
 [ -n "$major" ] || uiap_die 102 'Could not determine the macOS version.'
@@ -270,7 +276,7 @@ cat > "$UIAP_WORKSPACE/deps/VERSIONS.md" <<EOF
 EOF
 
 cat > "$UIAP_DEVKIT_ROOT/.state/mac/setup-complete" <<EOF
-version=0.1.0-dev
+version=$PACKAGE_VERSION
 date=$(date -u '+%Y-%m-%dT%H:%M:%SZ')
 EOF
 

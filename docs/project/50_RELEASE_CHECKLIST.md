@@ -929,6 +929,18 @@ Devkit `0.4.3-test11`は、有効な`C:\pj\xpfes2026\uiap-devkit-win64`を拒否
 - `VERSION`とロック内のDevkit版が一致する
 - ロック変更後に正常取得、キャッシュ再利用、不一致隔離を再検証した
 
+配布ZIP作成コマンドが上記の版番号不一致を検出して失敗することを確認する。タグ公開時は、Windows版とmacOS版の両方のビルドが成功するまでReleaseを公開しない。
+
+## 2026-08-08 Devkit 0.1.1 配布修正
+
+Devkit `0.1.0`のWindows版は、`VERSION=0.1.0`に対してbootstrap lockが`0.1.0-dev`のまま公開され、`setup`が`UIAP-E133`で停止したため使用しない。`0.1.1`では次をリリース条件とする。
+
+- [x] `VERSION`とWindows bootstrap lockが`0.1.1`で一致
+- [x] `VERSION`とmacOS bootstrap lockが`0.1.1`で一致
+- [x] ZIP作成前の版番号整合性検査を追加
+- [x] `--version`によるZIP名と同梱メタデータの不一致を拒否
+- [x] 両OSの配布ZIPを作成し、同梱版番号とSHA-256を検証
+
 ch32funの具体的な入力値は`15_CH32FUN_SUBSET_RULES.md`を参照し、このチェックリストへ重複記載しない。
 
 ## 2026-08-01 Windows test17追加検査
