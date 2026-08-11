@@ -4,7 +4,7 @@
 
 | 演習 | 目的 | 現在状態 |
 |---|---|---|
-| `00_onboard_led_blink` | ビルド・書き込み・復旧 | macOS実機合格済み |
+| `00_onboard_led_blink` | ビルド・書き込み・復旧 | 変更前版はmacOS実機合格済み。現行3連フラッシュ版は再確認待ち |
 | `01_macro_keyboard` | スイッチとUSB HID | macOS実機合格済み |
 | `02_rotary_cursor_size` | エンコーダーとPC側処理 | Devkit `v0.1.2`の共通Pythonホスト版をmacOS実機で合格確認済み |
 | `03_vibration_motor_console` | Makeコマンドによる振動モジュール単体制御 | 一括パターン版はWindows実機合格。macOS実機再検証対象 |

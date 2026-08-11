@@ -181,7 +181,7 @@ macOS版は、Apple Silicon arm64ネイティブとし、Rosetta 2、Homebrew、
 - libusb 1.0.29の静的ビルド
 - arm64版`minichlink`のローカル生成、隔離属性処理、アドホック署名、署名検証
 - arm64版ネイティブカーソルホストの生成、署名、API自己診断
-- `00_onboard_led_blink`のビルド、書き込み、基板上LEDの0.2秒点灯・0.8秒消灯
+- `00_onboard_led_blink`のビルド、書き込み、基板上LEDの150ms間隔3連フラッシュと1.5秒休止
 - `01_macro_keyboard`のビルド、書き込み、HIDキーボード入力
 - スイッチ1回で`AbCdE`を入力し、長押しで連続入力せず、再押下、キー解放、USB再接続が正常に動作
 - 初回のキーボード設定アシスタントを「終了」で閉じた後も入力でき、再接続時にはアシスタントが再表示されないこと
@@ -202,7 +202,7 @@ Windowsの`SystemParametersInfoW`アクション`0x2029`とmacOSの非公開Core
 
 | 演習 | 目的 | 現在の検証状態 |
 |---|---|---|
-| `00_onboard_led_blink` | 開発環境、ビルド、書き込み、復旧の基本確認 | 従来のOS別実装は両OSで物理動作確認済み。共通化後は再確認待ち |
+| `00_onboard_led_blink` | 開発環境、ビルド、書き込み、復旧の基本確認 | 現行3連フラッシュ版をWindows実機で合格確認済み。macOS実機確認待ち |
 | `01_macro_keyboard` | エンコーダーモジュールのセンタースイッチとUSB HIDキーボード入力 | 共通化後の単一実装、およびGND/KEYの2本配線を実機確認済み |
 | `02_rotary_cursor_size` | 同じエンコーダーモジュールとPC側処理の体験 | 統合後の現行版をWindows/macOS実機で合格確認済み |
 | `03_vibration_motor_console` | `02`へ振動モジュールを追加し、Makeコマンドから強度とパターンを単体制御 | 現行一括パターン版をWindows実機で合格確認済み。macOS実機確認待ち |

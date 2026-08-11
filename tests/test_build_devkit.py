@@ -226,11 +226,18 @@ class UnifiedRepositoryTests(unittest.TestCase):
         self.assertFalse((haptic_host / "mac").exists())
 
         plain = (ROOT / "workspace" / "exercises" / "02_rotary_cursor_size" / "rotary_cursor_size.c").read_text(encoding="utf-8")
+        blink = (ROOT / "workspace" / "exercises" / "00_onboard_led_blink" / "onboard_led_blink.c").read_text(encoding="utf-8")
         motor = (ROOT / "workspace" / "exercises" / "03_vibration_motor_console" / "vibration_motor_console.c").read_text(encoding="utf-8")
         haptic = (ROOT / "workspace" / "exercises" / "04_rotary_cursor_haptic" / "rotary_cursor_size.c").read_text(encoding="utf-8")
         self.assertNotIn("HAPTIC_PIN", plain)
         self.assertIn("MOTOR_PIN", motor)
         self.assertIn("HAPTIC_PIN", haptic)
+        self.assertIn("#define BLINK_ON_MS 150u", blink)
+        self.assertIn("#define BLINK_GAP_MS 150u", blink)
+        self.assertIn("#define BLINK_PAUSE_MS 1500u", blink)
+        self.assertIn("#define BLINK_FLASH_COUNT 3u", blink)
+        self.assertIn("#define BUILTIN_LED_ON FUN_HIGH", blink)
+        self.assertIn("#define BUILTIN_LED_OFF FUN_LOW", blink)
 
         motor_root = ROOT / "workspace" / "exercises" / "03_vibration_motor_console"
         haptic_root = ROOT / "workspace" / "exercises" / "04_rotary_cursor_haptic"

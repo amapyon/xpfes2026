@@ -160,7 +160,7 @@ Windows版は、MSYS2を使用しないxPackベースのWindowsネイティブ�
 - FLASH 444 B、RAM 0 B
 - USBブートローダー`1209:B803`とCH32V003検出
 - `make flash`、書き込み、ブート
-- 基板上LEDの0.2秒点灯・0.8秒消灯
+- 基板上LEDの150ms間隔3連フラッシュと1.5秒休止
 
 次は未合格であり、参加者向けリリースを阻害する。
 
@@ -982,6 +982,8 @@ ch32funの具体的な入力値は`15_CH32FUN_SUBSET_RULES.md`を参照し、こ
 - [ ] Makefileの`FLASH_COMMAND`が、自動変数`$<`を含む場合は遅延評価`=`である
 - [ ] `make -n flash`が終了コード0になる
 - [ ] `00_onboard_led_blink`は`-w onboard_led_blink.bin flash -b`を含む
+- [ ] `00_onboard_led_blink`が150ms点灯・150ms間隔を3回繰り返し、その後1.5秒休止する
+- [ ] 参加者向けREADMEが3連フラッシュを工場出荷時点滅との判別条件として説明する
 - [ ] `01_macro_keyboard`は`-w macro_keyboard.bin flash -b`を含む
 - [ ] `02_rotary_cursor_size`は`-w rotary_cursor_size.bin flash -b`を含む
 - [ ] `-w`の直後が`-b`または空になっていない
