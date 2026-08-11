@@ -1201,7 +1201,7 @@ Windows test18では`make app-dry-run`が成功し、HID受信まで正常だっ
 
 - 共通`00`ファームウェアのWindows同梱ツールチェーンによるビルド: 合格
 - 共通`02`ファームウェアのWindows同梱ツールチェーンによるビルド: 合格
-- 共通化後のWindows/macOS実機動作: 再確認待ち
+- 共通化後のWindows/macOS実機動作: 利用者実機合格
 
 ---
 
@@ -1286,7 +1286,7 @@ Windows test18では`make app-dry-run`が成功し、HID受信まで正常だっ
 - Windows/macOS配布ZIPの構成を含む既存テスト11件: 合格
 - 同梱MakeとPythonによる`host-doctor`および主要ターゲット展開: 合格
 - Windows実機での統合後ホストの想定動作: 利用者実機合格
-- macOS実機でのサイズ変更と終了時復元: 再確認待ち
+- macOS実機での現行演習の基本動作: Devkit `v0.1.2`で利用者実機合格
 
 ---
 
@@ -1332,5 +1332,23 @@ Windows test18では`make app-dry-run`が成功し、HID受信まで正常だっ
 - Windows/macOS配布キットへの5演習収録を含む既存テスト11件: 合格
 - `03`の現行PWM強度変更版について、Windows実機での書き込み、USB接続、MakeコマンドによるON/OFFとレベル変更: 利用者実機合格
 - `LEVEL=100`は連続Highのソフトウェア上の最大出力とし、Windows向け必須演習として完成扱い
-- `03`のmacOS演習版での書き込み、USB列挙、振動動作: 実機確認待ち
+- `03`のmacOS現行演習版の基本動作: Devkit `v0.1.2`で利用者実機合格
 - `04`の配線済み開始手順: 実機確認待ち
+
+---
+
+## 2026-08-11 Devkit `v0.1.2`のmacOS演習02・03確認
+
+### 確認結果
+
+- 利用者から、macOS実機で`02_rotary_cursor_size`が正常動作したとの報告を受けた
+- 利用者から、同じ環境で`03_vibration_motor_console`が正常動作したとの報告を受けた
+- `02`の現行共通Pythonホストと単一ファームウェアをmacOS実機合格とする
+- `03`の現行PWM強度変更版、共通Pythonホスト、単一ファームウェアをmacOS実機合格とする
+- `02`と`03`はWindows/macOS向けの必須演習として完成扱いとする
+
+### 継続確認
+
+- 詳細ログ、個々のコマンド出力、macOSバージョンは今回記録していない
+- `04_rotary_cursor_haptic`のmacOS実機動作は未確認
+- `02`のUSB切断時復元、別Mac・別ユーザーでの再現性は未確認

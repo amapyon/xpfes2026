@@ -190,7 +190,7 @@ macOS版は、Apple Silicon arm64ネイティブとし、Rosetta 2、Homebrew、
 - 当時のネイティブarm64ホストによるカーソルサイズ変更
 - `Ctrl+C`終了時の起動前カーソルサイズ復元
 
-`02_rotary_cursor_size`の現行ホストは、Windows/macOS共通のPythonプログラムである。HID列挙、入力処理、コマンド体系を共通化し、ポインター設定だけを実行時に選択するWindows/macOSバックエンドへ分離する。macOSのカーソルサイズ変更には非公開CoreGraphics APIを使用し、スカラー引数の`float32`／`float64` ABIを実行時に判定する。統合前のmacOS実装はmacOS 26.5.2の利用者実機で想定動作を確認済みだが、統合後のホストはmacOS実機で再確認が必要である。
+`02_rotary_cursor_size`の現行ホストは、Windows/macOS共通のPythonプログラムである。HID列挙、入力処理、コマンド体系を共通化し、ポインター設定だけを実行時に選択するWindows/macOSバックエンドへ分離する。macOSのカーソルサイズ変更には非公開CoreGraphics APIを使用し、スカラー引数の`float32`／`float64` ABIを実行時に判定する。統合後の共通ホストはDevkit `v0.1.2`でmacOS利用者実機の想定動作を確認済みである。
 
 最終`ch32fun`許可リスト、`rv003usb`入力SHA-256の正式固定、別Mac・別ユーザー、macOS 26以降での追加検証、署名・公証方針は未確認または未決定である。最終参加者向け版もオンライン初期化型とする。
 
@@ -204,8 +204,8 @@ Windowsの`SystemParametersInfoW`アクション`0x2029`とmacOSの非公開Core
 |---|---|---|
 | `00_onboard_led_blink` | 開発環境、ビルド、書き込み、復旧の基本確認 | 従来のOS別実装は両OSで物理動作確認済み。共通化後は再確認待ち |
 | `01_macro_keyboard` | エンコーダーモジュールのセンタースイッチとUSB HIDキーボード入力 | 共通化後の単一実装、およびGND/KEYの2本配線を実機確認済み |
-| `02_rotary_cursor_size` | 同じエンコーダーモジュールとPC側処理の体験 | 従来のOS別実装は両OSで確認済み。共通ファームウェアは再確認待ち |
-| `03_vibration_motor_console` | `02`へ振動モジュールを追加し、Makeコマンドから強度を変えて単体制御 | 現行版はWindows実機合格・完成扱い。macOS演習版は実機再確認待ち |
+| `02_rotary_cursor_size` | 同じエンコーダーモジュールとPC側処理の体験 | 統合後の現行版をWindows/macOS実機で合格確認済み |
+| `03_vibration_motor_console` | `02`へ振動モジュールを追加し、Makeコマンドから強度を変えて単体制御 | 現行版をWindows/macOS実機で合格確認済み・完成扱い |
 | `04_rotary_cursor_haptic` | `02`のカーソル操作と`03`の触覚制御を統合 | 静的検査・配布構成検査済み。統合動作は実機確認待ち |
 
 必須演習の決定は、ワークショップで最終的に制作するUSBデバイスや、公開配布用の正式HID Usage、VID:PIDを決定したことを意味しない。

@@ -618,7 +618,7 @@ TEST7-001
 | Windowsポテンショメーター＋振動統合PoC v1.0.8 | 主要動作合格 |
 | ch32fun許可リストサブセット | 方針決定・未実装 |
 | 最終オフライン参加者向けZIP | 未確認 |
-| macOS Apple Silicon | `00`、`01`、`02`の当時の3演習は合格。現行`03_vibration_motor_console`、`04_rotary_cursor_haptic`と統合後Pythonホストは実機再確認待ち |
+| macOS Apple Silicon | `00`、`01`に加え、Devkit `v0.1.2`の現行`02_rotary_cursor_size`と`03_vibration_motor_console`を利用者実機で合格確認済み。`04_rotary_cursor_haptic`は実機確認待ち |
 | ワークショップ必須演習としての採用 | `00`、`01`、`02`、`03`、`04`を採用済み |
 
 PoC合格を、そのまま最終リリース合格または参加者向け採用済みとして扱わない。
@@ -1863,7 +1863,7 @@ Restored pointer size: 80
 - 共通`00`ビルド: 合格、FLASH 436 B / 16 KB、RAM 0 B / 2 KB
 - 共通`02`ビルド: 合格、FLASH 2340 B / 16 KB、RAM 200 B / 2 KB
 - 共通`00`のWindows/macOS実機点滅: 再確認待ち
-- 共通`02`のWindows/macOS HID入力・ポインターサイズ変更・復元: 再確認待ち
+- 共通`02`のWindows/macOS HID入力・ポインターサイズ変更・復元: この静的確認時点では再確認待ち。後続の実機確認で両OS合格へ更新
 
 ---
 
@@ -2048,7 +2048,7 @@ PC3の内部プルアップを使用し、GNDとKEYの2本だけを接続した�
 - 必須演習のソース構成検査: 合格
 - Windows/macOS配布ZIPへの収録を含む既存テスト11件: 合格
 
-### 未確認
+### 静的確認時点の未確認
 
 - `1209:C006`のmacOS実機列挙
 - macOS演習版での`make pulse`、`make on`、`make status`、`make off`による実際の振動
@@ -2056,4 +2056,8 @@ PC3の内部プルアップを使用し、GNDとKEYの2本だけを接続した�
 
 ### Windows実機追試
 
-利用者から、現行のPWM強度変更版`03_vibration_motor_console`がWindowsで動作し、`LEVEL=100`でも振動することの報告を受けた。Windows実機での書き込み、USB接続、MakeコマンドによるON/OFFとレベル変更を合格とし、Windows向け必須演習として完成扱いとする。`LEVEL=100`は連続Highであり、ソフトウェア上の最大出力である。今回は詳細ログを収録していないため、個々のコマンド出力や読取り値は記録しない。macOS演習版の実機確認は引き続き未確認とする。
+利用者から、現行のPWM強度変更版`03_vibration_motor_console`がWindowsで動作し、`LEVEL=100`でも振動することの報告を受けた。Windows実機での書き込み、USB接続、MakeコマンドによるON/OFFとレベル変更を合格とし、Windows向け必須演習として完成扱いとする。`LEVEL=100`は連続Highであり、ソフトウェア上の最大出力である。今回は詳細ログを収録していないため、個々のコマンド出力や読取り値は記録しない。このWindows確認時点ではmacOS演習版は未確認だったが、後続のmacOS追試で更新した。
+
+### macOS Devkit `v0.1.2`実機追試
+
+利用者から、macOS実機でDevkit `v0.1.2`の`02_rotary_cursor_size`と`03_vibration_motor_console`がともに正常動作したとの報告を受けた。現行の共通Pythonホスト、単一ファームウェア、演習手順による基本動作を両演習とも合格とする。詳細ログを収録していないため、個々のコマンド出力、OSバージョン、読取り値は記録しない。`04_rotary_cursor_haptic`、USB切断時の`02`復元、別Mac・別ユーザーでの再現性は未確認とする。
