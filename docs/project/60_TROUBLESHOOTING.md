@@ -996,18 +996,20 @@ make restore
 workspace/exercises/<exercise-name>/host/<program>.py
 ```
 
-OS固有ホストの場合:
+OS固有ホストをファイル分割する場合:
 
 ```text
 workspace/exercises/<exercise-name>/host/<platform>/<program>.py
 ```
 
-ロータリーエンコーダー演習:
+`02_rotary_cursor_size`と`03_rotary_cursor_haptic`の共通ホスト:
 
 ```text
-workspace/exercises/02_rotary_cursor_size/host/win/cursor_size_host.py
-workspace/exercises/02_rotary_cursor_size/host/mac/cursor_size_host.py
+workspace/exercises/02_rotary_cursor_size/host/cursor_size_host.py
+workspace/exercises/03_rotary_cursor_haptic/host/cursor_size_host.py
 ```
+
+これらのホストは起動時にWindows/macOSバックエンドを選択する。`host/win`または`host/mac`を探す必要はない。
 
 次の旧パスを実行時の標準として使用しない。
 
@@ -1088,10 +1090,10 @@ hidapi import: PASS
 | UIAPduino | モジュール | 用途 |
 |---|---|---|
 | GND | GND | 共通GND |
-| D8 / PC6 | S1 | 回転信号1 |
-| D9 / PC7 | S2 | 回転信号2 |
+| D9 / PC7 | S1 | 回転信号1 |
+| D8 / PC6 | S2 | 回転信号2 |
 | D5 / PC3 | KEY | センタースイッチ |
-| 5V | 5V | モジュール電源 |
+| 5V | 5V | モジュール電源。赤い配線 |
 
 注意:
 
@@ -1104,7 +1106,7 @@ hidapi import: PASS
 
 - 基板表記のGND、S1、S2、KEY、5Vを取り違えていないか
 - GNDと5Vが正しく接続されているか
-- S1がD8、S2がD9へ接続されているか
+- S1がD9 / PC7、S2がD8 / PC6へ接続されているか
 - D8とD9が入力として初期化されているか
 - Vendor-defined HIDデバイスが列挙されているか
 - 演習ディレクトリの`make app-dry-run`で回転イベントが表示されるか
@@ -2112,3 +2114,5 @@ Mac test13ファームウェアは`[delta, sequence]`の2バイトを送信す�
 Windowsホストの`decode_delta`は、常に先頭バイトを移動量として読む。`[0, sequence]`が0、`[1, sequence]`が1、`[255, sequence]`が-1になる自己診断ケースを保持する。
 
 修正後、同じMac test13ファームウェアをWindowsへ接続し、静止中は値が表示されず、回転時だけ期待するCW／CCWが表示されることを利用者実機で確認した。ファームウェアの再書き込みは不要である。
+
+2026-08-11追加の`03_rotary_cursor_haptic`は3バイトの`[Report ID 1, delta, sequence]`を使用する。`03`のホストは3バイト時だけReport IDを読み飛ばし、コピー元の`02`を含む旧2バイト形式では従来どおり先頭をdeltaとして扱う。

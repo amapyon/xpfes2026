@@ -2,6 +2,8 @@
 
 更新日: 2026-08-01
 
+> この文書はtest13時点の検証範囲を記録した履歴資料です。現行の必須4演習と`02`／`03`の共通ホストに関する状態は、`required-exercises.md`と`../../project/70_VALIDATION_RESULTS.md`を参照してください。
+
 ## 既存の確認済み基準
 
 macOS 26.5.2、Apple Silicon arm64でtest12ネイティブCホストまで含め、必須演習3本の基本動作を確認済みです。演習02ではUSB/IOHID列挙、CW/CCW、サイズ変更、`Ctrl+C`復元が合格しました。

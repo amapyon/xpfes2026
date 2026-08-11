@@ -259,6 +259,7 @@ test10の初版`doctor`は未使用の`NEWLIB?=/usr/include/newlib`既定値ま�
 00_onboard_led_blink
 01_macro_keyboard
 02_rotary_cursor_size
+03_rotary_cursor_haptic
 ```
 
 各演習で次を実行する。
@@ -335,9 +336,11 @@ PoC用一時値を検索する。
 ```text
 1209:C003
 1209:C004
+1209:C005
 1209:D003
 TEST3-001
 TEST7-001
+TEST8-001
 ```
 
 確認事項:
@@ -380,10 +383,10 @@ PoCの期待文字列を変更した場合は、ファームウェア、README�
 | UIAPduino | モジュール |
 |---|---|
 | GND | GND |
-| D8 / PC6 | S1 |
-| D9 / PC7 | S2 |
+| D9 / PC7 | S1 |
+| D8 / PC6 | S2 |
 | D5 / PC3 | KEY |
-| 5V | 5V |
+| 5V | 5V（赤い配線） |
 
 確認項目:
 
@@ -1000,3 +1003,27 @@ ch32funの具体的な入力値は`15_CH32FUN_SUBSET_RULES.md`を参照し、こ
 - [ ] USB切断または異常終了後に`make restore`で復元できる
 
 `0x2029`は未文書化動作であるため、静的検査だけで合格にせず、Windows更新後を含む各リリース候補で実機確認する。具体的な不具合と復旧は`60_TROUBLESHOOTING.md`、検証事実は`70_VALIDATION_RESULTS.md`を正本とする。
+
+## 2026-08-11 `03_rotary_cursor_haptic`追加検査
+
+- [ ] 必須演習が`00`、`01`、`02`、`03`の4フォルダーに分かれている
+- [ ] `02_rotary_cursor_size`に振動モジュール制御、Feature Report、PC4出力が含まれていない
+- [ ] `02_rotary_cursor_size`が従来の`1209:C004`、`UIAP Rotary Cursor`、`TEST7-001`を維持している
+- [ ] `03_rotary_cursor_haptic`が`1209:C005`、`UIAP Rotary Haptic`、`TEST8-001`を使用する
+- [ ] `03`の入力Report ID 1と触覚Feature Report ID 2をWindows/macOSホストが処理する
+- [ ] `03`でカーソルサイズ変更成功時だけ約60ms振動し、上限／下限とドライランでは振動しない
+- [ ] `02`と`03`の状態ファイル名が分離されている
+- [ ] 両演習でS1→D9 / PC7、S2→D8 / PC6の配線とファームウェア定義が一致する
+- [ ] `03`でVCC-GND間コンデンサーを追加しないこと、ドライバー内蔵モジュールを使用すること、GPIO直結禁止を参加者向け資料へ記載する
+- [ ] Windows/macOS配布キットの両方に`03_rotary_cursor_haptic/host/cursor_size_host.py`が含まれる
+- [ ] `03_rotary_cursor_haptic/host/win`と`host/mac`がソースおよび配布キットに存在しない
+
+## 2026-08-11 `02_rotary_cursor_size`ホスト共通化検査
+
+- [ ] `host/cursor_size_host.py`がWindows/macOS配布キットの両方に含まれる
+- [ ] `02_rotary_cursor_size/host/win`と`host/mac`がソースおよび配布キットに存在しない
+- [ ] `list`、`hidcheck`、`dry-run`、`app`、`restore`、`cursor-test`、`self-test`、`version`を両OSで同じ形式で実行できる
+- [ ] HID列挙、レポート解釈、イベントループが共通処理になっている
+- [ ] Windowsで従来のJSON状態ファイルと旧形式の移行が機能する
+- [ ] macOSで従来の倍率状態ファイルを復元できる
+- [ ] Windows/macOS実機でカーソルサイズ変更と`Ctrl+C`終了時の復元を確認する

@@ -12,7 +12,7 @@
 # XP祭り2026 物理UIワークショップ
 # プロジェクト概要
 
-更新日: 2026-08-01
+更新日: 2026-08-11
 
 ## 1. 目的
 
@@ -198,10 +198,10 @@ macOS版は、Apple Silicon arm64ネイティブとし、Rosetta 2、Homebrew、
 - 初回のキーボード設定アシスタントを「終了」で閉じた後も入力でき、再接続時にはアシスタントが再表示されないこと
 - `02_rotary_cursor_size`のビルド、書き込み、`1209:C004`のUSB・IOHID列挙
 - D8 / PC6、D9 / PC7、GNDへ接続したロータリーエンコーダーのCW／CCW受信
-- ネイティブarm64ホストによるカーソルサイズ変更
+- 当時のネイティブarm64ホストによるカーソルサイズ変更
 - `Ctrl+C`終了時の起動前カーソルサイズ復元
 
-macOS版DevkitにはPythonとhidapiを含める。ただし、`02_rotary_cursor_size`の現行ホスト実装自体はPython・hidapiではなくIOKit HIDとネイティブarm64ホストを使用する。カーソルサイズ変更には非公開CoreGraphics APIを使用し、test12ではスカラー引数の`float32`／`float64` ABIを実行時に判定する。macOS 26.5.2の利用者実機では想定動作を確認したが、USB切断時復元、別Mac、別ユーザー、最低対応macOS、将来のmacOS更新後の互換性は未確認である。
+`02_rotary_cursor_size`の現行ホストは、Windows/macOS共通のPythonプログラムである。HID列挙、入力処理、コマンド体系を共通化し、ポインター設定だけを実行時に選択するWindows/macOSバックエンドへ分離する。macOSのカーソルサイズ変更には非公開CoreGraphics APIを使用し、スカラー引数の`float32`／`float64` ABIを実行時に判定する。統合前のmacOS実装はmacOS 26.5.2の利用者実機で想定動作を確認済みだが、統合後のホストはmacOS実機で再確認が必要である。
 
 最終`ch32fun`許可リスト、`rv003usb`入力SHA-256の正式固定、別Mac・別ユーザー、macOS 26以降での追加検証、署名・公証方針は未確認または未決定である。最終参加者向け版もオンライン初期化型とする。
 
@@ -209,13 +209,14 @@ Windowsの`SystemParametersInfoW`アクション`0x2029`とmacOSの非公開Core
 
 ## 6. ワークショップ必須演習
 
-2026-07-31時点で、次の3演習を必須演習とする。
+2026-08-11時点で、次の4演習を必須演習とする。
 
 | 演習 | 目的 | 現在の検証状態 |
 |---|---|---|
 | `00_onboard_led_blink` | 開発環境、ビルド、書き込み、復旧の基本確認 | 従来のOS別実装は両OSで物理動作確認済み。共通化後は再確認待ち |
 | `01_macro_keyboard` | エンコーダーモジュールのセンタースイッチとUSB HIDキーボード入力 | 共通化後の単一実装、およびGND/KEYの2本配線を実機確認済み |
 | `02_rotary_cursor_size` | 同じエンコーダーモジュールとPC側処理の体験 | 従来のOS別実装は両OSで確認済み。共通ファームウェアは再確認待ち |
+| `03_rotary_cursor_haptic` | `02`へ振動モジュールを追加し、サイズ変更時の触覚フィードバックを体験 | 静的検査・配布構成検査済み。統合動作は実機確認待ち |
 
 必須演習の決定は、ワークショップで最終的に制作するUSBデバイスや、公開配布用の正式HID Usage、VID:PIDを決定したことを意味しない。
 
@@ -524,8 +525,7 @@ uiap-devkit-win64/
         ├── 01_macro_keyboard/
         ├── 02_rotary_cursor_size/
         │   └── host/
-        └── 03_pot_cursor_haptic/
-            ├── docs/
+        └── 03_rotary_cursor_haptic/
             └── host/
 ```
 
@@ -762,7 +762,7 @@ Windows Command Promptの例:
 cd /d "%UIAP_WORKSPACE%\exercises\00_onboard_led_blink"
 cd /d "%UIAP_WORKSPACE%\exercises\01_macro_keyboard"
 cd /d "%UIAP_WORKSPACE%\exercises\02_rotary_cursor_size"
-cd /d "%UIAP_WORKSPACE%\exercises\03_pot_cursor_haptic"
+cd /d "%UIAP_WORKSPACE%\exercises\03_rotary_cursor_haptic"
 ```
 
 macOSの例:
@@ -771,7 +771,7 @@ macOSの例:
 cd "$UIAP_WORKSPACE/exercises/00_onboard_led_blink"
 cd "$UIAP_WORKSPACE/exercises/01_macro_keyboard"
 cd "$UIAP_WORKSPACE/exercises/02_rotary_cursor_size"
-cd "$UIAP_WORKSPACE/exercises/03_pot_cursor_haptic"
+cd "$UIAP_WORKSPACE/exercises/03_rotary_cursor_haptic"
 ```
 
 手順書では、対象演習ごとに実行する`cd`を明記する。参加者に演習番号や別名コマンドを暗記させない。
@@ -908,7 +908,7 @@ workspace/exercises/
 ├── 00_onboard_led_blink/
 ├── 01_macro_keyboard/
 ├── 02_rotary_cursor_size/
-└── 03_pot_cursor_haptic/
+└── 03_rotary_cursor_haptic/
 ```
 
 役割:
@@ -917,12 +917,12 @@ workspace/exercises/
 |---|---|
 | `00_onboard_led_blink` | 必須。基板上LEDとビルド・書き込み確認 |
 | `01_macro_keyboard` | 必須。5ピンエンコーダーモジュールのGND/KEYだけを接続するUSB HIDキーボード |
-| `02_rotary_cursor_size` | 必須。同じモジュールへS1/S2/5Vを追加する回転入力とOS別ホストアプリ |
-| `03_pot_cursor_haptic` | PoC。RV09ポテンショメーター、Windowsポインターサイズ、振動フィードバック |
+| `02_rotary_cursor_size` | 必須。同じモジュールへS1/S2/5Vを追加する回転入力と共通ホストアプリ |
+| `03_rotary_cursor_haptic` | 必須。`02`へ振動モジュールを追加する触覚フィードバック |
 
-`00_onboard_led_blink`、`01_macro_keyboard`、`02_rotary_cursor_size`はワークショップ必須演習として採用済みである。`03_pot_cursor_haptic`はWindows実機PoCで、v1.0.8の統合動作とADC安定化を確認済みだが、必須演習には採用していない。
+4演習すべてをワークショップ必須演習として採用する。`02_rotary_cursor_size`は振動なしの基本演習として維持し、`03_rotary_cursor_haptic`で触覚フィードバックを追加する。
 
-3演習のファームウェアとビルド設定は演習直下へ置き、Windows/macOSで共用する。`02_rotary_cursor_size`はOS固有のポインター設定処理だけを`host/win`と`host/mac`へ分ける。
+4演習のファームウェアとビルド設定は演習直下へ置き、Windows/macOSで共用する。`02_rotary_cursor_size`と`03_rotary_cursor_haptic`は、それぞれ単一の`host/cursor_size_host.py`内でWindows/macOSバックエンドを実行時に選択する。
 
 各演習は、原則として次を含む。
 
@@ -941,28 +941,21 @@ workspace/exercises/
 
 USBを使用しない演習では`usb_config.h`を省略してよい。PC側プログラムを使用しない演習では`host`を省略する。
 
-`03_pot_cursor_haptic`の確認済み構成:
+`03_rotary_cursor_haptic`の構成:
 
 ```text
-workspace/exercises/03_pot_cursor_haptic/
+workspace/exercises/03_rotary_cursor_haptic/
 ├── README.md
 ├── Makefile
-├── pot_cursor_haptic.c
+├── rotary_cursor_size.c
 ├── funconfig.h
 ├── usb_config.h
-├── docs/
-│   ├── VALIDATION.md
-│   └── WIRING.md
 └── host/
-    ├── pot_cursor_host.py
-    ├── hidcheck.py
-    ├── haptic_test.py
-    ├── cursor_test.py
-    ├── restore_cursor.py
-    └── 補助モジュール
+    ├── README.md
+    └── cursor_size_host.py
 ```
 
-この演習はWindows 11 x64向けPoCであり、参加者向け必須演習としての採用は未決定である。
+この演習は`02_rotary_cursor_size`を複製して触覚フィードバックを追加した必須演習である。
 
 ### 8.4 各演習の`host`
 
@@ -979,8 +972,7 @@ workspace/exercises/02_rotary_cursor_size/
 ├── usb_config.h
 └── host/
     ├── README.md
-    ├── cursor_size_host.py       # Windows版
-    └── cursor_size_host.c        # macOS Apple Silicon版
+    └── cursor_size_host.py       # Windows/macOS共通、実行時にバックエンド選択
 ```
 
 規則:
@@ -991,7 +983,7 @@ workspace/exercises/02_rotary_cursor_size/
 - 演習間で別演習の`host`を直接参照しない
 - Devkit全体で使用する診断コードは`scripts/python`へ配置する
 - Pythonホストアプリは`runtime/python`を使用し、システムPythonへ依存しない
-- macOS版DevkitにもPython・hidapiを含める。ただし`02_rotary_cursor_size`の現行ホストはネイティブarm64 CLIであり、当該演習の実行自体はPython・hidapiへ依存しない
+- macOS版DevkitにもPython・hidapiを含め、`02_rotary_cursor_size`の共通Pythonホストで使用する
 - OS固有コードが必要な場合も、当該演習の`host`配下で共通処理と分離する
 
 ### 8.5 `workspace/poc`
@@ -2410,12 +2402,14 @@ OS固有の実装だけを分ける場合:
 workspace/exercises/<exercise-name>/host/<platform>/<program>.py
 ```
 
-例:
+OS差を単一ファイル内のバックエンドへ閉じ込める例:
 
 ```text
-workspace/exercises/02_rotary_cursor_size/host/win/cursor_size_host.py
-workspace/exercises/02_rotary_cursor_size/host/mac/cursor_size_host.py
+workspace/exercises/02_rotary_cursor_size/host/cursor_size_host.py
+workspace/exercises/03_rotary_cursor_haptic/host/cursor_size_host.py
 ```
+
+両ファイルではHID列挙、入力処理、CLIを共通化し、Windows/macOS固有のポインター設定だけを別クラスへ分離して実行時に選択する。ファイル分割が必要な演習は`host/<platform>`を使用してよい。
 
 次を標準とする。
 
@@ -3218,7 +3212,7 @@ GPIOの出力電流、電圧降下、発熱、突入電流を確認する。
 
 回路図には、部品値、極性、GND、モーター電源を明示する。
 
-ドライバー回路内蔵の5V振動モーターモジュールを使用する場合も、モジュールのVCC、GND、INを区別し、VCC-GND間へ100µF程度のバルクコンデンサーを近接配置する。GPIOはモーター本体ではなくIN端子だけを駆動する。
+ドライバー回路内蔵の5V振動モーターモジュールを使用する場合は、モジュールのVCC、GND、INを区別し、GPIOはモーター本体ではなくIN端子だけを駆動する。追加コンデンサーの要否は使用するモジュールと演習ごとに決定し、今回の`03_rotary_cursor_haptic`ではVCC-GND間コンデンサーを追加しない。
 
 振動の知覚性を上げる場合は、定格を超える電圧へ上げるのではなく、ON時間とパルス回数を調整する。確認済みPoCでは、D6/A2（PC4）をHighにする80msパルス2回、間隔40msを強めの既定値とした。
 
@@ -3426,6 +3420,7 @@ USBポートから供給する総電流を見積もる。
 | `00_onboard_led_blink` | 外付け配線なし。基板上LEDを使用 |
 | `01_macro_keyboard` | GNDとKEYの2本だけを接続し、KEYをD5 / PC3で使用 |
 | `02_rotary_cursor_size` | S1、S2、5Vの3本を追加し、合計5本で使用 |
+| `03_rotary_cursor_haptic` | `02`の5本を維持し、5V振動モジュールのVCC、GND、INだけを追加 |
 
 両演習では、[指定のセンタースイッチ付きロータリーエンコーダーモジュール](https://electronicwork.shop/items/64b9e54b9dd503007bc60458)を1個使用する。`01_macro_keyboard`では次の2本だけを接続する。
 
@@ -3439,12 +3434,14 @@ PC3の内部プルアップを使用するため、`01`ではモジュールの5
 | UIAPduino | モジュール | 用途 |
 |---|---|---|
 | GND | GND | 共通GND |
-| D8 / PC6 | S1 | 回転信号1 |
-| D9 / PC7 | S2 | 回転信号2 |
+| D9 / PC7 | S1 | 回転信号1 |
+| D8 / PC6 | S2 | 回転信号2 |
 | D5 / PC3 | KEY | センタースイッチ、押し込み時Low |
-| 5V | 5V | モジュール電源 |
+| 5V | 5V | モジュール電源。赤い配線 |
 
 販売ページの仕様は動作電圧5V、1周20パルスである。5Vを追加する`02`では、UIAPduinoのマイクロコントローラー電源が初期状態の5V設定であることを前提とする。配線変更前にはUSBを外す。旧3端子エンコーダーのA/C/B配線や、独立したモメンタリスイッチの配線を新モジュールへ流用しない。
+
+`03_rotary_cursor_haptic`では、上記5本を維持したまま、ドライバー回路内蔵5V振動モジュールをVCC→5V、GND→GND、IN→D6/A2 / PC4で追加する。今回の回路ではVCC-GND間コンデンサーを追加しない。
 
 これらのGPIO割り当てを変更する場合は、ファームウェア、配線表、参加者向け手順、検証記録を同時に更新する。
 
@@ -3452,7 +3449,7 @@ PC3の内部プルアップを使用するため、`01`ではモジュールの5
 
 # 参加者向け手順書の作成規約
 
-更新日: 2026-08-01
+更新日: 2026-08-11
 
 ## 1. 対象読者
 
@@ -3549,6 +3546,8 @@ make flash
 make app
 ```
 
+`02_rotary_cursor_size`では両OSとも同じ`host/cursor_size_host.py`と同じサブコマンドを使用する。手順書でOS別Pythonファイルを指定せず、`make app`、`make list`、`make restore`など共通のMakeターゲットを案内する。
+
 WindowsネイティブDevkitで`setup`などの起動コンソール専用コマンドを使用する場合は、そのDevkit版だけの操作であることを明記する。
 
 `sample`、`macro`、`blink`、`cursorapp`、`cursorlist`、`cursorrestore`などの独自コマンドで演習移動や演習固有操作を隠さない。受講者が`cd`で演習へ移動し、その演習の`make`ターゲットを実行する手順にする。
@@ -3637,7 +3636,8 @@ macOS 26.5.2の実機では「スキップ」ボタンは表示されなかっ�
 | 段階 | 接続 |
 |---|---|
 | `01_macro_keyboard` | GND→GND、KEY→D5 / PC3 |
-| `02_rotary_cursor_size` | S1→D8 / PC6、S2→D9 / PC7、5V→5Vを追加 |
+| `02_rotary_cursor_size` | S1→D9 / PC7、S2→D8 / PC6、5V→5V（赤い配線）を追加 |
+| `03_rotary_cursor_haptic` | `02`の5本を維持し、振動モジュールのVCC→5V、GND→GND、IN→D6/A2 / PC4を追加 |
 
 必要に応じて次も記載する。
 
@@ -3672,9 +3672,19 @@ macOS 26.5.2の実機では「スキップ」ボタンは表示されなかっ�
 
 | UIAPduino | モジュール | 用途 |
 |---|---|---|
-| D8 / PC6 | S1 | 回転信号1 |
-| D9 / PC7 | S2 | 回転信号2 |
-| 5V | 5V | モジュール電源 |
+| D9 / PC7 | S1 | 回転信号1 |
+| D8 / PC6 | S2 | 回転信号2 |
+| 5V | 5V | モジュール電源。赤い配線 |
+
+`03_rotary_cursor_haptic`へ進むとき、USBを外してからドライバー回路内蔵の5V振動モーターモジュールを追加する。エンコーダーの5本は変更しない。
+
+| UIAPduino | 振動モジュール | 用途 |
+|---|---|---|
+| 5V | VCC | モーター電源 |
+| GND | GND | 共通GND |
+| D6/A2 / PC4 | IN | 約60msの振動ON/OFF制御 |
+
+モーター本体をGPIOへ直接接続せず、ドライバー回路内蔵モジュールのIN端子だけをGPIOで制御する。今回の`03_rotary_cursor_haptic`ではVCC-GND間コンデンサーを追加しない。
 
 注意:
 
@@ -3682,6 +3692,7 @@ macOS 26.5.2の実機では「スキップ」ボタンは表示されなかっ�
 - `01`はPC3の内部プルアップを使用するため5Vへ接続しない
 - `02`で5Vを追加し、UIAPduinoのマイクロコントローラー電源が初期状態の5V設定であることを確認する
 - `01_macro_keyboard`はKEYだけを読み、`02_rotary_cursor_size`はS1/S2だけを読む
+- `03_rotary_cursor_haptic`はS1/S2を読み、PC4で振動モジュールを制御する
 - 押し続けでは繰り返さず、押下エッジで動作する構成とチャタリング対策を明記する
 - 回転方向が逆の場合はS1とS2を入れ替える
 
@@ -3877,15 +3888,16 @@ TEST7-001
 - 追加: 早く終わった参加者向け
 - 発展: ワークショップ後に試せる
 
-必須演習は次の3本とする。
+必須演習は次の4本とする。
 
 | 演習 | 最小到達点 |
 |---|---|
 | `00_onboard_led_blink` | ビルド、書き込み、基板上LED点滅 |
 | `01_macro_keyboard` | スイッチ1回で`AbCdE`、長押し抑止、キー解放 |
 | `02_rotary_cursor_size` | CW/CCW受信、カーソルサイズ変更、終了時復元 |
+| `03_rotary_cursor_haptic` | `02`の動作に加え、変更時の短い振動 |
 
-必須演習には、配線、ビルド、書き込み、USB列挙、最小動作確認だけを含める。
+必須演習には、配線、ビルド、書き込み、USB列挙、最小動作確認だけを含める。`03_rotary_cursor_haptic`ではドライバー内蔵5V振動モジュールを使用し、VCC-GND間コンデンサーは追加せず、モーター本体をGPIOへ直接接続しない。
 
 PC側アプリやパラメーター変更を含む場合も、完成済みサンプルを実行するだけで基本動作へ到達できる構成にする。`02_rotary_cursor_size`はmacOS 26.5.2の1台で基本動作を確認したが、非公開APIを使用するため、別Mac、最低対応macOS、USB切断時復元を確認するまでは十分な予備時間と代替デモを用意する。
 
@@ -4104,6 +4116,21 @@ make restore
 ```
 
 復元対象がない場合のエラーと、復元失敗を区別する。参加者向け資料には、非公開CoreGraphics APIを使用するためmacOS更新で動作が変わる可能性があること、動作しない場合は`make app-dry-run`までを成功扱いとして完成済みデモへ切り替えることを記載する。
+
+## 27. macOSロータリー触覚演習の手順記載
+
+`03_rotary_cursor_haptic`は、先に`02_rotary_cursor_size`の成功を確認してから開始する。
+
+実行場所:
+
+```sh
+cd "$UIAP_WORKSPACE/exercises/03_rotary_cursor_haptic"
+```
+
+`make list`では`1209:C005`を1台検出する。`make app-dry-run`ではCW／CCWだけを確認し、振動しない。`make app`ではカーソルサイズの変更と再読取りに成功した時だけ、D6/A2 / PC4の振動モジュールが約60ms動作する。上限／下限、変更失敗時は振動しない。`Ctrl+C`終了時は起動前のカーソルサイズへ戻る。
+
+振動が連続する、発熱、異臭、USB切断、連続リセットが発生した場合は直ちにUSBを外し、振動モジュールのVCC、GND、INとモジュールの定格を確認する。
+
 
 ## 20. オンライン検証版のダウンロード進捗説明
 
@@ -4402,6 +4429,7 @@ test10の初版`doctor`は未使用の`NEWLIB?=/usr/include/newlib`既定値ま�
 00_onboard_led_blink
 01_macro_keyboard
 02_rotary_cursor_size
+03_rotary_cursor_haptic
 ```
 
 各演習で次を実行する。
@@ -4478,9 +4506,11 @@ PoC用一時値を検索する。
 ```text
 1209:C003
 1209:C004
+1209:C005
 1209:D003
 TEST3-001
 TEST7-001
+TEST8-001
 ```
 
 確認事項:
@@ -4523,10 +4553,10 @@ PoCの期待文字列を変更した場合は、ファームウェア、README�
 | UIAPduino | モジュール |
 |---|---|
 | GND | GND |
-| D8 / PC6 | S1 |
-| D9 / PC7 | S2 |
+| D9 / PC7 | S1 |
+| D8 / PC6 | S2 |
 | D5 / PC3 | KEY |
-| 5V | 5V |
+| 5V | 5V（赤い配線） |
 
 確認項目:
 
@@ -5143,6 +5173,30 @@ ch32funの具体的な入力値は`15_CH32FUN_SUBSET_RULES.md`を参照し、こ
 - [ ] USB切断または異常終了後に`make restore`で復元できる
 
 `0x2029`は未文書化動作であるため、静的検査だけで合格にせず、Windows更新後を含む各リリース候補で実機確認する。具体的な不具合と復旧は`60_TROUBLESHOOTING.md`、検証事実は`70_VALIDATION_RESULTS.md`を正本とする。
+
+## 2026-08-11 `03_rotary_cursor_haptic`追加検査
+
+- [ ] 必須演習が`00`、`01`、`02`、`03`の4フォルダーに分かれている
+- [ ] `02_rotary_cursor_size`に振動モジュール制御、Feature Report、PC4出力が含まれていない
+- [ ] `02_rotary_cursor_size`が従来の`1209:C004`、`UIAP Rotary Cursor`、`TEST7-001`を維持している
+- [ ] `03_rotary_cursor_haptic`が`1209:C005`、`UIAP Rotary Haptic`、`TEST8-001`を使用する
+- [ ] `03`の入力Report ID 1と触覚Feature Report ID 2をWindows/macOSホストが処理する
+- [ ] `03`でカーソルサイズ変更成功時だけ約60ms振動し、上限／下限とドライランでは振動しない
+- [ ] `02`と`03`の状態ファイル名が分離されている
+- [ ] 両演習でS1→D9 / PC7、S2→D8 / PC6の配線とファームウェア定義が一致する
+- [ ] `03`でVCC-GND間コンデンサーを追加しないこと、ドライバー内蔵モジュールを使用すること、GPIO直結禁止を参加者向け資料へ記載する
+- [ ] Windows/macOS配布キットの両方に`03_rotary_cursor_haptic/host/cursor_size_host.py`が含まれる
+- [ ] `03_rotary_cursor_haptic/host/win`と`host/mac`がソースおよび配布キットに存在しない
+
+## 2026-08-11 `02_rotary_cursor_size`ホスト共通化検査
+
+- [ ] `host/cursor_size_host.py`がWindows/macOS配布キットの両方に含まれる
+- [ ] `02_rotary_cursor_size/host/win`と`host/mac`がソースおよび配布キットに存在しない
+- [ ] `list`、`hidcheck`、`dry-run`、`app`、`restore`、`cursor-test`、`self-test`、`version`を両OSで同じ形式で実行できる
+- [ ] HID列挙、レポート解釈、イベントループが共通処理になっている
+- [ ] Windowsで従来のJSON状態ファイルと旧形式の移行が機能する
+- [ ] macOSで従来の倍率状態ファイルを復元できる
+- [ ] Windows/macOS実機でカーソルサイズ変更と`Ctrl+C`終了時の復元を確認する
 
 <!-- Source: 60_TROUBLESHOOTING.md -->
 
@@ -6144,18 +6198,20 @@ make restore
 workspace/exercises/<exercise-name>/host/<program>.py
 ```
 
-OS固有ホストの場合:
+OS固有ホストをファイル分割する場合:
 
 ```text
 workspace/exercises/<exercise-name>/host/<platform>/<program>.py
 ```
 
-ロータリーエンコーダー演習:
+`02_rotary_cursor_size`と`03_rotary_cursor_haptic`の共通ホスト:
 
 ```text
-workspace/exercises/02_rotary_cursor_size/host/win/cursor_size_host.py
-workspace/exercises/02_rotary_cursor_size/host/mac/cursor_size_host.py
+workspace/exercises/02_rotary_cursor_size/host/cursor_size_host.py
+workspace/exercises/03_rotary_cursor_haptic/host/cursor_size_host.py
 ```
+
+これらのホストは起動時にWindows/macOSバックエンドを選択する。`host/win`または`host/mac`を探す必要はない。
 
 次の旧パスを実行時の標準として使用しない。
 
@@ -6236,10 +6292,10 @@ hidapi import: PASS
 | UIAPduino | モジュール | 用途 |
 |---|---|---|
 | GND | GND | 共通GND |
-| D8 / PC6 | S1 | 回転信号1 |
-| D9 / PC7 | S2 | 回転信号2 |
+| D9 / PC7 | S1 | 回転信号1 |
+| D8 / PC6 | S2 | 回転信号2 |
 | D5 / PC3 | KEY | センタースイッチ |
-| 5V | 5V | モジュール電源 |
+| 5V | 5V | モジュール電源。赤い配線 |
 
 注意:
 
@@ -6252,7 +6308,7 @@ hidapi import: PASS
 
 - 基板表記のGND、S1、S2、KEY、5Vを取り違えていないか
 - GNDと5Vが正しく接続されているか
-- S1がD8、S2がD9へ接続されているか
+- S1がD9 / PC7、S2がD8 / PC6へ接続されているか
 - D8とD9が入力として初期化されているか
 - Vendor-defined HIDデバイスが列挙されているか
 - 演習ディレクトリの`make app-dry-run`で回転イベントが表示されるか
@@ -7261,6 +7317,8 @@ Windowsホストの`decode_delta`は、常に先頭バイトを移動量とし�
 
 修正後、同じMac test13ファームウェアをWindowsへ接続し、静止中は値が表示されず、回転時だけ期待するCW／CCWが表示されることを利用者実機で確認した。ファームウェアの再書き込みは不要である。
 
+2026-08-11追加の`03_rotary_cursor_haptic`は3バイトの`[Report ID 1, delta, sequence]`を使用する。`03`のホストは3バイト時だけReport IDを読み飛ばし、コピー元の`02`を含む旧2バイト形式では従来どおり先頭をdeltaとして扱う。
+
 <!-- Source: 70_VALIDATION_RESULTS.md -->
 
 # 検証結果
@@ -7883,8 +7941,8 @@ TEST7-001
 | Windowsポテンショメーター＋振動統合PoC v1.0.8 | 主要動作合格 |
 | ch32fun許可リストサブセット | 方針決定・未実装 |
 | 最終オフライン参加者向けZIP | 未確認 |
-| macOS Apple Silicon | 必須演習3本合格。ロータリーカーソル統合動作と振動モーターHID PoCの基本動作を確認 |
-| ワークショップ必須演習としての採用 | `00`、`01`、`02`を採用済み |
+| macOS Apple Silicon | `00`、`01`、`02`の当時の3演習は合格。現行`03_rotary_cursor_haptic`と統合後Pythonホストは実機再確認待ち |
+| ワークショップ必須演習としての採用 | `00`、`01`、`02`、`03`を採用済み |
 
 PoC合格を、そのまま最終リリース合格または参加者向け採用済みとして扱わない。
 
@@ -8570,7 +8628,7 @@ USB Product Name: UIAP Macro Keyboard Test
 | `01_macro_keyboard` | 必須 | 合格 | 合格 |
 | `02_rotary_cursor_size` | 必須 | 合格 | 合格 |
 
-`02_rotary_cursor_size`のmacOS版は、ネイティブIOKit HIDホストと非公開CoreGraphicsカーソルAPIを使用する検証実装である。test12でCW／CCW、カーソルサイズ変更、`Ctrl+C`復元を利用者実機確認したため、macOS側の必須演習3本を当該実機では合格とする。USB切断時復元、別Mac・別ユーザー、最低対応macOS、将来互換性は未確認である。
+test12当時の`02_rotary_cursor_size` macOS版は、ネイティブIOKit HIDホストと非公開CoreGraphicsカーソルAPIを使用する検証実装である。test12でCW／CCW、カーソルサイズ変更、`Ctrl+C`復元を利用者実機確認したため、当時のmacOS側必須演習3本を当該実機では合格とする。この結果は、2026-08-11に統合した共通Pythonホストの実機合格を意味しない。USB切断時復元、別Mac・別ユーザー、最低対応macOS、将来互換性は未確認である。
 
 ## 21. macOSロータリーカーソル test11・test12実機検証
 
@@ -9246,6 +9304,54 @@ PC3の内部プルアップを使用し、GNDとKEYの2本だけを接続した�
 - 5V未接続でのKEY入力: 合格
 - GND/KEYの2本配線による`01_macro_keyboard`: 利用者実機合格
 - `01`で2本を接続し、`02`でS1/S2/5Vを追加する段階配線: 採用可能
+
+---
+
+## 2026-08-11 `02_rotary_cursor_size`共通ホスト静的確認
+
+### 変更
+
+- Windows/macOS別のPythonホストを`host/cursor_size_host.py`へ統合
+- 共通HID処理とCLIから、実行時にWindows/macOSのポインター設定バックエンドを選択
+- 従来のWindows/macOS状態ファイル形式を維持
+
+### 結果
+
+- Python構文検査: 合格
+- Windowsバックエンドのプロトコル、カーソルサイズ変換、状態移行自己テスト: 合格
+- `version`コマンド: 合格（`uiap-cursor-host.py 0.3.0 win32 python`）
+- Windows/macOS配布ZIPの構成を含む既存テスト11件: 合格
+- 同梱MakeとPythonによる`host-doctor`: 合格
+- `app-dry-run`と`cursor-test`のMakeターゲット展開: 合格
+
+### 未確認
+
+- macOS実機でのHID列挙、ABI判定、サイズ変更と終了時復元
+
+### Windows実機追試
+
+利用者から、統合後の共通ホストがWindowsで想定どおり動作したとの報告を受けた。統合後ホストのWindows実機動作を合格とする。今回は詳細ログを収録していないため、個々のカーソル値や状態ファイル内容は記録しない。
+
+---
+
+## 2026-08-11 `03_rotary_cursor_haptic`共通ホスト静的確認
+
+### 変更
+
+- Windows/macOS別ホストを`host/cursor_size_host.py`へ統合
+- `02`と同じOSバックエンド構成へ、Report ID 1の入力とFeature Report ID 2の触覚指示を追加
+- `03`専用のWindows/macOS状態ファイル名を維持
+
+### 結果
+
+- Python構文検査: 合格
+- Windowsでの入力Report ID・触覚コマンド・カーソル変換・状態移行自己テスト: 合格
+- Windows/macOS配布ZIPの共通ホスト構成: 合格
+- 同梱Makeによる`host-doctor`と`app-dry-run`ターゲット展開: 合格
+
+### 未確認
+
+- Windows/macOS実機でのカーソル変更、振動、終了時復元
 
 <!-- Source: 90_DECISIONS.md -->
 
@@ -10359,7 +10465,7 @@ Windows test18では`make app-dry-run`が成功し、HID受信まで正常だっ
 - Windows版の現行標準は、MSYS2を使用しないxPackベースのWindowsネイティブ構成とする。過去のMSYS2/UCRT64記述は検証履歴としてのみ残し、現行手順、Makefile、起動処理、リリース判定へ混用しない。
 - 最終参加者向けDevkitもオンライン・ブートストラップ方式とする。初回`setup`ではインターネット接続を使用し、固定URL、固定バージョン、アーカイブ形式、SHA-256で入力を管理する。
 - Devkitのバージョン番号は`MAJOR.MINOR.PATCH`の3桁だけで管理する。`-rc1`、`-testN`などの接尾辞を使用しない。
-- macOS版にもPythonとhidapiを含める。`02_rotary_cursor_size`の現行ネイティブarm64ホスト自体がPython/hidapiへ依存しないこととは区別する。
+- macOS版にもPythonとhidapiを含める。当時の`02_rotary_cursor_size`ネイティブarm64ホスト自体がPython/hidapiへ依存しないこととは区別する。このホスト方式は2026-08-11の共通Pythonホスト決定で更新済みである。
 - `ch32fun`の許可リスト方式と`rv003usb`の配布形態は、現在採用している形式を維持する。
 - Windowsの`SystemParametersInfoW`アクション`0x2029`とmacOSの非公開CoreGraphics APIは、互換性リスクを明記し、各リリースで回帰検証することを条件に今回の参加者向けDevkitでの使用を許容する。
 - macOSの正式対応範囲はApple SiliconのmacOS 26以降とする。macOS 15はサポート対象外とする。
@@ -10463,16 +10569,97 @@ Windows test18では`make app-dry-run`が成功し、HID受信まで正常だっ
 - 2026-08-01の5本共通配線を改め、参加者向けの現行標準は段階配線とする
 - `01_macro_keyboard`ではGND→GND、KEY→D5 / PC3の2本だけを接続する
 - PC3の内部プルアップを使用するため、`01`ではS1、S2、5Vを接続しない
-- `02_rotary_cursor_size`へ進むとき、USBを外してS1→D8 / PC6、S2→D9 / PC7、5V→5Vの3本を追加する
+- `02_rotary_cursor_size`へ進むとき、USBを外してS1→D9 / PC7、S2→D8 / PC6、5V→5V（赤い配線）の3本を追加する
 - `02`の5V接続は、UIAPduinoのマイクロコントローラー電源が初期状態の5V設定であることを前提とする
 
 ### 根拠
 
 - 同じモジュールと既存の共通ファームウェアを使用し、GND/KEYの2本だけで`01_macro_keyboard`が従来どおり動作することを利用者実機で確認した
 - 接続本数を2本から5本へ増やすことで、センタースイッチ入力から2相信号による回転検出へ段階的に学習できる
-- ファームウェアのGPIO割り当てとHID処理は変更不要である
+- S1をD9、S2をD8へ割り当てることで、指定モジュールとUIAPduino間の配線が交差しない
+- ファームウェアはS1をPC7、S2をPC6へ割り当て直す。S1/S2の論理上の順序は維持するため、回転方向の定数とHID処理は変更しない
 
 ### 検証状態
 
 - `01_macro_keyboard`のGND/KEY 2本配線: 利用者実機合格
 - `02_rotary_cursor_size`の3本追加後の再確認: 既存の5本配線実績あり。段階手順としての再確認待ち
+
+---
+
+## 2026-08-11 `03_rotary_cursor_haptic`の必須演習追加
+
+### 決定
+
+- 振動なしの`02_rotary_cursor_size`は従来の独立した必須演習として維持する
+- `02_rotary_cursor_size`の内容を新しい`03_rotary_cursor_haptic`へコピーし、振動による触覚フィードバックだけを`03`へ追加する
+- `03`ではドライバー回路内蔵の5V振動モーターモジュールを使用し、VCC→5V、GND→GND、IN→D6/A2 / PC4とする
+- 今回の`03`では振動モジュールのVCC-GND間コンデンサーを追加せず、モーター本体をGPIOへ直接接続しない
+- `03`のUSB識別子は暫定VID:PID `1209:C005`、Product `UIAP Rotary Haptic`、Serial `TEST8-001`とする
+- `03`のHID入力を`[Report ID 1, delta, sequence]`とし、触覚指示にはFeature Report `[Report ID 2, 1]`を使用する
+- ホストアプリがOSのカーソルサイズを変更して再読取りに成功した時だけ、約60msの振動を指示する
+- 上限／下限、`make app-dry-run`、カーソル変更失敗時は振動させない
+- 起動時はPC4をLowとし、指示後はファームウェア側のタイマーで必ずLowへ戻す
+
+### 根拠
+
+- 振動なしのカーソル演習と触覚追加演習を分離し、参加者が機能追加の差分を段階的に理解できる
+- USB識別子と状態ファイルを分けることで、`02`のファームウェアや復元状態との取り違えを検出しやすくする
+- 既存の`vibration_motor_hid` PoCで、PC4とドライバー内蔵5V振動モジュールによる制御をWindows/macOSで確認済みである
+
+### 検証状態
+
+- `02_rotary_cursor_size`の振動追加前状態への復元: 完了
+- Windows同梱ツールチェーンによる`02`ビルド: 合格（Flash 2,340 bytes、RAM 200 bytes）
+- Windows同梱ツールチェーンによる`03`ビルド: 合格（Flash 2,640 bytes、RAM 204 bytes）
+- `02`と`03`のWindows/macOSホストPython構文検査: 合格
+- `02`の従来プロトコル自己テストと`03`の入力Report ID・触覚コマンド自己テスト: 合格
+- 4演習のWindows/macOS配布キット生成を含む既存テスト11件: 合格
+- `03_rotary_cursor_haptic`のWindows/macOS実機動作: 再確認待ち
+
+---
+
+## 2026-08-11 `02_rotary_cursor_size`ホストのWindows/macOS共通化
+
+### 決定
+
+- `host/win/cursor_size_host.py`と`host/mac/cursor_size_host.py`を廃止し、`host/cursor_size_host.py`へ統合する
+- HID列挙、デバイス選択、レポート解釈、イベントループ、終了時復元、CLIを共通処理とする
+- ポインター設定処理だけを`WindowsCursorBackend`と`MacCursorBackend`へ分離し、実行時にOSを選択する
+- コマンドを`list`、`hidcheck`、`dry-run`、`app`、`restore`、`cursor-test`、`self-test`、`version`へ統一する
+- WindowsのJSON状態ファイルと旧形式移行、macOSの倍率状態ファイルは従来形式を維持する
+- この時点では`03_rotary_cursor_haptic`を統合対象外として`host/win`と`host/mac`を維持した。後続の「`03_rotary_cursor_haptic`ホストのWindows/macOS共通化」で更新済みである
+
+### 根拠
+
+- USB HIDプロトコルと操作手順は両OSで同一であり、OS差はポインター設定APIへ限定できる
+- 共通処理を一か所にすることで、修正時のWindows/macOS間の差異と配布漏れを減らせる
+- 既存の状態ファイル形式を維持すれば、更新前に保存された復元情報を継続利用できる
+
+### 検証状態
+
+- Python構文検査: 合格
+- Windowsバックエンドのプロトコル、サイズ変換、状態移行自己テスト: 合格
+- Windowsでのバージョンコマンド: 合格
+- Windows/macOS配布ZIPの構成を含む既存テスト11件: 合格
+- 同梱MakeとPythonによる`host-doctor`および主要ターゲット展開: 合格
+- Windows実機での統合後ホストの想定動作: 利用者実機合格
+- macOS実機でのサイズ変更と終了時復元: 再確認待ち
+
+---
+
+## 2026-08-11 `03_rotary_cursor_haptic`ホストのWindows/macOS共通化
+
+### 決定
+
+- `host/win/cursor_size_host.py`と`host/mac/cursor_size_host.py`を廃止し、`host/cursor_size_host.py`へ統合する
+- `02_rotary_cursor_size`と同じ共通HID・CLI・OSバックエンド構成を使用する
+- `03`固有のPID `C005`、入力Report ID 1、触覚Feature Report ID 2、専用状態ファイルを維持する
+- OSのカーソル変更と再読取りが成功した時だけ振動を指示する
+- 上限／下限、ドライラン、カーソル変更失敗時は振動させない
+
+### 検証状態
+
+- Python構文検査とWindows自己テスト: 合格
+- Windows/macOS配布ZIP構成を含む既存テスト11件: 合格
+- 同梱Makeによる`host-doctor`と主要ターゲット展開: 合格
+- Windows/macOS実機でのカーソル変更・振動・終了時復元: 再確認待ち

@@ -108,8 +108,7 @@ uiap-devkit-win64/
         ├── 01_macro_keyboard/
         ├── 02_rotary_cursor_size/
         │   └── host/
-        └── 03_pot_cursor_haptic/
-            ├── docs/
+        └── 03_rotary_cursor_haptic/
             └── host/
 ```
 
@@ -346,7 +345,7 @@ Windows Command Promptの例:
 cd /d "%UIAP_WORKSPACE%\exercises\00_onboard_led_blink"
 cd /d "%UIAP_WORKSPACE%\exercises\01_macro_keyboard"
 cd /d "%UIAP_WORKSPACE%\exercises\02_rotary_cursor_size"
-cd /d "%UIAP_WORKSPACE%\exercises\03_pot_cursor_haptic"
+cd /d "%UIAP_WORKSPACE%\exercises\03_rotary_cursor_haptic"
 ```
 
 macOSの例:
@@ -355,7 +354,7 @@ macOSの例:
 cd "$UIAP_WORKSPACE/exercises/00_onboard_led_blink"
 cd "$UIAP_WORKSPACE/exercises/01_macro_keyboard"
 cd "$UIAP_WORKSPACE/exercises/02_rotary_cursor_size"
-cd "$UIAP_WORKSPACE/exercises/03_pot_cursor_haptic"
+cd "$UIAP_WORKSPACE/exercises/03_rotary_cursor_haptic"
 ```
 
 手順書では、対象演習ごとに実行する`cd`を明記する。参加者に演習番号や別名コマンドを暗記させない。
@@ -492,7 +491,7 @@ workspace/exercises/
 ├── 00_onboard_led_blink/
 ├── 01_macro_keyboard/
 ├── 02_rotary_cursor_size/
-└── 03_pot_cursor_haptic/
+└── 03_rotary_cursor_haptic/
 ```
 
 役割:
@@ -501,12 +500,12 @@ workspace/exercises/
 |---|---|
 | `00_onboard_led_blink` | 必須。基板上LEDとビルド・書き込み確認 |
 | `01_macro_keyboard` | 必須。5ピンエンコーダーモジュールのGND/KEYだけを接続するUSB HIDキーボード |
-| `02_rotary_cursor_size` | 必須。同じモジュールへS1/S2/5Vを追加する回転入力とOS別ホストアプリ |
-| `03_pot_cursor_haptic` | PoC。RV09ポテンショメーター、Windowsポインターサイズ、振動フィードバック |
+| `02_rotary_cursor_size` | 必須。同じモジュールへS1/S2/5Vを追加する回転入力と共通ホストアプリ |
+| `03_rotary_cursor_haptic` | 必須。`02`へ振動モジュールを追加する触覚フィードバック |
 
-`00_onboard_led_blink`、`01_macro_keyboard`、`02_rotary_cursor_size`はワークショップ必須演習として採用済みである。`03_pot_cursor_haptic`はWindows実機PoCで、v1.0.8の統合動作とADC安定化を確認済みだが、必須演習には採用していない。
+4演習すべてをワークショップ必須演習として採用する。`02_rotary_cursor_size`は振動なしの基本演習として維持し、`03_rotary_cursor_haptic`で触覚フィードバックを追加する。
 
-3演習のファームウェアとビルド設定は演習直下へ置き、Windows/macOSで共用する。`02_rotary_cursor_size`はOS固有のポインター設定処理だけを`host/win`と`host/mac`へ分ける。
+4演習のファームウェアとビルド設定は演習直下へ置き、Windows/macOSで共用する。`02_rotary_cursor_size`と`03_rotary_cursor_haptic`は、それぞれ単一の`host/cursor_size_host.py`内でWindows/macOSバックエンドを実行時に選択する。
 
 各演習は、原則として次を含む。
 
@@ -525,28 +524,21 @@ workspace/exercises/
 
 USBを使用しない演習では`usb_config.h`を省略してよい。PC側プログラムを使用しない演習では`host`を省略する。
 
-`03_pot_cursor_haptic`の確認済み構成:
+`03_rotary_cursor_haptic`の構成:
 
 ```text
-workspace/exercises/03_pot_cursor_haptic/
+workspace/exercises/03_rotary_cursor_haptic/
 ├── README.md
 ├── Makefile
-├── pot_cursor_haptic.c
+├── rotary_cursor_size.c
 ├── funconfig.h
 ├── usb_config.h
-├── docs/
-│   ├── VALIDATION.md
-│   └── WIRING.md
 └── host/
-    ├── pot_cursor_host.py
-    ├── hidcheck.py
-    ├── haptic_test.py
-    ├── cursor_test.py
-    ├── restore_cursor.py
-    └── 補助モジュール
+    ├── README.md
+    └── cursor_size_host.py
 ```
 
-この演習はWindows 11 x64向けPoCであり、参加者向け必須演習としての採用は未決定である。
+この演習は`02_rotary_cursor_size`を複製して触覚フィードバックを追加した必須演習である。
 
 ### 8.4 各演習の`host`
 
@@ -563,8 +555,7 @@ workspace/exercises/02_rotary_cursor_size/
 ├── usb_config.h
 └── host/
     ├── README.md
-    ├── cursor_size_host.py       # Windows版
-    └── cursor_size_host.c        # macOS Apple Silicon版
+    └── cursor_size_host.py       # Windows/macOS共通、実行時にバックエンド選択
 ```
 
 規則:
@@ -575,7 +566,7 @@ workspace/exercises/02_rotary_cursor_size/
 - 演習間で別演習の`host`を直接参照しない
 - Devkit全体で使用する診断コードは`scripts/python`へ配置する
 - Pythonホストアプリは`runtime/python`を使用し、システムPythonへ依存しない
-- macOS版DevkitにもPython・hidapiを含める。ただし`02_rotary_cursor_size`の現行ホストはネイティブarm64 CLIであり、当該演習の実行自体はPython・hidapiへ依存しない
+- macOS版DevkitにもPython・hidapiを含め、`02_rotary_cursor_size`の共通Pythonホストで使用する
 - OS固有コードが必要な場合も、当該演習の`host`配下で共通処理と分離する
 
 ### 8.5 `workspace/poc`

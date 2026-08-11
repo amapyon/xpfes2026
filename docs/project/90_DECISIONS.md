@@ -1108,7 +1108,7 @@ Windows test18では`make app-dry-run`が成功し、HID受信まで正常だっ
 - Windows版の現行標準は、MSYS2を使用しないxPackベースのWindowsネイティブ構成とする。過去のMSYS2/UCRT64記述は検証履歴としてのみ残し、現行手順、Makefile、起動処理、リリース判定へ混用しない。
 - 最終参加者向けDevkitもオンライン・ブートストラップ方式とする。初回`setup`ではインターネット接続を使用し、固定URL、固定バージョン、アーカイブ形式、SHA-256で入力を管理する。
 - Devkitのバージョン番号は`MAJOR.MINOR.PATCH`の3桁だけで管理する。`-rc1`、`-testN`などの接尾辞を使用しない。
-- macOS版にもPythonとhidapiを含める。`02_rotary_cursor_size`の現行ネイティブarm64ホスト自体がPython/hidapiへ依存しないこととは区別する。
+- macOS版にもPythonとhidapiを含める。当時の`02_rotary_cursor_size`ネイティブarm64ホスト自体がPython/hidapiへ依存しないこととは区別する。このホスト方式は2026-08-11の共通Pythonホスト決定で更新済みである。
 - `ch32fun`の許可リスト方式と`rv003usb`の配布形態は、現在採用している形式を維持する。
 - Windowsの`SystemParametersInfoW`アクション`0x2029`とmacOSの非公開CoreGraphics APIは、互換性リスクを明記し、各リリースで回帰検証することを条件に今回の参加者向けDevkitでの使用を許容する。
 - macOSの正式対応範囲はApple SiliconのmacOS 26以降とする。macOS 15はサポート対象外とする。
@@ -1212,16 +1212,97 @@ Windows test18では`make app-dry-run`が成功し、HID受信まで正常だっ
 - 2026-08-01の5本共通配線を改め、参加者向けの現行標準は段階配線とする
 - `01_macro_keyboard`ではGND→GND、KEY→D5 / PC3の2本だけを接続する
 - PC3の内部プルアップを使用するため、`01`ではS1、S2、5Vを接続しない
-- `02_rotary_cursor_size`へ進むとき、USBを外してS1→D8 / PC6、S2→D9 / PC7、5V→5Vの3本を追加する
+- `02_rotary_cursor_size`へ進むとき、USBを外してS1→D9 / PC7、S2→D8 / PC6、5V→5V（赤い配線）の3本を追加する
 - `02`の5V接続は、UIAPduinoのマイクロコントローラー電源が初期状態の5V設定であることを前提とする
 
 ### 根拠
 
 - 同じモジュールと既存の共通ファームウェアを使用し、GND/KEYの2本だけで`01_macro_keyboard`が従来どおり動作することを利用者実機で確認した
 - 接続本数を2本から5本へ増やすことで、センタースイッチ入力から2相信号による回転検出へ段階的に学習できる
-- ファームウェアのGPIO割り当てとHID処理は変更不要である
+- S1をD9、S2をD8へ割り当てることで、指定モジュールとUIAPduino間の配線が交差しない
+- ファームウェアはS1をPC7、S2をPC6へ割り当て直す。S1/S2の論理上の順序は維持するため、回転方向の定数とHID処理は変更しない
 
 ### 検証状態
 
 - `01_macro_keyboard`のGND/KEY 2本配線: 利用者実機合格
 - `02_rotary_cursor_size`の3本追加後の再確認: 既存の5本配線実績あり。段階手順としての再確認待ち
+
+---
+
+## 2026-08-11 `03_rotary_cursor_haptic`の必須演習追加
+
+### 決定
+
+- 振動なしの`02_rotary_cursor_size`は従来の独立した必須演習として維持する
+- `02_rotary_cursor_size`の内容を新しい`03_rotary_cursor_haptic`へコピーし、振動による触覚フィードバックだけを`03`へ追加する
+- `03`ではドライバー回路内蔵の5V振動モーターモジュールを使用し、VCC→5V、GND→GND、IN→D6/A2 / PC4とする
+- 今回の`03`では振動モジュールのVCC-GND間コンデンサーを追加せず、モーター本体をGPIOへ直接接続しない
+- `03`のUSB識別子は暫定VID:PID `1209:C005`、Product `UIAP Rotary Haptic`、Serial `TEST8-001`とする
+- `03`のHID入力を`[Report ID 1, delta, sequence]`とし、触覚指示にはFeature Report `[Report ID 2, 1]`を使用する
+- ホストアプリがOSのカーソルサイズを変更して再読取りに成功した時だけ、約60msの振動を指示する
+- 上限／下限、`make app-dry-run`、カーソル変更失敗時は振動させない
+- 起動時はPC4をLowとし、指示後はファームウェア側のタイマーで必ずLowへ戻す
+
+### 根拠
+
+- 振動なしのカーソル演習と触覚追加演習を分離し、参加者が機能追加の差分を段階的に理解できる
+- USB識別子と状態ファイルを分けることで、`02`のファームウェアや復元状態との取り違えを検出しやすくする
+- 既存の`vibration_motor_hid` PoCで、PC4とドライバー内蔵5V振動モジュールによる制御をWindows/macOSで確認済みである
+
+### 検証状態
+
+- `02_rotary_cursor_size`の振動追加前状態への復元: 完了
+- Windows同梱ツールチェーンによる`02`ビルド: 合格（Flash 2,340 bytes、RAM 200 bytes）
+- Windows同梱ツールチェーンによる`03`ビルド: 合格（Flash 2,640 bytes、RAM 204 bytes）
+- `02`と`03`のWindows/macOSホストPython構文検査: 合格
+- `02`の従来プロトコル自己テストと`03`の入力Report ID・触覚コマンド自己テスト: 合格
+- 4演習のWindows/macOS配布キット生成を含む既存テスト11件: 合格
+- `03_rotary_cursor_haptic`のWindows/macOS実機動作: 再確認待ち
+
+---
+
+## 2026-08-11 `02_rotary_cursor_size`ホストのWindows/macOS共通化
+
+### 決定
+
+- `host/win/cursor_size_host.py`と`host/mac/cursor_size_host.py`を廃止し、`host/cursor_size_host.py`へ統合する
+- HID列挙、デバイス選択、レポート解釈、イベントループ、終了時復元、CLIを共通処理とする
+- ポインター設定処理だけを`WindowsCursorBackend`と`MacCursorBackend`へ分離し、実行時にOSを選択する
+- コマンドを`list`、`hidcheck`、`dry-run`、`app`、`restore`、`cursor-test`、`self-test`、`version`へ統一する
+- WindowsのJSON状態ファイルと旧形式移行、macOSの倍率状態ファイルは従来形式を維持する
+- この時点では`03_rotary_cursor_haptic`を統合対象外として`host/win`と`host/mac`を維持した。後続の「`03_rotary_cursor_haptic`ホストのWindows/macOS共通化」で更新済みである
+
+### 根拠
+
+- USB HIDプロトコルと操作手順は両OSで同一であり、OS差はポインター設定APIへ限定できる
+- 共通処理を一か所にすることで、修正時のWindows/macOS間の差異と配布漏れを減らせる
+- 既存の状態ファイル形式を維持すれば、更新前に保存された復元情報を継続利用できる
+
+### 検証状態
+
+- Python構文検査: 合格
+- Windowsバックエンドのプロトコル、サイズ変換、状態移行自己テスト: 合格
+- Windowsでのバージョンコマンド: 合格
+- Windows/macOS配布ZIPの構成を含む既存テスト11件: 合格
+- 同梱MakeとPythonによる`host-doctor`および主要ターゲット展開: 合格
+- Windows実機での統合後ホストの想定動作: 利用者実機合格
+- macOS実機でのサイズ変更と終了時復元: 再確認待ち
+
+---
+
+## 2026-08-11 `03_rotary_cursor_haptic`ホストのWindows/macOS共通化
+
+### 決定
+
+- `host/win/cursor_size_host.py`と`host/mac/cursor_size_host.py`を廃止し、`host/cursor_size_host.py`へ統合する
+- `02_rotary_cursor_size`と同じ共通HID・CLI・OSバックエンド構成を使用する
+- `03`固有のPID `C005`、入力Report ID 1、触覚Feature Report ID 2、専用状態ファイルを維持する
+- OSのカーソル変更と再読取りが成功した時だけ振動を指示する
+- 上限／下限、ドライラン、カーソル変更失敗時は振動させない
+
+### 検証状態
+
+- Python構文検査とWindows自己テスト: 合格
+- Windows/macOS配布ZIP構成を含む既存テスト11件: 合格
+- 同梱Makeによる`host-doctor`と主要ターゲット展開: 合格
+- Windows/macOS実機でのカーソル変更・振動・終了時復元: 再確認待ち

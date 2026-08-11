@@ -55,6 +55,7 @@ class BuildDevkitTests(unittest.TestCase):
                         "00_onboard_led_blink": ("Makefile", "onboard_led_blink.c"),
                         "01_macro_keyboard": ("Makefile", "macro_keyboard.c", "usb_config.h", "host/hidcheck.py"),
                         "02_rotary_cursor_size": ("Makefile", "rotary_cursor_size.c", "usb_config.h"),
+                        "03_rotary_cursor_haptic": ("Makefile", "rotary_cursor_size.c", "usb_config.h"),
                     }
                     for exercise, required in common_files.items():
                         base = f"uiap-devkit-{architecture}/workspace/exercises/{exercise}"
@@ -71,6 +72,13 @@ class BuildDevkitTests(unittest.TestCase):
                     )
                     self.assertFalse(any(name.startswith(f"{rotary_host}/win/") for name in names))
                     self.assertFalse(any(name.startswith(f"{rotary_host}/mac/") for name in names))
+                    haptic_host = (
+                        f"uiap-devkit-{architecture}/workspace/exercises/"
+                        "03_rotary_cursor_haptic/host"
+                    )
+                    self.assertIn(f"{haptic_host}/cursor_size_host.py", names)
+                    self.assertFalse(any(name.startswith(f"{haptic_host}/win/") for name in names))
+                    self.assertFalse(any(name.startswith(f"{haptic_host}/mac/") for name in names))
                     self.assertFalse(any("\\" in item for item in names))
 
     def test_distribution_version_metadata_matches(self) -> None:
@@ -190,6 +198,7 @@ class UnifiedRepositoryTests(unittest.TestCase):
             "00_onboard_led_blink": ("onboard_led_blink.c",),
             "01_macro_keyboard": ("macro_keyboard.c", "usb_config.h", "host/hidcheck.py"),
             "02_rotary_cursor_size": ("rotary_cursor_size.c", "usb_config.h"),
+            "03_rotary_cursor_haptic": ("rotary_cursor_size.c", "usb_config.h"),
         }
         for exercise, files in requirements.items():
             root = ROOT / "workspace" / "exercises" / exercise
@@ -203,6 +212,16 @@ class UnifiedRepositoryTests(unittest.TestCase):
         self.assertTrue((rotary_host / "cursor_size_host.py").is_file())
         self.assertFalse((rotary_host / "win").exists())
         self.assertFalse((rotary_host / "mac").exists())
+
+        haptic_host = ROOT / "workspace" / "exercises" / "03_rotary_cursor_haptic" / "host"
+        self.assertTrue((haptic_host / "cursor_size_host.py").is_file())
+        self.assertFalse((haptic_host / "win").exists())
+        self.assertFalse((haptic_host / "mac").exists())
+
+        plain = (ROOT / "workspace" / "exercises" / "02_rotary_cursor_size" / "rotary_cursor_size.c").read_text()
+        haptic = (ROOT / "workspace" / "exercises" / "03_rotary_cursor_haptic" / "rotary_cursor_size.c").read_text()
+        self.assertNotIn("HAPTIC_PIN", plain)
+        self.assertIn("HAPTIC_PIN", haptic)
 
     def test_macos_setup_builds_write_tool(self) -> None:
         setup = (ROOT / "scripts" / "setup.sh").read_text(encoding="utf-8")

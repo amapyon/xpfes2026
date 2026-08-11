@@ -618,8 +618,8 @@ TEST7-001
 | Windowsポテンショメーター＋振動統合PoC v1.0.8 | 主要動作合格 |
 | ch32fun許可リストサブセット | 方針決定・未実装 |
 | 最終オフライン参加者向けZIP | 未確認 |
-| macOS Apple Silicon | 必須演習3本合格。ロータリーカーソル統合動作と振動モーターHID PoCの基本動作を確認 |
-| ワークショップ必須演習としての採用 | `00`、`01`、`02`を採用済み |
+| macOS Apple Silicon | `00`、`01`、`02`の当時の3演習は合格。現行`03_rotary_cursor_haptic`と統合後Pythonホストは実機再確認待ち |
+| ワークショップ必須演習としての採用 | `00`、`01`、`02`、`03`を採用済み |
 
 PoC合格を、そのまま最終リリース合格または参加者向け採用済みとして扱わない。
 
@@ -1305,7 +1305,7 @@ USB Product Name: UIAP Macro Keyboard Test
 | `01_macro_keyboard` | 必須 | 合格 | 合格 |
 | `02_rotary_cursor_size` | 必須 | 合格 | 合格 |
 
-`02_rotary_cursor_size`のmacOS版は、ネイティブIOKit HIDホストと非公開CoreGraphicsカーソルAPIを使用する検証実装である。test12でCW／CCW、カーソルサイズ変更、`Ctrl+C`復元を利用者実機確認したため、macOS側の必須演習3本を当該実機では合格とする。USB切断時復元、別Mac・別ユーザー、最低対応macOS、将来互換性は未確認である。
+test12当時の`02_rotary_cursor_size` macOS版は、ネイティブIOKit HIDホストと非公開CoreGraphicsカーソルAPIを使用する検証実装である。test12でCW／CCW、カーソルサイズ変更、`Ctrl+C`復元を利用者実機確認したため、当時のmacOS側必須演習3本を当該実機では合格とする。この結果は、2026-08-11に統合した共通Pythonホストの実機合格を意味しない。USB切断時復元、別Mac・別ユーザー、最低対応macOS、将来互換性は未確認である。
 
 ## 21. macOSロータリーカーソル test11・test12実機検証
 
@@ -1981,3 +1981,51 @@ PC3の内部プルアップを使用し、GNDとKEYの2本だけを接続した�
 - 5V未接続でのKEY入力: 合格
 - GND/KEYの2本配線による`01_macro_keyboard`: 利用者実機合格
 - `01`で2本を接続し、`02`でS1/S2/5Vを追加する段階配線: 採用可能
+
+---
+
+## 2026-08-11 `02_rotary_cursor_size`共通ホスト静的確認
+
+### 変更
+
+- Windows/macOS別のPythonホストを`host/cursor_size_host.py`へ統合
+- 共通HID処理とCLIから、実行時にWindows/macOSのポインター設定バックエンドを選択
+- 従来のWindows/macOS状態ファイル形式を維持
+
+### 結果
+
+- Python構文検査: 合格
+- Windowsバックエンドのプロトコル、カーソルサイズ変換、状態移行自己テスト: 合格
+- `version`コマンド: 合格（`uiap-cursor-host.py 0.3.0 win32 python`）
+- Windows/macOS配布ZIPの構成を含む既存テスト11件: 合格
+- 同梱MakeとPythonによる`host-doctor`: 合格
+- `app-dry-run`と`cursor-test`のMakeターゲット展開: 合格
+
+### 未確認
+
+- macOS実機でのHID列挙、ABI判定、サイズ変更と終了時復元
+
+### Windows実機追試
+
+利用者から、統合後の共通ホストがWindowsで想定どおり動作したとの報告を受けた。統合後ホストのWindows実機動作を合格とする。今回は詳細ログを収録していないため、個々のカーソル値や状態ファイル内容は記録しない。
+
+---
+
+## 2026-08-11 `03_rotary_cursor_haptic`共通ホスト静的確認
+
+### 変更
+
+- Windows/macOS別ホストを`host/cursor_size_host.py`へ統合
+- `02`と同じOSバックエンド構成へ、Report ID 1の入力とFeature Report ID 2の触覚指示を追加
+- `03`専用のWindows/macOS状態ファイル名を維持
+
+### 結果
+
+- Python構文検査: 合格
+- Windowsでの入力Report ID・触覚コマンド・カーソル変換・状態移行自己テスト: 合格
+- Windows/macOS配布ZIPの共通ホスト構成: 合格
+- 同梱Makeによる`host-doctor`と`app-dry-run`ターゲット展開: 合格
+
+### 未確認
+
+- Windows/macOS実機でのカーソル変更、振動、終了時復元

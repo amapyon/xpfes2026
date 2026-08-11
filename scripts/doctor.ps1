@@ -24,7 +24,7 @@ CheckFile (Join-Path $workspace 'deps\ch32fun\ch32fun\ch32fun.mk') 'ch32fun'
 CheckFile (Join-Path $workspace 'deps\rv003usb\rv003usb\rv003usb.c') 'rv003usb'
 CheckFile (Join-Path $runtime 'bin\minichlink.exe') 'minichlink'
 
-$exerciseNames = @('00_onboard_led_blink', '01_macro_keyboard', '02_rotary_cursor_size')
+$exerciseNames = @('00_onboard_led_blink', '01_macro_keyboard', '02_rotary_cursor_size', '03_rotary_cursor_haptic')
 foreach ($name in $exerciseNames) {
     $exercise = Join-Path $workspace "exercises\$name"
     CheckFile (Join-Path $exercise 'Makefile') "$name Makefile"
@@ -32,6 +32,7 @@ foreach ($name in $exerciseNames) {
         '00_onboard_led_blink' { 'onboard_led_blink.c' }
         '01_macro_keyboard' { 'macro_keyboard.c' }
         '02_rotary_cursor_size' { 'rotary_cursor_size.c' }
+        '03_rotary_cursor_haptic' { 'rotary_cursor_size.c' }
     }
     CheckFile (Join-Path $exercise $sourceName) "$name common firmware"
     if ($name -ne '00_onboard_led_blink') { CheckFile (Join-Path $exercise 'usb_config.h') "$name common USB configuration" }
@@ -57,6 +58,8 @@ if (Test-Path -LiteralPath $python -PathType Leaf) {
     if ($LASTEXITCODE -eq 0) { Pass 'Macro keyboard host self-test' } else { Fail 'Macro keyboard host self-test' }
     & $python (Join-Path $workspace 'exercises\02_rotary_cursor_size\host\cursor_size_host.py') self-test
     if ($LASTEXITCODE -eq 0) { Pass 'Rotary cursor host self-test' } else { Fail 'Rotary cursor host self-test' }
+    & $python (Join-Path $workspace 'exercises\03_rotary_cursor_haptic\host\cursor_size_host.py') self-test
+    if ($LASTEXITCODE -eq 0) { Pass 'Rotary haptic host self-test' } else { Fail 'Rotary haptic host self-test' }
 }
 
 Warn '実機書き込みとHID動作は、接続したUIAPduinoでmake flash、make appを実行して確認してください。'
