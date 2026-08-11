@@ -500,8 +500,8 @@ workspace/exercises/
 | 演習 | 内容 |
 |---|---|
 | `00_onboard_led_blink` | 必須。基板上LEDとビルド・書き込み確認 |
-| `01_macro_keyboard` | 必須。5ピンエンコーダーモジュールのKEYによるUSB HIDキーボード |
-| `02_rotary_cursor_size` | 必須。同じモジュールのS1/S2とOS別ホストアプリ |
+| `01_macro_keyboard` | 必須。5ピンエンコーダーモジュールのGND/KEYだけを接続するUSB HIDキーボード |
+| `02_rotary_cursor_size` | 必須。同じモジュールへS1/S2/5Vを追加する回転入力とOS別ホストアプリ |
 | `03_pot_cursor_haptic` | PoC。RV09ポテンショメーター、Windowsポインターサイズ、振動フィードバック |
 
 `00_onboard_led_blink`、`01_macro_keyboard`、`02_rotary_cursor_size`はワークショップ必須演習として採用済みである。`03_pot_cursor_haptic`はWindows実機PoCで、v1.0.8の統合動作とADC安定化を確認済みだが、必須演習には採用していない。
