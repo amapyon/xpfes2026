@@ -14,8 +14,9 @@
 #define RV003USB_HID_FEATURES 1
 
 #define MOTOR_REPORT_ID 0x01
-#define MOTOR_REPORT_PAYLOAD_SIZE 1u
-#define MOTOR_REPORT_TOTAL_SIZE (1u + MOTOR_REPORT_PAYLOAD_SIZE)
+#include "haptic_pattern_protocol.h"
+#define MOTOR_REPORT_PAYLOAD_SIZE HAPTIC_PATTERN_PAYLOAD_SIZE
+#define MOTOR_REPORT_TOTAL_SIZE HAPTIC_PATTERN_TOTAL_SIZE
 
 #ifndef __ASSEMBLER__
 
@@ -40,7 +41,7 @@ static const uint8_t device_descriptor[] = {
     1
 };
 
-/* Report ID 1、payload 0=OFF / 1..100=振動レベルのFeature Report。 */
+/* Report ID 1、payload=[level, on_ms LE16, off_ms LE16, count]。 */
 static const uint8_t special_hid_desc[] = {
     0x06, 0x00, 0xff,
     0x09, 0x01,
@@ -48,7 +49,7 @@ static const uint8_t special_hid_desc[] = {
     0x85, MOTOR_REPORT_ID,
     0x09, 0x01,
     0x15, 0x00,
-    0x25, 0x64,
+    0x26, 0xff, 0x00,
     0x75, 0x08,
     0x95, MOTOR_REPORT_PAYLOAD_SIZE,
     0xb1, 0x02,

@@ -17,8 +17,9 @@
 
 #define ENCODER_REPORT_ID 0x01
 #define HAPTIC_REPORT_ID 0x02
-#define HAPTIC_REPORT_PAYLOAD_SIZE 1u
-#define HAPTIC_REPORT_TOTAL_SIZE (1u + HAPTIC_REPORT_PAYLOAD_SIZE)
+#include "haptic_pattern_protocol.h"
+#define HAPTIC_REPORT_PAYLOAD_SIZE HAPTIC_PATTERN_PAYLOAD_SIZE
+#define HAPTIC_REPORT_TOTAL_SIZE HAPTIC_PATTERN_TOTAL_SIZE
 
 #ifndef __ASSEMBLER__
 #include <stdint.h>
@@ -44,7 +45,7 @@ static const uint8_t encoder_hid_desc[] = {
     0x81, 0x02,
     0x85, HAPTIC_REPORT_ID,
     0x15, 0x00,
-    0x25, 0x01,
+    0x26, 0xFF, 0x00,
     0x75, 0x08,
     0x95, HAPTIC_REPORT_PAYLOAD_SIZE,
     0x09, 0x02,

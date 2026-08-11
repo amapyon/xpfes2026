@@ -1013,18 +1013,22 @@ ch32funの具体的な入力値は`15_CH32FUN_SUBSET_RULES.md`を参照し、こ
 - [ ] `02_rotary_cursor_size`に振動モジュール制御、Feature Report、PC4出力が含まれていない
 - [ ] `02_rotary_cursor_size`が従来の`1209:C004`、`UIAP Rotary Cursor`、`TEST7-001`を維持している
 - [ ] `03_vibration_motor_console`が`1209:C006`、`UIAP Vibration Console`、`TEST9-001`を使用する
-- [ ] `03`がFeature Report ID 1によるレベル`0`〜`100`と`make pulse`、`make on`、`make status`、`make off`を提供する
+- [ ] `03`がFeature Report ID 1でLEVEL、ON時間、OFF時間、回数を一括受信し、`make pulse`、`make pattern`、`make on`、`make status`、`make off`を提供する
 - [ ] `make pulse LEVEL=25`、`75`、`100`で指定レベルへ変更でき、`LEVEL=100`が連続Highになる
 - [ ] `03`で振動モジュールを追加し、`04`では配線を変更しない
 - [ ] `04_rotary_cursor_haptic`が`1209:C005`、`UIAP Rotary Haptic`、`TEST8-001`を使用する
-- [ ] `04`の入力Report ID 1と触覚Feature Report ID 2をWindows/macOSホストが処理する
-- [ ] `04`でカーソルサイズ変更成功時だけ約60ms振動し、上限／下限とドライランでは振動しない
+- [ ] `04`の入力Report ID 1と、LEVEL・ON時間・OFF時間・回数を含む触覚Feature Report ID 2をWindows/macOSホストが処理する
+- [ ] `03`と`04`の`haptic_pattern.h`および`haptic_pattern_protocol.h`が同一で、パターン実行と自動停止をデバイス側で行う
+- [ ] `04`で回転中は振動せず、操作停止200ms後に通常変更はレベル95の80ms×2回（間隔40ms）、上限／下限は250ms×1回振動し、ドライランでは振動しない
 - [ ] `02`と`04`の状態ファイル名が分離されている
 - [ ] 両演習でS1→D9 / PC7、S2→D8 / PC6の配線とファームウェア定義が一致する
 - [ ] `03`／`04`でVCC-GND間コンデンサーを追加しないこと、ドライバー内蔵モジュールを使用すること、GPIO直結禁止を参加者向け資料へ記載する
 - [ ] Windows/macOS配布キットの両方に`03_vibration_motor_console/host/motorctl.py`が含まれる
 - [ ] Windows/macOS配布キットの両方に`04_rotary_cursor_haptic/host/cursor_size_host.py`が含まれる
 - [ ] `04_rotary_cursor_haptic/host/win`と`host/mac`がソースおよび配布キットに存在しない
+- [ ] `01`〜`04`の`make hidcheck`が同じ5行構造で、1台接続と各演習の固定Product名完全一致を検証する
+- [ ] 固定Product名が順に`UIAP Macro Keyboard`、`UIAP Rotary Cursor`、`UIAP Vibration Console`、`UIAP Rotary Haptic`である
+- [ ] 各演習READMEが`make hidcheck`の完全な出力例とProduct名確認を案内する
 
 ## 2026-08-11 `02_rotary_cursor_size`ホスト共通化検査
 

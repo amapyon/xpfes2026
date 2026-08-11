@@ -14,15 +14,18 @@ import sys
 import time
 from typing import Any
 
-VERSION = "0.3.0"
+VERSION = "0.5.0"
 
 # rotary_cursor_size.cが通知するUSB識別子。
 # 派生演習や製品を作る場合は、ファームウェア側と同時に変更する。
 VID = 0x1209
 PID = 0xC005
+PRODUCT = "UIAP Rotary Haptic"
 ENCODER_REPORT_ID = 0x01
 HAPTIC_REPORT_ID = 0x02
-HAPTIC_COMMAND_PULSE = 0x01
+HAPTIC_DELAY_SECONDS = 0.2
+HAPTIC_NORMAL_PATTERN = (95, 80, 40, 2)
+HAPTIC_LIMIT_PATTERN = (95, 250, 0, 1)
 
 # 参加者が調整しやすいWindows用の値。
 # STEPはエンコーダー1刻みの変化量、MIN/MAXは変更可能な範囲を表す。
@@ -89,6 +92,12 @@ def require_one_device() -> dict[str, Any]:
         raise RuntimeError(
             "[UIAP-CURSOR-E201] Connect exactly one rotary cursor device."
         )
+    actual_product = devices[0].get("product_string") or "(unknown)"
+    if actual_product != PRODUCT:
+        raise RuntimeError(
+            f"[UIAP-CURSOR-E219] Expected Product '{PRODUCT}', "
+            f"got '{actual_product}'."
+        )
     return devices[0]
 
 
@@ -115,15 +124,58 @@ def decode_delta(data: list[int]) -> int:
     return raw - 256 if raw >= 128 else raw
 
 
-def trigger_haptic(dev: Any) -> None:
-    """Feature Report ID 2で短い振動を指示する。"""
-    result = dev.send_feature_report(
-        bytes((HAPTIC_REPORT_ID, HAPTIC_COMMAND_PULSE))
+def encode_haptic_pattern(pattern: tuple[int, int, int, int]) -> bytes:
+    """[ID, level, on_ms LE16, off_ms LE16, count]を生成する。"""
+    level, on_ms, off_ms, count = pattern
+    if not 0 <= level <= 100:
+        raise ValueError("haptic level must be between 0 and 100")
+    if not 0 <= on_ms <= 5000 or not 0 <= off_ms <= 5000:
+        raise ValueError("haptic ON/OFF time must be between 0 and 5000ms")
+    if not 0 <= count <= 255:
+        raise ValueError("haptic count must be between 0 and 255")
+    if level > 0 and count > 0 and on_ms == 0:
+        raise ValueError("finite haptic pattern requires a positive ON time")
+    return bytes(
+        (
+            HAPTIC_REPORT_ID,
+            level,
+            on_ms & 0xFF,
+            (on_ms >> 8) & 0xFF,
+            off_ms & 0xFF,
+            (off_ms >> 8) & 0xFF,
+            count,
+        )
     )
+
+
+def trigger_haptic(dev: Any, pattern: tuple[int, int, int, int]) -> None:
+    """Feature Report ID 2で振動パターン一式を指示する。"""
+    result = dev.send_feature_report(encode_haptic_pattern(pattern))
     if result is not None and result < 0:
         raise RuntimeError(
             "[UIAP-CURSOR-E217] Haptic Feature Report failed."
         )
+
+
+class HapticScheduler:
+    """最後の回転から一定時間が経過するまで触覚指示を保留する。"""
+
+    def __init__(self) -> None:
+        self.pattern: tuple[int, int, int, int] | None = None
+        self.deadline = 0.0
+
+    def schedule(self, pattern: tuple[int, int, int, int], now: float) -> None:
+        # 連続回転中は、最後に発生した結果と停止時刻で上書きする。
+        self.pattern = pattern
+        self.deadline = now + HAPTIC_DELAY_SECONDS
+
+    def take_due(self, now: float) -> tuple[int, int, int, int] | None:
+        if self.pattern is None or now < self.deadline:
+            return None
+        pattern = self.pattern
+        self.pattern = None
+        return pattern
+
 
 def devkit_root() -> Path:
     root = os.environ.get("UIAP_DEVKIT_ROOT")
@@ -742,6 +794,7 @@ def run_events(dry_run: bool) -> int:
     backend = None if dry_run else create_backend()
     original = None
     current = None
+    haptic = HapticScheduler()
     if backend is not None:
         recover_stale_state(backend)
         detail = backend.self_test()
@@ -761,6 +814,15 @@ def run_events(dry_run: bool) -> int:
         while True:
             delta = decode_delta(dev.read(64, 100))
             if delta == 0:
+                pattern = haptic.take_due(time.monotonic())
+                if pattern is not None:
+                    trigger_haptic(dev, pattern)
+                    pattern = (
+                        "80ms x2"
+                        if pattern == HAPTIC_NORMAL_PATTERN
+                        else "250ms x1"
+                    )
+                    print(f"haptic={pattern} level=95", flush=True)
                 continue
             direction = "CW" if delta > 0 else "CCW"
             if dry_run:
@@ -773,6 +835,7 @@ def run_events(dry_run: bool) -> int:
             # 各バックエンドのnext_value()へ計算規則を実装する。
             target = backend.next_value(current, delta)
             if backend.equal(target, current):
+                haptic.schedule(HAPTIC_LIMIT_PATTERN, time.monotonic())
                 print(
                     f"{direction} limit "
                     f"{backend.format_value(current)}",
@@ -780,11 +843,11 @@ def run_events(dry_run: bool) -> int:
                 )
                 continue
             current = backend.apply(target)
-            # OS側の変更と再読取りが成功した後だけ振動させる。
-            # 上限・下限、ドライラン、設定失敗時にはここへ到達しない。
-            trigger_haptic(dev)
+            # 変更成功を保留し、最後の回転から200ms後に振動させる。
+            # その前に次の入力が来た場合は、新しい結果と時刻で上書きする。
+            haptic.schedule(HAPTIC_NORMAL_PATTERN, time.monotonic())
             print(
-                f"{direction}: {backend.format_value(current)} haptic=ON",
+                f"{direction}: {backend.format_value(current)}",
                 flush=True,
             )
     except KeyboardInterrupt:
@@ -878,11 +941,31 @@ def protocol_self_test() -> None:
             sent_reports.append(report)
             return len(report)
 
-    trigger_haptic(FakeDevice())
-    expected = [bytes((HAPTIC_REPORT_ID, HAPTIC_COMMAND_PULSE))]
+    trigger_haptic(FakeDevice(), HAPTIC_NORMAL_PATTERN)
+    trigger_haptic(FakeDevice(), HAPTIC_LIMIT_PATTERN)
+    expected = [
+        bytes((HAPTIC_REPORT_ID, 95, 80, 0, 40, 0, 2)),
+        bytes((HAPTIC_REPORT_ID, 95, 250, 0, 0, 0, 1)),
+    ]
     if sent_reports != expected:
         raise RuntimeError(
             "[UIAP-CURSOR-E214] Haptic report self-test failed."
+        )
+
+    scheduler = HapticScheduler()
+    scheduler.schedule(HAPTIC_NORMAL_PATTERN, 1.0)
+    if scheduler.take_due(1.199) is not None:
+        raise RuntimeError(
+            "[UIAP-CURSOR-E218] Haptic delay self-test fired early."
+        )
+    scheduler.schedule(HAPTIC_LIMIT_PATTERN, 1.1)
+    if scheduler.take_due(1.299) is not None:
+        raise RuntimeError(
+            "[UIAP-CURSOR-E218] Haptic reschedule self-test fired early."
+        )
+    if scheduler.take_due(1.301) != HAPTIC_LIMIT_PATTERN:
+        raise RuntimeError(
+            "[UIAP-CURSOR-E218] Haptic delay self-test did not fire."
         )
 
 
@@ -930,7 +1013,7 @@ def main() -> int:
             return 0
         if args.command == "hidcheck":
             require_one_device()
-            print("Rotary cursor HID enumeration: PASS")
+            print(f"{PRODUCT} HID enumeration: PASS")
             return 0
         if args.command == "restore":
             return restore_saved_state(create_backend())
@@ -944,4 +1027,3 @@ def main() -> int:
 
 if __name__ == "__main__":
     raise SystemExit(main())
-

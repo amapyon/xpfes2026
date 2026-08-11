@@ -41,6 +41,18 @@ make cursor-test
 make app
 ```
 
+`make hidcheck`では次の形式で表示されます。`Product:`が`UIAP Rotary Cursor`であり、最終行にも同じ名称が表示されることを確認してください。
+
+```text
+Matching devices: 1
+[0] VID:PID=1209:C004
+  Product: UIAP Rotary Cursor
+  Serial: TEST7-001
+UIAP Rotary Cursor HID enumeration: PASS
+```
+
+Product名が異なる場合は次へ進まず、この演習のファームウェアを書き込んだか確認します。
+
 `make app-dry-run`はポインターサイズを変更せずCW／CCWだけを表示します。`make app`は回転に合わせてサイズを変更し、`Ctrl+C`終了時に起動前の値へ戻します。
 
 異常終了後の手動復元:

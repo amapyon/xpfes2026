@@ -234,7 +234,7 @@ macOS 26.5.2の実機では「スキップ」ボタンは表示されなかっ�
 |---|---|---|
 | 5V | VCC | モーター電源 |
 | GND | GND | 共通GND |
-| D6/A2 / PC4 | IN | `03`の単体ON/OFFと`04`の約60ms振動制御 |
+| D6/A2 / PC4 | IN | `03`の単体ON/OFFと`04`のレベル95パターン振動制御 |
 
 モーター本体をGPIOへ直接接続せず、ドライバー回路内蔵モジュールのIN端子だけをGPIOで制御する。今回の`03`／`04`ではVCC-GND間コンデンサーを追加しない。`04`では`03`の配線を変更しない。
 
@@ -340,6 +340,13 @@ workspace/exercises/<exercise-name>/host/<program>.py
 ```
 
 参加者向け手順では、最初に`cd`で演習ディレクトリへ移動させ、その場所から`make app`を実行させる。列挙は`make list`または`make hidcheck`、復元は`make restore`を使用する。参加者に`workspace/host`へ移動させたり、Pythonファイルの絶対パスを入力させたりしない。
+
+`01`〜`04`の`make hidcheck`は、すべて`Matching devices`、`VID:PID`、`Product`、`Serial`、演習固有Product名を含むPASS行の順で表示する。接続台数は1台を必須とし、USB Descriptorとホストに固定したProduct名が完全一致しない場合は失敗させる。参加者には各READMEの出力例と見比べ、次のProduct名を確認させる。
+
+- `01`: `UIAP Macro Keyboard`
+- `02`: `UIAP Rotary Cursor`
+- `03`: `UIAP Vibration Console`
+- `04`: `UIAP Rotary Haptic`
 
 PC側プログラムがない演習には、空の`host`ディレクトリを作成しない。`scripts/python`はDevkit全体の診断・復旧用であり、演習固有アプリの配置先として説明しない。
 
@@ -448,7 +455,7 @@ TEST7-001
 | `00_onboard_led_blink` | ビルド、書き込み、基板上LED点滅 |
 | `01_macro_keyboard` | スイッチ1回で`AbCdE`、長押し抑止、キー解放 |
 | `02_rotary_cursor_size` | CW/CCW受信、カーソルサイズ変更、終了時復元 |
-| `03_vibration_motor_console` | `LEVEL=25`、`75`、`100`を比較し、`make pulse`、`make on`、`make off`で振動単体制御 |
+| `03_vibration_motor_console` | `LEVEL=25`、`75`、`100`を比較し、`make pattern`でON時間、OFF時間、回数と自動停止を確認 |
 | `04_rotary_cursor_haptic` | `02`の動作に加え、変更時の短い振動 |
 
 必須演習には、配線、ビルド、書き込み、USB列挙、最小動作確認だけを含める。`03_vibration_motor_console`でドライバー内蔵5V振動モジュールを配線し、`04`は配線済み状態から開始する。VCC-GND間コンデンサーは追加せず、モーター本体をGPIOへ直接接続しない。
@@ -673,7 +680,7 @@ make restore
 
 ## 27. macOS振動単体・ロータリー触覚演習の手順記載
 
-`03_vibration_motor_console`は、先に`02_rotary_cursor_size`の成功を確認してから開始する。振動モジュールを配線して`make flash`を実行後、`make list`で`1209:C006`を1台検出し、`make pulse LEVEL=25`、`LEVEL=75`、`LEVEL=100`で強さを比較する。`make on LEVEL=<1..100>`を使った場合は必ず`make status`と`make off`まで実行する。
+`03_vibration_motor_console`は、先に`02_rotary_cursor_size`の成功を確認してから開始する。振動モジュールを配線して`make flash`を実行後、`make list`で`1209:C006`を1台検出し、`make pulse LEVEL=25`、`LEVEL=75`、`LEVEL=100`で強さを比較する。`make pattern LEVEL=95 ON_MS=80 OFF_MS=40 COUNT=2`で、一括パラメーター受信、2回振動、デバイス側自動停止を確認する。`make on LEVEL=<1..100>`を使った場合は必ず`make status`と`make off`まで実行する。
 
 `04_rotary_cursor_haptic`は、先に`02_rotary_cursor_size`と`03_vibration_motor_console`の成功を確認してから開始する。振動モジュールは`03`で配線済みとし、`04`では配線を変更しない。
 
@@ -683,7 +690,7 @@ make restore
 cd "$UIAP_WORKSPACE/exercises/04_rotary_cursor_haptic"
 ```
 
-`make list`では`1209:C005`を1台検出する。`make app-dry-run`ではCW／CCWだけを確認し、振動しない。`make app`ではカーソルサイズの変更と再読取りに成功した時だけ、D6/A2 / PC4の振動モジュールが約60ms動作する。上限／下限、変更失敗時は振動しない。`Ctrl+C`終了時は起動前のカーソルサイズへ戻る。
+`make list`では`1209:C005`を1台検出する。`make app-dry-run`ではCW／CCWだけを確認し、振動しない。`make app`では回転中にカーソルサイズだけを変更し、最後の回転から200ms後、通常変更ではD6/A2 / PC4の振動モジュールがレベル95で80msを2回、間隔40msで動作する。上限／下限では同じ待ち時間後に250msを1回振動する。変更失敗時は振動しない。`Ctrl+C`終了時は起動前のカーソルサイズへ戻る。
 
 振動が連続する、発熱、異臭、USB切断、連続リセットが発生した場合は直ちにUSBを外し、振動モジュールのVCC、GND、INとモジュールの定格を確認する。
 

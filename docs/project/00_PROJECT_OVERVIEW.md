@@ -205,8 +205,8 @@ Windowsの`SystemParametersInfoW`アクション`0x2029`とmacOSの非公開Core
 | `00_onboard_led_blink` | 開発環境、ビルド、書き込み、復旧の基本確認 | 従来のOS別実装は両OSで物理動作確認済み。共通化後は再確認待ち |
 | `01_macro_keyboard` | エンコーダーモジュールのセンタースイッチとUSB HIDキーボード入力 | 共通化後の単一実装、およびGND/KEYの2本配線を実機確認済み |
 | `02_rotary_cursor_size` | 同じエンコーダーモジュールとPC側処理の体験 | 統合後の現行版をWindows/macOS実機で合格確認済み |
-| `03_vibration_motor_console` | `02`へ振動モジュールを追加し、Makeコマンドから強度を変えて単体制御 | 現行版をWindows/macOS実機で合格確認済み・完成扱い |
-| `04_rotary_cursor_haptic` | `02`のカーソル操作と`03`の触覚制御を統合 | 静的検査・配布構成検査済み。統合動作は実機確認待ち |
+| `03_vibration_motor_console` | `02`へ振動モジュールを追加し、Makeコマンドから強度とパターンを単体制御 | 現行一括パターン版をWindows実機で合格確認済み。macOS実機確認待ち |
+| `04_rotary_cursor_haptic` | `02`のカーソル操作と`03`の共通パターン実行部を統合 | 現行一括パターン版をWindows実機で合格確認済み。macOS実機確認待ち |
 
 必須演習の決定は、ワークショップで最終的に制作するUSBデバイスや、公開配布用の正式HID Usage、VID:PIDを決定したことを意味しない。
 

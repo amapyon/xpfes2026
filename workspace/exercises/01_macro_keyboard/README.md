@@ -59,4 +59,16 @@ make flash
 make hidcheck
 ```
 
+成功時は次の形式で表示されます。`Product:`が`UIAP Macro Keyboard`であり、最終行にも同じ名称が表示されることを確認してください。
+
+```text
+Matching devices: 1
+[0] VID:PID=1209:C003
+  Product: UIAP Macro Keyboard
+  Serial: TEST3-001
+UIAP Macro Keyboard HID enumeration: PASS
+```
+
+Product名が異なる場合は次へ進まず、この演習のファームウェアを書き込んだか確認します。
+
 macOSで初回キーボード設定アシスタントが表示された場合は、存在しない識別キーを押さず、前の画面へ戻って「終了」で閉じます。

@@ -20,6 +20,7 @@ VERSION = "0.3.0"
 # 派生演習や製品を作る場合は、ファームウェア側と同時に変更する。
 VID = 0x1209
 PID = 0xC004
+PRODUCT = "UIAP Rotary Cursor"
 
 # 参加者が調整しやすいWindows用の値。
 # STEPはエンコーダー1刻みの変化量、MIN/MAXは変更可能な範囲を表す。
@@ -85,6 +86,12 @@ def require_one_device() -> dict[str, Any]:
     if len(devices) != 1:
         raise RuntimeError(
             "[UIAP-CURSOR-E201] Connect exactly one rotary cursor device."
+        )
+    actual_product = devices[0].get("product_string") or "(unknown)"
+    if actual_product != PRODUCT:
+        raise RuntimeError(
+            f"[UIAP-CURSOR-E219] Expected Product '{PRODUCT}', "
+            f"got '{actual_product}'."
         )
     return devices[0]
 
@@ -892,7 +899,7 @@ def main() -> int:
             return 0
         if args.command == "hidcheck":
             require_one_device()
-            print("Rotary cursor HID enumeration: PASS")
+            print(f"{PRODUCT} HID enumeration: PASS")
             return 0
         if args.command == "restore":
             return restore_saved_state(create_backend())

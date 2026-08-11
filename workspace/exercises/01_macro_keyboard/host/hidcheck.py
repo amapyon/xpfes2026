@@ -4,6 +4,7 @@ import sys
 
 VID = 0x1209
 PID = 0xC003
+PRODUCT = 'UIAP Macro Keyboard'
 
 
 def self_test() -> int:
@@ -26,7 +27,7 @@ def main() -> int:
     except Exception as exc:
         print(f'[UIAP-KBD-E202] hidapi import failed: {exc}', file=sys.stderr)
         return 2
-    devices = hid.enumerate(VID, PID)
+    devices = list(hid.enumerate(VID, PID))
     print(f'Matching devices: {len(devices)}')
     for index, dev in enumerate(devices):
         print(f'[{index}] VID:PID={dev.get("vendor_id", 0):04X}:{dev.get("product_id", 0):04X}')
@@ -35,7 +36,15 @@ def main() -> int:
     if len(devices) != 1:
         print('[UIAP-KBD-E203] Connect exactly one UIAP Macro Keyboard.', file=sys.stderr)
         return 3
-    print('HID keyboard enumeration: PASS')
+    actual_product = devices[0].get('product_string') or '(unknown)'
+    if actual_product != PRODUCT:
+        print(
+            f"[UIAP-KBD-E204] Expected Product '{PRODUCT}', "
+            f"got '{actual_product}'.",
+            file=sys.stderr,
+        )
+        return 4
+    print(f'{PRODUCT} HID enumeration: PASS')
     return 0
 
 

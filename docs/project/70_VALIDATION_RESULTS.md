@@ -618,7 +618,7 @@ TEST7-001
 | Windowsポテンショメーター＋振動統合PoC v1.0.8 | 主要動作合格 |
 | ch32fun許可リストサブセット | 方針決定・未実装 |
 | 最終オフライン参加者向けZIP | 未確認 |
-| macOS Apple Silicon | `00`、`01`に加え、Devkit `v0.1.2`の現行`02_rotary_cursor_size`と`03_vibration_motor_console`を利用者実機で合格確認済み。`04_rotary_cursor_haptic`は実機確認待ち |
+| macOS Apple Silicon | `00`、`01`に加え、Devkit `v0.1.2`の現行`02_rotary_cursor_size`と`03_vibration_motor_console`を利用者実機で合格確認済み。新しい遅延パターン版`04_rotary_cursor_haptic`は実機確認待ち |
 | ワークショップ必須演習としての採用 | `00`、`01`、`02`、`03`、`04`を採用済み |
 
 PoC合格を、そのまま最終リリース合格または参加者向け採用済みとして扱わない。
@@ -2028,7 +2028,36 @@ PC3の内部プルアップを使用し、GNDとKEYの2本だけを接続した�
 
 ### 未確認
 
-- Windows/macOS実機でのカーソル変更、振動、終了時復元
+- macOS実機でのカーソル変更、振動、終了時復元
+
+### Windows新触覚パターン実機追試
+
+利用者から、レベル90の遅延パターンへ変更した`04_rotary_cursor_haptic`がWindows実機で動作したとの報告を受けた。Windows実機での変更後の統合動作を合格とする。今回は詳細ログを収録していないため、個々のカーソル値、実測時間、Feature Report、PWM波形は記録しない。macOS実機での同じパターンは未確認とする。
+
+### 03・04一括パターンプロトコル静的確認
+
+03と04のFeature Reportを`[Report ID, level, on_ms LE16, off_ms LE16, count]`へ変更し、両演習へ同一のパターン実行部を配置した。03の`make pulse`はホスト待機を廃止してデバイス側自動停止へ変更し、任意パターン用の`make pattern`を追加した。04は通常変更と上限／下限のパラメーター一式を送る。
+
+- 両ホストのPython構文検査とプロトコル自己テスト: 合格
+- 両ファームウェアのクロスコンパイラ構文検査: 合格
+- 共通ヘッダー2ファイルのバイト一致: 合格
+- Windows/macOS配布構成テスト: 合格
+- 新プロトコルのWindows実機動作: 03・04とも利用者報告により合格
+- 新プロトコルのmacOS実機動作: 再確認待ち
+
+### 03・04一括パターンプロトコルWindows実機追試
+
+利用者から、一括パターンプロトコルへ変更した`03_vibration_motor_console`と`04_rotary_cursor_haptic`が、いずれもWindows実機で動作したとの報告を受けた。LEVEL、ON時間、OFF時間、回数の一括送信、デバイス側のパターン実行と自動停止を含むWindows統合動作を両演習とも合格とする。詳細ログや実測波形は収録していない。macOS実機での新プロトコルは未確認とする。
+
+### 必須4演習`hidcheck`形式・Product検査
+
+`01`〜`04`の`make hidcheck`を同じ5行構造へ統一し、1台接続とUSB Descriptorに固定したProduct名の完全一致を必須にした。03は従来のホスト環境診断呼び出しから、実デバイスを列挙する専用`hidcheck`へ変更した。
+
+- 4演習の正常時出力完全一致テスト: 合格
+- 4演習のProduct不一致失敗テスト: 合格
+- ホスト固定ProductとUSB Descriptorの一致テスト: 合格
+- Python構文検査: 合格
+- Windows/macOS実機での統一後表示: 再確認待ち
 
 ---
 

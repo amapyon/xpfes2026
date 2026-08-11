@@ -27,5 +27,7 @@ make restore
 
 状態ファイルは既存形式を維持します。
 
+`make hidcheck`はProduct名`UIAP Rotary Cursor`の完全一致を確認します。
+
 - Windows: `.state/cursor-size-before.json`
 - macOS: `.state/02_rotary_cursor_size.original-scale`

@@ -45,7 +45,7 @@ report:
 host-doctor:
 	"$(UIAP_PYTHON)" "$(MOTOR_HOST)" self-test
 hidcheck:
-	"$(UIAP_PYTHON)" "$(MOTOR_HOST)" doctor
+	"$(UIAP_PYTHON)" "$(MOTOR_HOST)" hidcheck
 list:
 	"$(UIAP_PYTHON)" "$(MOTOR_HOST)" list
 LEVEL ?= 50
@@ -58,6 +58,11 @@ status:
 PULSE_SECONDS ?= 0.2
 pulse:
 	"$(UIAP_PYTHON)" "$(MOTOR_HOST)" pulse "$(PULSE_SECONDS)" "$(LEVEL)"
+ON_MS ?= 80
+OFF_MS ?= 40
+COUNT ?= 2
+pattern:
+	"$(UIAP_PYTHON)" "$(MOTOR_HOST)" pattern "$(LEVEL)" "$(ON_MS)" "$(OFF_MS)" "$(COUNT)"
 
 help:
 	@echo make
@@ -69,6 +74,7 @@ help:
 	@echo make list
 	@echo make pulse
 	@echo make pulse LEVEL=75 PULSE_SECONDS=0.5
+	@echo make pattern LEVEL=95 ON_MS=80 OFF_MS=40 COUNT=2
 	@echo make on
 	@echo make on LEVEL=75
 	@echo make status
@@ -76,4 +82,4 @@ help:
 	@echo make doctor
 	@echo make report
 
-.PHONY: all flash clean size host-doctor hidcheck list on off status pulse doctor report help
+.PHONY: all flash clean size host-doctor hidcheck list on off status pulse pattern doctor report help

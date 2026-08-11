@@ -7,14 +7,13 @@
 
 /* UIAPduino D6/A2 = CH32V003 PC4。モジュールのIN端子だけを駆動する。 */
 #define MOTOR_PIN PC4
-#define MOTOR_PWM_PERIOD 256u
-#define MOTOR_PWM_PRESCALER 374u
+#define HAPTIC_PIN MOTOR_PIN
+#include "haptic_pattern.h"
 
 /* macOSが接続時に送るHIDクラス要求。 */
 #define HID_REQ_GET_IDLE 0x02A1u
 #define HID_REQ_SET_IDLE 0x0A21u
 
-static volatile uint8_t motor_level;
 static volatile uint8_t report_ready;
 static uint8_t idle_rate;
 static uint8_t feature_report[MOTOR_REPORT_TOTAL_SIZE] = {
@@ -22,86 +21,32 @@ static uint8_t feature_report[MOTOR_REPORT_TOTAL_SIZE] = {
     0
 };
 
-static void motor_pwm_init(void)
-{
-    RCC->APB2PCENR |= RCC_APB2Periph_GPIOC | RCC_APB2Periph_TIM1;
-
-    /* 起動時はPC4を通常GPIOのLowにして誤振動を防ぐ。 */
-    GPIOC->CFGLR &= ~(0x0fu << (4u * 4u));
-    GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP) << (4u * 4u);
-    GPIOC->BCR = 1u << 4;
-
-    RCC->APB2PRSTR |= RCC_APB2Periph_TIM1;
-    RCC->APB2PRSTR &= ~RCC_APB2Periph_TIM1;
-
-    /* 48MHz / (375 * 256) = 500Hz。 */
-    TIM1->PSC = MOTOR_PWM_PRESCALER;
-    TIM1->ATRLR = MOTOR_PWM_PERIOD - 1u;
-    TIM1->CNT = 0;
-    TIM1->CH4CVR = 0;
-
-    /* TIM1_CH4をPWM mode 1、preload有効で準備する。 */
-    TIM1->CHCTLR2 &= ~0xff00u;
-    TIM1->CHCTLR2 |= 0x6800u;
-    TIM1->CCER &= ~0x3000u;
-    TIM1->BDTR |= TIM_MOE;
-    TIM1->SWEVGR = TIM_UG;
-    TIM1->CTLR1 |= TIM_CEN;
-}
-
-static void motor_set_level(uint8_t level)
-{
-    uint16_t pulse;
-
-    if (level > 100u) {
-        level = 100u;
-    }
-
-    if (level == 0u) {
-        /* OFFではPWM出力を切り、PC4をLowへ戻す。 */
-        TIM1->CCER &= ~(1u << 12);
-        TIM1->CH4CVR = 0u;
-        GPIOC->BCR = 1u << 4;
-        GPIOC->CFGLR &= ~(0x0fu << (4u * 4u));
-        GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP) << (4u * 4u);
-    } else if (level == 100u) {
-        /* 最大レベルはPWM境界値を使わず、PC4を連続Highにする。 */
-        TIM1->CCER &= ~(1u << 12);
-        GPIOC->BSHR = 1u << 4;
-        GPIOC->CFGLR &= ~(0x0fu << (4u * 4u));
-        GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP) << (4u * 4u);
-    } else {
-        pulse = (uint16_t)(((uint32_t)level * MOTOR_PWM_PERIOD + 50u) / 100u);
-        TIM1->CH4CVR = pulse;
-        TIM1->SWEVGR = TIM_UG;
-        GPIOC->CFGLR &= ~(0x0fu << (4u * 4u));
-        GPIOC->CFGLR |= (GPIO_Speed_10MHz | GPIO_CNF_OUT_PP_AF) << (4u * 4u);
-        TIM1->CCER &= ~(1u << 13);
-        TIM1->CCER |= 1u << 12;
-    }
-
-    motor_level = level;
-    feature_report[0] = MOTOR_REPORT_ID;
-    feature_report[1] = motor_level;
-}
-
 int main(void)
 {
     SystemInit();
     funGpioInitAll();
 
     /* USB初期化より前に必ずLowへ固定し、起動時の誤振動を防ぐ。 */
-    motor_pwm_init();
-    motor_set_level(0);
+    haptic_pattern_init();
 
     Delay_Ms(100);
     usb_setup();
 
     for (;;) {
         if (report_ready) {
+            uint16_t on_ms;
+            uint16_t off_ms;
+
             report_ready = 0;
-            motor_set_level(feature_report[1]);
+            on_ms = (uint16_t)(feature_report[HAPTIC_ON_MS_LO_OFFSET] |
+                               ((uint16_t)feature_report[HAPTIC_ON_MS_HI_OFFSET] << 8));
+            off_ms = (uint16_t)(feature_report[HAPTIC_OFF_MS_LO_OFFSET] |
+                                ((uint16_t)feature_report[HAPTIC_OFF_MS_HI_OFFSET] << 8));
+            haptic_pattern_start(feature_report[HAPTIC_LEVEL_OFFSET], on_ms,
+                                 off_ms, feature_report[HAPTIC_COUNT_OFFSET]);
         }
+        Delay_Ms(1);
+        haptic_pattern_tick_1ms();
     }
 }
 
@@ -178,7 +123,7 @@ void usb_handle_hid_get_report_start(struct usb_endpoint *e,
 {
     (void)value;
     feature_report[0] = MOTOR_REPORT_ID;
-    feature_report[1] = motor_level;
+    feature_report[HAPTIC_LEVEL_OFFSET] = haptic_pattern_current_level();
     if (req_len > (int)sizeof(feature_report)) {
         req_len = sizeof(feature_report);
     }
@@ -199,7 +144,6 @@ void usb_handle_hid_set_report_start(struct usb_endpoint *e,
     if (req_len > (int)sizeof(feature_report)) {
         req_len = sizeof(feature_report);
     }
-    feature_report[0] = 0;
-    feature_report[1] = 0;
+    memset(feature_report, 0, sizeof(feature_report));
     e->max_len = req_len;
 }

@@ -11,8 +11,7 @@
 #define ENCODER_REPORT_SIZE 3u
 
 #define HAPTIC_PIN PC4
-#define HAPTIC_PULSE_MS 60u
-#define HAPTIC_COMMAND_PULSE 1u
+#include "haptic_pattern.h"
 
 #define HID_REQ_GET_IDLE 0x02A1u
 #define HID_REQ_SET_IDLE 0x0A21u
@@ -126,7 +125,7 @@ void usb_handle_hid_get_report_start(struct usb_endpoint *e,
     }
 
     haptic_report[0] = HAPTIC_REPORT_ID;
-    haptic_report[1] = 0;
+    haptic_report[HAPTIC_LEVEL_OFFSET] = haptic_pattern_current_level();
     if (req_len > (int)sizeof(haptic_report)) {
         req_len = sizeof(haptic_report);
     }
@@ -147,8 +146,7 @@ void usb_handle_hid_set_report_start(struct usb_endpoint *e,
     if (req_len > (int)sizeof(haptic_report)) {
         req_len = sizeof(haptic_report);
     }
-    haptic_report[0] = 0;
-    haptic_report[1] = 0;
+    memset(haptic_report, 0, sizeof(haptic_report));
     e->max_len = req_len;
 }
 
@@ -158,26 +156,28 @@ int main(void)
     funGpioInitAll();
     funPinMode(ENCODER_S1_PIN, GPIO_CFGLR_IN_PUPD);
     funPinMode(ENCODER_S2_PIN, GPIO_CFGLR_IN_PUPD);
-    funPinMode(HAPTIC_PIN, GPIO_CFGLR_OUT_10Mhz_PP);
     funDigitalWrite(ENCODER_S1_PIN, FUN_HIGH);
     funDigitalWrite(ENCODER_S2_PIN, FUN_HIGH);
-    funDigitalWrite(HAPTIC_PIN, FUN_LOW);
+    haptic_pattern_init();
 
     uint8_t previous = (uint8_t)((funDigitalRead(ENCODER_S1_PIN) << 1) |
                                  funDigitalRead(ENCODER_S2_PIN));
     int8_t quarter_steps = 0;
-    uint8_t haptic_ms_remaining = 0;
-
     Delay_Ms(1);
     usb_setup();
 
     for (;;) {
         if (haptic_report_ready) {
+            uint16_t on_ms;
+            uint16_t off_ms;
+
             haptic_report_ready = 0;
-            if (haptic_report[1] == HAPTIC_COMMAND_PULSE) {
-                funDigitalWrite(HAPTIC_PIN, FUN_HIGH);
-                haptic_ms_remaining = HAPTIC_PULSE_MS;
-            }
+            on_ms = (uint16_t)(haptic_report[HAPTIC_ON_MS_LO_OFFSET] |
+                               ((uint16_t)haptic_report[HAPTIC_ON_MS_HI_OFFSET] << 8));
+            off_ms = (uint16_t)(haptic_report[HAPTIC_OFF_MS_LO_OFFSET] |
+                                ((uint16_t)haptic_report[HAPTIC_OFF_MS_HI_OFFSET] << 8));
+            haptic_pattern_start(haptic_report[HAPTIC_LEVEL_OFFSET], on_ms,
+                                 off_ms, haptic_report[HAPTIC_COUNT_OFFSET]);
         }
 
         uint8_t current = (uint8_t)((funDigitalRead(ENCODER_S1_PIN) << 1) |
@@ -201,11 +201,6 @@ int main(void)
         }
 
         Delay_Ms(1);
-        if (haptic_ms_remaining > 0u) {
-            haptic_ms_remaining--;
-            if (haptic_ms_remaining == 0u) {
-                funDigitalWrite(HAPTIC_PIN, FUN_LOW);
-            }
-        }
+        haptic_pattern_tick_1ms();
     }
 }

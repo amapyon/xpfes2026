@@ -55,8 +55,8 @@ class BuildDevkitTests(unittest.TestCase):
                         "00_onboard_led_blink": ("Makefile", "onboard_led_blink.c"),
                         "01_macro_keyboard": ("Makefile", "macro_keyboard.c", "usb_config.h", "host/hidcheck.py"),
                         "02_rotary_cursor_size": ("Makefile", "rotary_cursor_size.c", "usb_config.h"),
-                        "03_vibration_motor_console": ("Makefile", "vibration_motor_console.c", "usb_config.h", "host/motorctl.py"),
-                        "04_rotary_cursor_haptic": ("Makefile", "rotary_cursor_size.c", "usb_config.h"),
+                        "03_vibration_motor_console": ("Makefile", "vibration_motor_console.c", "usb_config.h", "haptic_pattern.h", "haptic_pattern_protocol.h", "host/motorctl.py"),
+                        "04_rotary_cursor_haptic": ("Makefile", "rotary_cursor_size.c", "usb_config.h", "haptic_pattern.h", "haptic_pattern_protocol.h"),
                     }
                     for exercise, required in common_files.items():
                         base = f"uiap-devkit-{architecture}/workspace/exercises/{exercise}"
@@ -199,8 +199,8 @@ class UnifiedRepositoryTests(unittest.TestCase):
             "00_onboard_led_blink": ("onboard_led_blink.c",),
             "01_macro_keyboard": ("macro_keyboard.c", "usb_config.h", "host/hidcheck.py"),
             "02_rotary_cursor_size": ("rotary_cursor_size.c", "usb_config.h"),
-            "03_vibration_motor_console": ("vibration_motor_console.c", "usb_config.h", "host/motorctl.py"),
-            "04_rotary_cursor_haptic": ("rotary_cursor_size.c", "usb_config.h"),
+            "03_vibration_motor_console": ("vibration_motor_console.c", "usb_config.h", "haptic_pattern.h", "haptic_pattern_protocol.h", "host/motorctl.py"),
+            "04_rotary_cursor_haptic": ("rotary_cursor_size.c", "usb_config.h", "haptic_pattern.h", "haptic_pattern_protocol.h"),
         }
         for exercise, files in requirements.items():
             root = ROOT / "workspace" / "exercises" / exercise
@@ -231,6 +231,15 @@ class UnifiedRepositoryTests(unittest.TestCase):
         self.assertNotIn("HAPTIC_PIN", plain)
         self.assertIn("MOTOR_PIN", motor)
         self.assertIn("HAPTIC_PIN", haptic)
+
+        motor_root = ROOT / "workspace" / "exercises" / "03_vibration_motor_console"
+        haptic_root = ROOT / "workspace" / "exercises" / "04_rotary_cursor_haptic"
+        for shared_name in ("haptic_pattern.h", "haptic_pattern_protocol.h"):
+            self.assertEqual(
+                (motor_root / shared_name).read_bytes(),
+                (haptic_root / shared_name).read_bytes(),
+                f"03/04 shared haptic implementation differs: {shared_name}",
+            )
 
     def test_macos_setup_builds_write_tool(self) -> None:
         setup = (ROOT / "scripts" / "setup.sh").read_text(encoding="utf-8")
