@@ -1011,6 +1011,14 @@ workspace/exercises/04_rotary_cursor_haptic/host/cursor_size_host.py
 
 これらのホストは起動時にWindows/macOSバックエンドを選択する。`host/win`または`host/mac`を探す必要はない。
 
+`03_vibration_motor_console`の共通ホスト:
+
+```text
+workspace/exercises/03_vibration_motor_console/host/motorctl.py
+```
+
+通常はPythonファイルを直接実行せず、演習フォルダーで`make pulse`、`make on`、`make status`、`make off`を使用する。`make on`後に停止できない場合は直ちにUSBを外す。
+
 次の旧パスを実行時の標準として使用しない。
 
 ```text

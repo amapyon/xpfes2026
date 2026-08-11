@@ -209,14 +209,15 @@ Windowsの`SystemParametersInfoW`アクション`0x2029`とmacOSの非公開Core
 
 ## 6. ワークショップ必須演習
 
-2026-08-11時点で、次の4演習を必須演習とする。
+2026-08-11時点で、次の5演習を必須演習とする。
 
 | 演習 | 目的 | 現在の検証状態 |
 |---|---|---|
 | `00_onboard_led_blink` | 開発環境、ビルド、書き込み、復旧の基本確認 | 従来のOS別実装は両OSで物理動作確認済み。共通化後は再確認待ち |
 | `01_macro_keyboard` | エンコーダーモジュールのセンタースイッチとUSB HIDキーボード入力 | 共通化後の単一実装、およびGND/KEYの2本配線を実機確認済み |
 | `02_rotary_cursor_size` | 同じエンコーダーモジュールとPC側処理の体験 | 従来のOS別実装は両OSで確認済み。共通ファームウェアは再確認待ち |
-| `04_rotary_cursor_haptic` | `02`へ振動モジュールを追加し、サイズ変更時の触覚フィードバックを体験 | 静的検査・配布構成検査済み。統合動作は実機確認待ち |
+| `03_vibration_motor_console` | `02`へ振動モジュールを追加し、Makeコマンドから強度を変えて単体制御 | 現行版はWindows実機合格・完成扱い。macOS演習版は実機再確認待ち |
+| `04_rotary_cursor_haptic` | `02`のカーソル操作と`03`の触覚制御を統合 | 静的検査・配布構成検査済み。統合動作は実機確認待ち |
 
 必須演習の決定は、ワークショップで最終的に制作するUSBデバイスや、公開配布用の正式HID Usage、VID:PIDを決定したことを意味しない。
 
@@ -525,6 +526,8 @@ uiap-devkit-win64/
         ├── 01_macro_keyboard/
         ├── 02_rotary_cursor_size/
         │   └── host/
+        ├── 03_vibration_motor_console/
+        │   └── host/
         └── 04_rotary_cursor_haptic/
             └── host/
 ```
@@ -762,6 +765,7 @@ Windows Command Promptの例:
 cd /d "%UIAP_WORKSPACE%\exercises\00_onboard_led_blink"
 cd /d "%UIAP_WORKSPACE%\exercises\01_macro_keyboard"
 cd /d "%UIAP_WORKSPACE%\exercises\02_rotary_cursor_size"
+cd /d "%UIAP_WORKSPACE%\exercises\03_vibration_motor_console"
 cd /d "%UIAP_WORKSPACE%\exercises\04_rotary_cursor_haptic"
 ```
 
@@ -771,6 +775,7 @@ macOSの例:
 cd "$UIAP_WORKSPACE/exercises/00_onboard_led_blink"
 cd "$UIAP_WORKSPACE/exercises/01_macro_keyboard"
 cd "$UIAP_WORKSPACE/exercises/02_rotary_cursor_size"
+cd "$UIAP_WORKSPACE/exercises/03_vibration_motor_console"
 cd "$UIAP_WORKSPACE/exercises/04_rotary_cursor_haptic"
 ```
 
@@ -908,6 +913,7 @@ workspace/exercises/
 ├── 00_onboard_led_blink/
 ├── 01_macro_keyboard/
 ├── 02_rotary_cursor_size/
+├── 03_vibration_motor_console/
 └── 04_rotary_cursor_haptic/
 ```
 
@@ -918,11 +924,12 @@ workspace/exercises/
 | `00_onboard_led_blink` | 必須。基板上LEDとビルド・書き込み確認 |
 | `01_macro_keyboard` | 必須。5ピンエンコーダーモジュールのGND/KEYだけを接続するUSB HIDキーボード |
 | `02_rotary_cursor_size` | 必須。同じモジュールへS1/S2/5Vを追加する回転入力と共通ホストアプリ |
-| `04_rotary_cursor_haptic` | 必須。`02`へ振動モジュールを追加する触覚フィードバック |
+| `03_vibration_motor_console` | 必須。振動モジュールを追加し、Makeコマンドから単体制御 |
+| `04_rotary_cursor_haptic` | 必須。`02`のカーソル操作と`03`の触覚制御を統合 |
 
-4演習すべてをワークショップ必須演習として採用する。`02_rotary_cursor_size`は振動なしの基本演習として維持し、`04_rotary_cursor_haptic`で触覚フィードバックを追加する。
+5演習すべてをワークショップ必須演習として採用する。`02`でカーソル操作、`03`で振動モジュールの配線と単体制御、`04`で両方を組み合わせる。
 
-4演習のファームウェアとビルド設定は演習直下へ置き、Windows/macOSで共用する。`02_rotary_cursor_size`と`04_rotary_cursor_haptic`は、それぞれ単一の`host/cursor_size_host.py`内でWindows/macOSバックエンドを実行時に選択する。
+5演習のファームウェアとビルド設定は演習直下へ置き、Windows/macOSで共用する。`03`の`host/motorctl.py`も共通である。`02_rotary_cursor_size`と`04_rotary_cursor_haptic`は、それぞれ単一の`host/cursor_size_host.py`内でWindows/macOSバックエンドを実行時に選択する。
 
 各演習は、原則として次を含む。
 
@@ -941,6 +948,20 @@ workspace/exercises/
 
 USBを使用しない演習では`usb_config.h`を省略してよい。PC側プログラムを使用しない演習では`host`を省略する。
 
+`03_vibration_motor_console`の構成:
+
+```text
+workspace/exercises/03_vibration_motor_console/
+├── README.md
+├── Makefile
+├── vibration_motor_console.c
+├── funconfig.h
+├── usb_config.h
+└── host/
+    ├── README.md
+    └── motorctl.py
+```
+
 `04_rotary_cursor_haptic`の構成:
 
 ```text
@@ -955,7 +976,7 @@ workspace/exercises/04_rotary_cursor_haptic/
     └── cursor_size_host.py
 ```
 
-この演習は`02_rotary_cursor_size`を複製して触覚フィードバックを追加した必須演習である。
+この演習は`02_rotary_cursor_size`のカーソル操作と、`03_vibration_motor_console`で配線・確認した振動モジュールを組み合わせる必須演習である。
 
 ### 8.4 各演習の`host`
 
@@ -2411,6 +2432,12 @@ workspace/exercises/04_rotary_cursor_haptic/host/cursor_size_host.py
 
 両ファイルではHID列挙、入力処理、CLIを共通化し、Windows/macOS固有のポインター設定だけを別クラスへ分離して実行時に選択する。ファイル分割が必要な演習は`host/<platform>`を使用してよい。
 
+OS固有処理を必要としない共通ホストの例:
+
+```text
+workspace/exercises/03_vibration_motor_console/host/motorctl.py
+```
+
 次を標準とする。
 
 - トップレベルの`workspace/host`を使用しない
@@ -3212,7 +3239,7 @@ GPIOの出力電流、電圧降下、発熱、突入電流を確認する。
 
 回路図には、部品値、極性、GND、モーター電源を明示する。
 
-ドライバー回路内蔵の5V振動モーターモジュールを使用する場合は、モジュールのVCC、GND、INを区別し、GPIOはモーター本体ではなくIN端子だけを駆動する。追加コンデンサーの要否は使用するモジュールと演習ごとに決定し、今回の`04_rotary_cursor_haptic`ではVCC-GND間コンデンサーを追加しない。
+ドライバー回路内蔵の5V振動モーターモジュールを使用する場合は、モジュールのVCC、GND、INを区別し、GPIOはモーター本体ではなくIN端子だけを駆動する。追加コンデンサーの要否は使用するモジュールと演習ごとに決定し、今回の`03_vibration_motor_console`と`04_rotary_cursor_haptic`ではVCC-GND間コンデンサーを追加しない。
 
 振動の知覚性を上げる場合は、定格を超える電圧へ上げるのではなく、ON時間とパルス回数を調整する。確認済みPoCでは、D6/A2（PC4）をHighにする80msパルス2回、間隔40msを強めの既定値とした。
 
@@ -3420,7 +3447,8 @@ USBポートから供給する総電流を見積もる。
 | `00_onboard_led_blink` | 外付け配線なし。基板上LEDを使用 |
 | `01_macro_keyboard` | GNDとKEYの2本だけを接続し、KEYをD5 / PC3で使用 |
 | `02_rotary_cursor_size` | S1、S2、5Vの3本を追加し、合計5本で使用 |
-| `04_rotary_cursor_haptic` | `02`の5本を維持し、5V振動モジュールのVCC、GND、INだけを追加 |
+| `03_vibration_motor_console` | `02`の5本を維持し、5V振動モジュールのVCC、GND、INを追加 |
+| `04_rotary_cursor_haptic` | `03`完了時の配線を変更せず使用 |
 
 両演習では、[指定のセンタースイッチ付きロータリーエンコーダーモジュール](https://electronicwork.shop/items/64b9e54b9dd503007bc60458)を1個使用する。`01_macro_keyboard`では次の2本だけを接続する。
 
@@ -3441,7 +3469,7 @@ PC3の内部プルアップを使用するため、`01`ではモジュールの5
 
 販売ページの仕様は動作電圧5V、1周20パルスである。5Vを追加する`02`では、UIAPduinoのマイクロコントローラー電源が初期状態の5V設定であることを前提とする。配線変更前にはUSBを外す。旧3端子エンコーダーのA/C/B配線や、独立したモメンタリスイッチの配線を新モジュールへ流用しない。
 
-`04_rotary_cursor_haptic`では、上記5本を維持したまま、ドライバー回路内蔵5V振動モジュールをVCC→5V、GND→GND、IN→D6/A2 / PC4で追加する。今回の回路ではVCC-GND間コンデンサーを追加しない。
+`03_vibration_motor_console`では、上記5本を維持したまま、ドライバー回路内蔵5V振動モジュールをVCC→5V、GND→GND、IN→D6/A2 / PC4で追加する。今回の回路ではVCC-GND間コンデンサーを追加しない。`04_rotary_cursor_haptic`ではこの配線を変更しない。
 
 これらのGPIO割り当てを変更する場合は、ファームウェア、配線表、参加者向け手順、検証記録を同時に更新する。
 
@@ -3637,7 +3665,8 @@ macOS 26.5.2の実機では「スキップ」ボタンは表示されなかっ�
 |---|---|
 | `01_macro_keyboard` | GND→GND、KEY→D5 / PC3 |
 | `02_rotary_cursor_size` | S1→D9 / PC7、S2→D8 / PC6、5V→5V（赤い配線）を追加 |
-| `04_rotary_cursor_haptic` | `02`の5本を維持し、振動モジュールのVCC→5V、GND→GND、IN→D6/A2 / PC4を追加 |
+| `03_vibration_motor_console` | `02`の5本を維持し、振動モジュールのVCC→5V、GND→GND、IN→D6/A2 / PC4を追加 |
+| `04_rotary_cursor_haptic` | `03`完了時の配線を変更せず使用 |
 
 必要に応じて次も記載する。
 
@@ -3676,15 +3705,15 @@ macOS 26.5.2の実機では「スキップ」ボタンは表示されなかっ�
 | D8 / PC6 | S2 | 回転信号2 |
 | 5V | 5V | モジュール電源。赤い配線 |
 
-`04_rotary_cursor_haptic`へ進むとき、USBを外してからドライバー回路内蔵の5V振動モーターモジュールを追加する。エンコーダーの5本は変更しない。
+`03_vibration_motor_console`へ進むとき、USBを外してからドライバー回路内蔵の5V振動モーターモジュールを追加する。エンコーダーの5本は変更しない。
 
 | UIAPduino | 振動モジュール | 用途 |
 |---|---|---|
 | 5V | VCC | モーター電源 |
 | GND | GND | 共通GND |
-| D6/A2 / PC4 | IN | 約60msの振動ON/OFF制御 |
+| D6/A2 / PC4 | IN | `03`の単体ON/OFFと`04`の約60ms振動制御 |
 
-モーター本体をGPIOへ直接接続せず、ドライバー回路内蔵モジュールのIN端子だけをGPIOで制御する。今回の`04_rotary_cursor_haptic`ではVCC-GND間コンデンサーを追加しない。
+モーター本体をGPIOへ直接接続せず、ドライバー回路内蔵モジュールのIN端子だけをGPIOで制御する。今回の`03`／`04`ではVCC-GND間コンデンサーを追加しない。`04`では`03`の配線を変更しない。
 
 注意:
 
@@ -3692,6 +3721,7 @@ macOS 26.5.2の実機では「スキップ」ボタンは表示されなかっ�
 - `01`はPC3の内部プルアップを使用するため5Vへ接続しない
 - `02`で5Vを追加し、UIAPduinoのマイクロコントローラー電源が初期状態の5V設定であることを確認する
 - `01_macro_keyboard`はKEYだけを読み、`02_rotary_cursor_size`はS1/S2だけを読む
+- `03_vibration_motor_console`はPC4で振動モジュールを単体制御する
 - `04_rotary_cursor_haptic`はS1/S2を読み、PC4で振動モジュールを制御する
 - 押し続けでは繰り返さず、押下エッジで動作する構成とチャタリング対策を明記する
 - 回転方向が逆の場合はS1とS2を入れ替える
@@ -3888,16 +3918,17 @@ TEST7-001
 - 追加: 早く終わった参加者向け
 - 発展: ワークショップ後に試せる
 
-必須演習は次の4本とする。
+必須演習は次の5本とする。
 
 | 演習 | 最小到達点 |
 |---|---|
 | `00_onboard_led_blink` | ビルド、書き込み、基板上LED点滅 |
 | `01_macro_keyboard` | スイッチ1回で`AbCdE`、長押し抑止、キー解放 |
 | `02_rotary_cursor_size` | CW/CCW受信、カーソルサイズ変更、終了時復元 |
+| `03_vibration_motor_console` | `LEVEL=25`、`75`、`100`を比較し、`make pulse`、`make on`、`make off`で振動単体制御 |
 | `04_rotary_cursor_haptic` | `02`の動作に加え、変更時の短い振動 |
 
-必須演習には、配線、ビルド、書き込み、USB列挙、最小動作確認だけを含める。`04_rotary_cursor_haptic`ではドライバー内蔵5V振動モジュールを使用し、VCC-GND間コンデンサーは追加せず、モーター本体をGPIOへ直接接続しない。
+必須演習には、配線、ビルド、書き込み、USB列挙、最小動作確認だけを含める。`03_vibration_motor_console`でドライバー内蔵5V振動モジュールを配線し、`04`は配線済み状態から開始する。VCC-GND間コンデンサーは追加せず、モーター本体をGPIOへ直接接続しない。
 
 PC側アプリやパラメーター変更を含む場合も、完成済みサンプルを実行するだけで基本動作へ到達できる構成にする。`02_rotary_cursor_size`はmacOS 26.5.2の1台で基本動作を確認したが、非公開APIを使用するため、別Mac、最低対応macOS、USB切断時復元を確認するまでは十分な予備時間と代替デモを用意する。
 
@@ -4117,9 +4148,11 @@ make restore
 
 復元対象がない場合のエラーと、復元失敗を区別する。参加者向け資料には、非公開CoreGraphics APIを使用するためmacOS更新で動作が変わる可能性があること、動作しない場合は`make app-dry-run`までを成功扱いとして完成済みデモへ切り替えることを記載する。
 
-## 27. macOSロータリー触覚演習の手順記載
+## 27. macOS振動単体・ロータリー触覚演習の手順記載
 
-`04_rotary_cursor_haptic`は、先に`02_rotary_cursor_size`の成功を確認してから開始する。
+`03_vibration_motor_console`は、先に`02_rotary_cursor_size`の成功を確認してから開始する。振動モジュールを配線して`make flash`を実行後、`make list`で`1209:C006`を1台検出し、`make pulse LEVEL=25`、`LEVEL=75`、`LEVEL=100`で強さを比較する。`make on LEVEL=<1..100>`を使った場合は必ず`make status`と`make off`まで実行する。
+
+`04_rotary_cursor_haptic`は、先に`02_rotary_cursor_size`と`03_vibration_motor_console`の成功を確認してから開始する。振動モジュールは`03`で配線済みとし、`04`では配線を変更しない。
 
 実行場所:
 
@@ -4429,6 +4462,7 @@ test10の初版`doctor`は未使用の`NEWLIB?=/usr/include/newlib`既定値ま�
 00_onboard_led_blink
 01_macro_keyboard
 02_rotary_cursor_size
+03_vibration_motor_console
 04_rotary_cursor_haptic
 ```
 
@@ -4507,10 +4541,12 @@ PoC用一時値を検索する。
 1209:C003
 1209:C004
 1209:C005
+1209:C006
 1209:D003
 TEST3-001
 TEST7-001
 TEST8-001
+TEST9-001
 ```
 
 確認事項:
@@ -5174,17 +5210,22 @@ ch32funの具体的な入力値は`15_CH32FUN_SUBSET_RULES.md`を参照し、こ
 
 `0x2029`は未文書化動作であるため、静的検査だけで合格にせず、Windows更新後を含む各リリース候補で実機確認する。具体的な不具合と復旧は`60_TROUBLESHOOTING.md`、検証事実は`70_VALIDATION_RESULTS.md`を正本とする。
 
-## 2026-08-11 `04_rotary_cursor_haptic`追加検査
+## 2026-08-11 `03_vibration_motor_console`・`04_rotary_cursor_haptic`追加検査
 
-- [ ] 必須演習が`00`、`01`、`02`、`04`の4フォルダーに分かれている
+- [ ] 必須演習が`00`、`01`、`02`、`03`、`04`の5フォルダーに分かれている
 - [ ] `02_rotary_cursor_size`に振動モジュール制御、Feature Report、PC4出力が含まれていない
 - [ ] `02_rotary_cursor_size`が従来の`1209:C004`、`UIAP Rotary Cursor`、`TEST7-001`を維持している
+- [ ] `03_vibration_motor_console`が`1209:C006`、`UIAP Vibration Console`、`TEST9-001`を使用する
+- [ ] `03`がFeature Report ID 1によるレベル`0`〜`100`と`make pulse`、`make on`、`make status`、`make off`を提供する
+- [ ] `make pulse LEVEL=25`、`75`、`100`で指定レベルへ変更でき、`LEVEL=100`が連続Highになる
+- [ ] `03`で振動モジュールを追加し、`04`では配線を変更しない
 - [ ] `04_rotary_cursor_haptic`が`1209:C005`、`UIAP Rotary Haptic`、`TEST8-001`を使用する
 - [ ] `04`の入力Report ID 1と触覚Feature Report ID 2をWindows/macOSホストが処理する
 - [ ] `04`でカーソルサイズ変更成功時だけ約60ms振動し、上限／下限とドライランでは振動しない
 - [ ] `02`と`04`の状態ファイル名が分離されている
 - [ ] 両演習でS1→D9 / PC7、S2→D8 / PC6の配線とファームウェア定義が一致する
-- [ ] `04`でVCC-GND間コンデンサーを追加しないこと、ドライバー内蔵モジュールを使用すること、GPIO直結禁止を参加者向け資料へ記載する
+- [ ] `03`／`04`でVCC-GND間コンデンサーを追加しないこと、ドライバー内蔵モジュールを使用すること、GPIO直結禁止を参加者向け資料へ記載する
+- [ ] Windows/macOS配布キットの両方に`03_vibration_motor_console/host/motorctl.py`が含まれる
 - [ ] Windows/macOS配布キットの両方に`04_rotary_cursor_haptic/host/cursor_size_host.py`が含まれる
 - [ ] `04_rotary_cursor_haptic/host/win`と`host/mac`がソースおよび配布キットに存在しない
 
@@ -6212,6 +6253,14 @@ workspace/exercises/04_rotary_cursor_haptic/host/cursor_size_host.py
 ```
 
 これらのホストは起動時にWindows/macOSバックエンドを選択する。`host/win`または`host/mac`を探す必要はない。
+
+`03_vibration_motor_console`の共通ホスト:
+
+```text
+workspace/exercises/03_vibration_motor_console/host/motorctl.py
+```
+
+通常はPythonファイルを直接実行せず、演習フォルダーで`make pulse`、`make on`、`make status`、`make off`を使用する。`make on`後に停止できない場合は直ちにUSBを外す。
 
 次の旧パスを実行時の標準として使用しない。
 
@@ -7941,8 +7990,8 @@ TEST7-001
 | Windowsポテンショメーター＋振動統合PoC v1.0.8 | 主要動作合格 |
 | ch32fun許可リストサブセット | 方針決定・未実装 |
 | 最終オフライン参加者向けZIP | 未確認 |
-| macOS Apple Silicon | `00`、`01`、`02`の当時の3演習は合格。現行`04_rotary_cursor_haptic`と統合後Pythonホストは実機再確認待ち |
-| ワークショップ必須演習としての採用 | `00`、`01`、`02`、`04`を採用済み |
+| macOS Apple Silicon | `00`、`01`、`02`の当時の3演習は合格。現行`03_vibration_motor_console`、`04_rotary_cursor_haptic`と統合後Pythonホストは実機再確認待ち |
+| ワークショップ必須演習としての採用 | `00`、`01`、`02`、`03`、`04`を採用済み |
 
 PoC合格を、そのまま最終リリース合格または参加者向け採用済みとして扱わない。
 
@@ -9353,6 +9402,34 @@ PC3の内部プルアップを使用し、GNDとKEYの2本だけを接続した�
 
 - Windows/macOS実機でのカーソル変更、振動、終了時復元
 
+---
+
+## 2026-08-11 `03_vibration_motor_console`静的確認
+
+### 変更
+
+- `vibration_motor_hid` PoCのFeature Report方式を、振動モジュール単体の必須演習として追加
+- `make pulse`、`make on`、`make status`、`make off`から共通Pythonホストを実行
+- レベル`1`〜`99`を500Hz PWM、レベル`100`を連続Highとして振動強度を変更
+- `03`で振動モジュールを配線し、`04`は配線済み状態から開始する手順へ変更
+
+### 結果
+
+- ホストプロトコル自己テスト: 合格
+- PWM強度変更後のWindows同梱ツールチェーンによるビルド: 合格（Flash 2,928 bytes、RAM 212 bytes）
+- 必須演習のソース構成検査: 合格
+- Windows/macOS配布ZIPへの収録を含む既存テスト11件: 合格
+
+### 未確認
+
+- `1209:C006`のmacOS実機列挙
+- macOS演習版での`make pulse`、`make on`、`make status`、`make off`による実際の振動
+- `03`から配線を変更せず`04`へ進む一連の実機動作
+
+### Windows実機追試
+
+利用者から、現行のPWM強度変更版`03_vibration_motor_console`がWindowsで動作し、`LEVEL=100`でも振動することの報告を受けた。Windows実機での書き込み、USB接続、MakeコマンドによるON/OFFとレベル変更を合格とし、Windows向け必須演習として完成扱いとする。`LEVEL=100`は連続Highであり、ソフトウェア上の最大出力である。今回は詳細ログを収録していないため、個々のコマンド出力や読取り値は記録しない。macOS演習版の実機確認は引き続き未確認とする。
+
 <!-- Source: 90_DECISIONS.md -->
 
 # 決定履歴
@@ -10663,3 +10740,31 @@ Windows test18では`make app-dry-run`が成功し、HID受信まで正常だっ
 - Windows/macOS配布ZIP構成を含む既存テスト11件: 合格
 - 同梱Makeによる`host-doctor`と主要ターゲット展開: 合格
 - Windows/macOS実機でのカーソル変更・振動・終了時復元: 再確認待ち
+
+---
+
+## 2026-08-11 `03_vibration_motor_console`の必須演習追加
+
+### 決定
+
+- 必須演習を`00`、`01`、`02`、`03`、`04`の5本とする
+- `03_vibration_motor_console`は`02_rotary_cursor_size`完了後に行う
+- `03`でドライバー回路内蔵5V振動モジュールをVCC→5V、GND→GND、IN→D6/A2 / PC4として追加する
+- `03`ではPoC `workspace/poc/vibration_motor_hid`を参考に、Vendor-defined HID Feature ReportでPCから振動モジュールを単体制御する
+- 振動レベルは`0`〜`100`とし、`0`はOFF、`1`〜`99`は500Hz PWM、`100`は連続Highとする
+- 参加者はPythonを直接実行せず、`make pulse LEVEL=<1..100>`、`make on LEVEL=<1..100>`、`make status`、`make off`を使用する
+- 短時間の確認には、自動的にOFFへ戻る`make pulse`を推奨する
+- `03`の暫定USB識別子は`1209:C006`、Product `UIAP Vibration Console`、Serial `TEST9-001`とする
+- `04_rotary_cursor_haptic`は`03`完了後に行い、振動モジュールが配線済みの状態から開始する
+- `04`では振動モジュールの配線を追加・変更しない
+- `03`／`04`ともVCC-GND間コンデンサーは追加せず、モーター本体をGPIOへ直接接続しない
+
+### 検証状態
+
+- `motorctl.py`の構文検査、Feature Reportプロトコル自己テスト: 合格
+- PWM強度変更後のWindows同梱ツールチェーンによる`03`ビルド: 合格（Flash 2,928 bytes、RAM 212 bytes）
+- Windows/macOS配布キットへの5演習収録を含む既存テスト11件: 合格
+- `03`の現行PWM強度変更版について、Windows実機での書き込み、USB接続、MakeコマンドによるON/OFFとレベル変更: 利用者実機合格
+- `LEVEL=100`は連続Highのソフトウェア上の最大出力とし、Windows向け必須演習として完成扱い
+- `03`のmacOS演習版での書き込み、USB列挙、振動動作: 実機確認待ち
+- `04`の配線済み開始手順: 実機確認待ち

@@ -20,10 +20,12 @@ Required exercises:
   00_onboard_led_blink
   01_macro_keyboard
   02_rotary_cursor_size
+  03_vibration_motor_console
   04_rotary_cursor_haptic
 
 Exercise 02 uses one cross-platform host/cursor_size_host.py.
-Exercise 03 uses one cross-platform host/cursor_size_host.py with haptic support.
+Exercise 03 controls the wired vibration module from make commands.
+Exercise 04 combines the cursor host with haptic feedback.
 Use cd to enter an exercise, then run its make targets.
 Do not use this test package for participants until validation is complete.
 EOF2

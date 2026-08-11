@@ -618,8 +618,8 @@ TEST7-001
 | Windowsポテンショメーター＋振動統合PoC v1.0.8 | 主要動作合格 |
 | ch32fun許可リストサブセット | 方針決定・未実装 |
 | 最終オフライン参加者向けZIP | 未確認 |
-| macOS Apple Silicon | `00`、`01`、`02`の当時の3演習は合格。現行`04_rotary_cursor_haptic`と統合後Pythonホストは実機再確認待ち |
-| ワークショップ必須演習としての採用 | `00`、`01`、`02`、`04`を採用済み |
+| macOS Apple Silicon | `00`、`01`、`02`の当時の3演習は合格。現行`03_vibration_motor_console`、`04_rotary_cursor_haptic`と統合後Pythonホストは実機再確認待ち |
+| ワークショップ必須演習としての採用 | `00`、`01`、`02`、`03`、`04`を採用済み |
 
 PoC合格を、そのまま最終リリース合格または参加者向け採用済みとして扱わない。
 
@@ -2029,3 +2029,31 @@ PC3の内部プルアップを使用し、GNDとKEYの2本だけを接続した�
 ### 未確認
 
 - Windows/macOS実機でのカーソル変更、振動、終了時復元
+
+---
+
+## 2026-08-11 `03_vibration_motor_console`静的確認
+
+### 変更
+
+- `vibration_motor_hid` PoCのFeature Report方式を、振動モジュール単体の必須演習として追加
+- `make pulse`、`make on`、`make status`、`make off`から共通Pythonホストを実行
+- レベル`1`〜`99`を500Hz PWM、レベル`100`を連続Highとして振動強度を変更
+- `03`で振動モジュールを配線し、`04`は配線済み状態から開始する手順へ変更
+
+### 結果
+
+- ホストプロトコル自己テスト: 合格
+- PWM強度変更後のWindows同梱ツールチェーンによるビルド: 合格（Flash 2,928 bytes、RAM 212 bytes）
+- 必須演習のソース構成検査: 合格
+- Windows/macOS配布ZIPへの収録を含む既存テスト11件: 合格
+
+### 未確認
+
+- `1209:C006`のmacOS実機列挙
+- macOS演習版での`make pulse`、`make on`、`make status`、`make off`による実際の振動
+- `03`から配線を変更せず`04`へ進む一連の実機動作
+
+### Windows実機追試
+
+利用者から、現行のPWM強度変更版`03_vibration_motor_console`がWindowsで動作し、`LEVEL=100`でも振動することの報告を受けた。Windows実機での書き込み、USB接続、MakeコマンドによるON/OFFとレベル変更を合格とし、Windows向け必須演習として完成扱いとする。`LEVEL=100`は連続Highであり、ソフトウェア上の最大出力である。今回は詳細ログを収録していないため、個々のコマンド出力や読取り値は記録しない。macOS演習版の実機確認は引き続き未確認とする。

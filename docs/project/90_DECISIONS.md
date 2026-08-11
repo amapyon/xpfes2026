@@ -1306,3 +1306,31 @@ Windows test18では`make app-dry-run`が成功し、HID受信まで正常だっ
 - Windows/macOS配布ZIP構成を含む既存テスト11件: 合格
 - 同梱Makeによる`host-doctor`と主要ターゲット展開: 合格
 - Windows/macOS実機でのカーソル変更・振動・終了時復元: 再確認待ち
+
+---
+
+## 2026-08-11 `03_vibration_motor_console`の必須演習追加
+
+### 決定
+
+- 必須演習を`00`、`01`、`02`、`03`、`04`の5本とする
+- `03_vibration_motor_console`は`02_rotary_cursor_size`完了後に行う
+- `03`でドライバー回路内蔵5V振動モジュールをVCC→5V、GND→GND、IN→D6/A2 / PC4として追加する
+- `03`ではPoC `workspace/poc/vibration_motor_hid`を参考に、Vendor-defined HID Feature ReportでPCから振動モジュールを単体制御する
+- 振動レベルは`0`〜`100`とし、`0`はOFF、`1`〜`99`は500Hz PWM、`100`は連続Highとする
+- 参加者はPythonを直接実行せず、`make pulse LEVEL=<1..100>`、`make on LEVEL=<1..100>`、`make status`、`make off`を使用する
+- 短時間の確認には、自動的にOFFへ戻る`make pulse`を推奨する
+- `03`の暫定USB識別子は`1209:C006`、Product `UIAP Vibration Console`、Serial `TEST9-001`とする
+- `04_rotary_cursor_haptic`は`03`完了後に行い、振動モジュールが配線済みの状態から開始する
+- `04`では振動モジュールの配線を追加・変更しない
+- `03`／`04`ともVCC-GND間コンデンサーは追加せず、モーター本体をGPIOへ直接接続しない
+
+### 検証状態
+
+- `motorctl.py`の構文検査、Feature Reportプロトコル自己テスト: 合格
+- PWM強度変更後のWindows同梱ツールチェーンによる`03`ビルド: 合格（Flash 2,928 bytes、RAM 212 bytes）
+- Windows/macOS配布キットへの5演習収録を含む既存テスト11件: 合格
+- `03`の現行PWM強度変更版について、Windows実機での書き込み、USB接続、MakeコマンドによるON/OFFとレベル変更: 利用者実機合格
+- `LEVEL=100`は連続Highのソフトウェア上の最大出力とし、Windows向け必須演習として完成扱い
+- `03`のmacOS演習版での書き込み、USB列挙、振動動作: 実機確認待ち
+- `04`の配線済み開始手順: 実機確認待ち

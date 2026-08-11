@@ -42,6 +42,11 @@ make flash
 make app-dry-run
 make app
 
+cd ../03_vibration_motor_console
+make
+make flash
+make pulse
+
 cd ../04_rotary_cursor_haptic
 make
 make flash
@@ -49,7 +54,7 @@ make app-dry-run
 make app
 ```
 
-`start-uiap.cmd`は`UIAP_PLATFORM=win`、`start-uiap.command`は`UIAP_PLATFORM=mac`を設定します。4演習のファームウェアは両OS共通です。`02_rotary_cursor_size`は振動なしのカーソルサイズ変更、`04_rotary_cursor_haptic`はその回路と処理へ振動モジュールを追加した演習です。両演習とも単一の`host/cursor_size_host.py`が実行時にOSバックエンドを選択します。
+`start-uiap.cmd`は`UIAP_PLATFORM=win`、`start-uiap.command`は`UIAP_PLATFORM=mac`を設定します。5演習のファームウェアは両OS共通です。`02_rotary_cursor_size`は振動なしのカーソルサイズ変更、`03_vibration_motor_console`は振動モジュールを配線してMakeコマンドから単体操作、`04_rotary_cursor_haptic`は両方を組み合わせる演習です。`02`と`04`は、それぞれ単一の`host/cursor_size_host.py`が実行時にOSバックエンドを選択します。
 
 最初に`workspace/preflight`を実行すると、USB HIDの列挙、PCとの往復通信、対象ボード、ファームウェアバージョン、MCU IDを演習前に確認できます。詳しくは[preflightのREADME](workspace/preflight/README.md)を参照してください。
 
@@ -120,6 +125,6 @@ GitHub Actionsの`Build participant kits`は、Windows runnerでWindows版、mac
 
 ## 演習ソースの統合状態
 
-4演習のファームウェアとビルド設定は、それぞれ演習直下の共通実装へ統合しています。`02_rotary_cursor_size`と`04_rotary_cursor_haptic`のポインター設定処理は、各演習の単一ホスト内でWindows/macOSバックエンドへ分離します。
+5演習のファームウェアとビルド設定は、それぞれ演習直下の共通実装へ統合しています。`03_vibration_motor_console`を含むホストプログラムはWindows/macOS共通です。`02_rotary_cursor_size`と`04_rotary_cursor_haptic`のポインター設定処理は、各演習の単一ホスト内でWindows/macOSバックエンドへ分離します。
 
 文書の一覧は[docs/README.md](docs/README.md)、詳細な統合仕様は[99_FULL_PROJECT_GUIDE.md](docs/project/99_FULL_PROJECT_GUIDE.md)を参照してください。

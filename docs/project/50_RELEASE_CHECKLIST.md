@@ -259,6 +259,7 @@ test10の初版`doctor`は未使用の`NEWLIB?=/usr/include/newlib`既定値ま�
 00_onboard_led_blink
 01_macro_keyboard
 02_rotary_cursor_size
+03_vibration_motor_console
 04_rotary_cursor_haptic
 ```
 
@@ -337,10 +338,12 @@ PoC用一時値を検索する。
 1209:C003
 1209:C004
 1209:C005
+1209:C006
 1209:D003
 TEST3-001
 TEST7-001
 TEST8-001
+TEST9-001
 ```
 
 確認事項:
@@ -1004,17 +1007,22 @@ ch32funの具体的な入力値は`15_CH32FUN_SUBSET_RULES.md`を参照し、こ
 
 `0x2029`は未文書化動作であるため、静的検査だけで合格にせず、Windows更新後を含む各リリース候補で実機確認する。具体的な不具合と復旧は`60_TROUBLESHOOTING.md`、検証事実は`70_VALIDATION_RESULTS.md`を正本とする。
 
-## 2026-08-11 `04_rotary_cursor_haptic`追加検査
+## 2026-08-11 `03_vibration_motor_console`・`04_rotary_cursor_haptic`追加検査
 
-- [ ] 必須演習が`00`、`01`、`02`、`04`の4フォルダーに分かれている
+- [ ] 必須演習が`00`、`01`、`02`、`03`、`04`の5フォルダーに分かれている
 - [ ] `02_rotary_cursor_size`に振動モジュール制御、Feature Report、PC4出力が含まれていない
 - [ ] `02_rotary_cursor_size`が従来の`1209:C004`、`UIAP Rotary Cursor`、`TEST7-001`を維持している
+- [ ] `03_vibration_motor_console`が`1209:C006`、`UIAP Vibration Console`、`TEST9-001`を使用する
+- [ ] `03`がFeature Report ID 1によるレベル`0`〜`100`と`make pulse`、`make on`、`make status`、`make off`を提供する
+- [ ] `make pulse LEVEL=25`、`75`、`100`で指定レベルへ変更でき、`LEVEL=100`が連続Highになる
+- [ ] `03`で振動モジュールを追加し、`04`では配線を変更しない
 - [ ] `04_rotary_cursor_haptic`が`1209:C005`、`UIAP Rotary Haptic`、`TEST8-001`を使用する
 - [ ] `04`の入力Report ID 1と触覚Feature Report ID 2をWindows/macOSホストが処理する
 - [ ] `04`でカーソルサイズ変更成功時だけ約60ms振動し、上限／下限とドライランでは振動しない
 - [ ] `02`と`04`の状態ファイル名が分離されている
 - [ ] 両演習でS1→D9 / PC7、S2→D8 / PC6の配線とファームウェア定義が一致する
-- [ ] `04`でVCC-GND間コンデンサーを追加しないこと、ドライバー内蔵モジュールを使用すること、GPIO直結禁止を参加者向け資料へ記載する
+- [ ] `03`／`04`でVCC-GND間コンデンサーを追加しないこと、ドライバー内蔵モジュールを使用すること、GPIO直結禁止を参加者向け資料へ記載する
+- [ ] Windows/macOS配布キットの両方に`03_vibration_motor_console/host/motorctl.py`が含まれる
 - [ ] Windows/macOS配布キットの両方に`04_rotary_cursor_haptic/host/cursor_size_host.py`が含まれる
 - [ ] `04_rotary_cursor_haptic/host/win`と`host/mac`がソースおよび配布キットに存在しない
 

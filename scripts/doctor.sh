@@ -22,13 +22,14 @@ printf '%s\n' 'UIAP unified repository doctor (macOS)'
 [ -f "$UIAP_WORKSPACE/deps/ch32fun/ch32fun/ch32fun.mk" ] && ok 'ch32fun' || bad 'ch32fun is missing; run setup'
 [ -f "$UIAP_WORKSPACE/deps/rv003usb/rv003usb/rv003usb.c" ] && ok 'rv003usb' || bad 'rv003usb is missing; run setup'
 
-for exercise in 00_onboard_led_blink 01_macro_keyboard 02_rotary_cursor_size 04_rotary_cursor_haptic; do
+for exercise in 00_onboard_led_blink 01_macro_keyboard 02_rotary_cursor_size 03_vibration_motor_console 04_rotary_cursor_haptic; do
     directory="$UIAP_WORKSPACE/exercises/$exercise"
     [ -f "$directory/Makefile" ] && ok "$exercise Makefile" || bad "$exercise Makefile is missing"
     case "$exercise" in
         00_onboard_led_blink) source_name=onboard_led_blink.c ;;
         01_macro_keyboard) source_name=macro_keyboard.c ;;
         02_rotary_cursor_size) source_name=rotary_cursor_size.c ;;
+        03_vibration_motor_console) source_name=vibration_motor_console.c ;;
         04_rotary_cursor_haptic) source_name=rotary_cursor_size.c ;;
     esac
     [ -f "$directory/$source_name" ] && ok "$exercise common firmware" || bad "$exercise common firmware is missing"
@@ -44,6 +45,7 @@ done
 if [ -x "$UIAP_PYTHON" ]; then
     "$UIAP_PYTHON" "$UIAP_WORKSPACE/exercises/01_macro_keyboard/host/hidcheck.py" --self-test >/dev/null 2>&1 && ok 'Macro keyboard host self-test' || bad 'Macro keyboard host self-test'
     "$UIAP_PYTHON" "$UIAP_WORKSPACE/exercises/02_rotary_cursor_size/host/cursor_size_host.py" self-test >/dev/null 2>&1 && ok 'Rotary cursor host self-test' || bad 'Rotary cursor host self-test'
+    "$UIAP_PYTHON" "$UIAP_WORKSPACE/exercises/03_vibration_motor_console/host/motorctl.py" self-test >/dev/null 2>&1 && ok 'Vibration console host self-test' || bad 'Vibration console host self-test'
     "$UIAP_PYTHON" "$UIAP_WORKSPACE/exercises/04_rotary_cursor_haptic/host/cursor_size_host.py" self-test >/dev/null 2>&1 && ok 'Rotary haptic host self-test' || bad 'Rotary haptic host self-test'
 fi
 

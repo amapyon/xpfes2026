@@ -188,7 +188,8 @@ macOS 26.5.2の実機では「スキップ」ボタンは表示されなかっ�
 |---|---|
 | `01_macro_keyboard` | GND→GND、KEY→D5 / PC3 |
 | `02_rotary_cursor_size` | S1→D9 / PC7、S2→D8 / PC6、5V→5V（赤い配線）を追加 |
-| `04_rotary_cursor_haptic` | `02`の5本を維持し、振動モジュールのVCC→5V、GND→GND、IN→D6/A2 / PC4を追加 |
+| `03_vibration_motor_console` | `02`の5本を維持し、振動モジュールのVCC→5V、GND→GND、IN→D6/A2 / PC4を追加 |
+| `04_rotary_cursor_haptic` | `03`完了時の配線を変更せず使用 |
 
 必要に応じて次も記載する。
 
@@ -227,15 +228,15 @@ macOS 26.5.2の実機では「スキップ」ボタンは表示されなかっ�
 | D8 / PC6 | S2 | 回転信号2 |
 | 5V | 5V | モジュール電源。赤い配線 |
 
-`04_rotary_cursor_haptic`へ進むとき、USBを外してからドライバー回路内蔵の5V振動モーターモジュールを追加する。エンコーダーの5本は変更しない。
+`03_vibration_motor_console`へ進むとき、USBを外してからドライバー回路内蔵の5V振動モーターモジュールを追加する。エンコーダーの5本は変更しない。
 
 | UIAPduino | 振動モジュール | 用途 |
 |---|---|---|
 | 5V | VCC | モーター電源 |
 | GND | GND | 共通GND |
-| D6/A2 / PC4 | IN | 約60msの振動ON/OFF制御 |
+| D6/A2 / PC4 | IN | `03`の単体ON/OFFと`04`の約60ms振動制御 |
 
-モーター本体をGPIOへ直接接続せず、ドライバー回路内蔵モジュールのIN端子だけをGPIOで制御する。今回の`04_rotary_cursor_haptic`ではVCC-GND間コンデンサーを追加しない。
+モーター本体をGPIOへ直接接続せず、ドライバー回路内蔵モジュールのIN端子だけをGPIOで制御する。今回の`03`／`04`ではVCC-GND間コンデンサーを追加しない。`04`では`03`の配線を変更しない。
 
 注意:
 
@@ -243,6 +244,7 @@ macOS 26.5.2の実機では「スキップ」ボタンは表示されなかっ�
 - `01`はPC3の内部プルアップを使用するため5Vへ接続しない
 - `02`で5Vを追加し、UIAPduinoのマイクロコントローラー電源が初期状態の5V設定であることを確認する
 - `01_macro_keyboard`はKEYだけを読み、`02_rotary_cursor_size`はS1/S2だけを読む
+- `03_vibration_motor_console`はPC4で振動モジュールを単体制御する
 - `04_rotary_cursor_haptic`はS1/S2を読み、PC4で振動モジュールを制御する
 - 押し続けでは繰り返さず、押下エッジで動作する構成とチャタリング対策を明記する
 - 回転方向が逆の場合はS1とS2を入れ替える
@@ -439,16 +441,17 @@ TEST7-001
 - 追加: 早く終わった参加者向け
 - 発展: ワークショップ後に試せる
 
-必須演習は次の4本とする。
+必須演習は次の5本とする。
 
 | 演習 | 最小到達点 |
 |---|---|
 | `00_onboard_led_blink` | ビルド、書き込み、基板上LED点滅 |
 | `01_macro_keyboard` | スイッチ1回で`AbCdE`、長押し抑止、キー解放 |
 | `02_rotary_cursor_size` | CW/CCW受信、カーソルサイズ変更、終了時復元 |
+| `03_vibration_motor_console` | `LEVEL=25`、`75`、`100`を比較し、`make pulse`、`make on`、`make off`で振動単体制御 |
 | `04_rotary_cursor_haptic` | `02`の動作に加え、変更時の短い振動 |
 
-必須演習には、配線、ビルド、書き込み、USB列挙、最小動作確認だけを含める。`04_rotary_cursor_haptic`ではドライバー内蔵5V振動モジュールを使用し、VCC-GND間コンデンサーは追加せず、モーター本体をGPIOへ直接接続しない。
+必須演習には、配線、ビルド、書き込み、USB列挙、最小動作確認だけを含める。`03_vibration_motor_console`でドライバー内蔵5V振動モジュールを配線し、`04`は配線済み状態から開始する。VCC-GND間コンデンサーは追加せず、モーター本体をGPIOへ直接接続しない。
 
 PC側アプリやパラメーター変更を含む場合も、完成済みサンプルを実行するだけで基本動作へ到達できる構成にする。`02_rotary_cursor_size`はmacOS 26.5.2の1台で基本動作を確認したが、非公開APIを使用するため、別Mac、最低対応macOS、USB切断時復元を確認するまでは十分な予備時間と代替デモを用意する。
 
@@ -668,9 +671,11 @@ make restore
 
 復元対象がない場合のエラーと、復元失敗を区別する。参加者向け資料には、非公開CoreGraphics APIを使用するためmacOS更新で動作が変わる可能性があること、動作しない場合は`make app-dry-run`までを成功扱いとして完成済みデモへ切り替えることを記載する。
 
-## 27. macOSロータリー触覚演習の手順記載
+## 27. macOS振動単体・ロータリー触覚演習の手順記載
 
-`04_rotary_cursor_haptic`は、先に`02_rotary_cursor_size`の成功を確認してから開始する。
+`03_vibration_motor_console`は、先に`02_rotary_cursor_size`の成功を確認してから開始する。振動モジュールを配線して`make flash`を実行後、`make list`で`1209:C006`を1台検出し、`make pulse LEVEL=25`、`LEVEL=75`、`LEVEL=100`で強さを比較する。`make on LEVEL=<1..100>`を使った場合は必ず`make status`と`make off`まで実行する。
+
+`04_rotary_cursor_haptic`は、先に`02_rotary_cursor_size`と`03_vibration_motor_console`の成功を確認してから開始する。振動モジュールは`03`で配線済みとし、`04`では配線を変更しない。
 
 実行場所:
 

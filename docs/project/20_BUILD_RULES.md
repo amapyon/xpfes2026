@@ -394,6 +394,12 @@ workspace/exercises/04_rotary_cursor_haptic/host/cursor_size_host.py
 
 両ファイルではHID列挙、入力処理、CLIを共通化し、Windows/macOS固有のポインター設定だけを別クラスへ分離して実行時に選択する。ファイル分割が必要な演習は`host/<platform>`を使用してよい。
 
+OS固有処理を必要としない共通ホストの例:
+
+```text
+workspace/exercises/03_vibration_motor_console/host/motorctl.py
+```
+
 次を標準とする。
 
 - トップレベルの`workspace/host`を使用しない

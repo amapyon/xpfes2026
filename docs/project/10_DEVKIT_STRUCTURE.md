@@ -108,6 +108,8 @@ uiap-devkit-win64/
         ├── 01_macro_keyboard/
         ├── 02_rotary_cursor_size/
         │   └── host/
+        ├── 03_vibration_motor_console/
+        │   └── host/
         └── 04_rotary_cursor_haptic/
             └── host/
 ```
@@ -345,6 +347,7 @@ Windows Command Promptの例:
 cd /d "%UIAP_WORKSPACE%\exercises\00_onboard_led_blink"
 cd /d "%UIAP_WORKSPACE%\exercises\01_macro_keyboard"
 cd /d "%UIAP_WORKSPACE%\exercises\02_rotary_cursor_size"
+cd /d "%UIAP_WORKSPACE%\exercises\03_vibration_motor_console"
 cd /d "%UIAP_WORKSPACE%\exercises\04_rotary_cursor_haptic"
 ```
 
@@ -354,6 +357,7 @@ macOSの例:
 cd "$UIAP_WORKSPACE/exercises/00_onboard_led_blink"
 cd "$UIAP_WORKSPACE/exercises/01_macro_keyboard"
 cd "$UIAP_WORKSPACE/exercises/02_rotary_cursor_size"
+cd "$UIAP_WORKSPACE/exercises/03_vibration_motor_console"
 cd "$UIAP_WORKSPACE/exercises/04_rotary_cursor_haptic"
 ```
 
@@ -491,6 +495,7 @@ workspace/exercises/
 ├── 00_onboard_led_blink/
 ├── 01_macro_keyboard/
 ├── 02_rotary_cursor_size/
+├── 03_vibration_motor_console/
 └── 04_rotary_cursor_haptic/
 ```
 
@@ -501,11 +506,12 @@ workspace/exercises/
 | `00_onboard_led_blink` | 必須。基板上LEDとビルド・書き込み確認 |
 | `01_macro_keyboard` | 必須。5ピンエンコーダーモジュールのGND/KEYだけを接続するUSB HIDキーボード |
 | `02_rotary_cursor_size` | 必須。同じモジュールへS1/S2/5Vを追加する回転入力と共通ホストアプリ |
-| `04_rotary_cursor_haptic` | 必須。`02`へ振動モジュールを追加する触覚フィードバック |
+| `03_vibration_motor_console` | 必須。振動モジュールを追加し、Makeコマンドから単体制御 |
+| `04_rotary_cursor_haptic` | 必須。`02`のカーソル操作と`03`の触覚制御を統合 |
 
-4演習すべてをワークショップ必須演習として採用する。`02_rotary_cursor_size`は振動なしの基本演習として維持し、`04_rotary_cursor_haptic`で触覚フィードバックを追加する。
+5演習すべてをワークショップ必須演習として採用する。`02`でカーソル操作、`03`で振動モジュールの配線と単体制御、`04`で両方を組み合わせる。
 
-4演習のファームウェアとビルド設定は演習直下へ置き、Windows/macOSで共用する。`02_rotary_cursor_size`と`04_rotary_cursor_haptic`は、それぞれ単一の`host/cursor_size_host.py`内でWindows/macOSバックエンドを実行時に選択する。
+5演習のファームウェアとビルド設定は演習直下へ置き、Windows/macOSで共用する。`03`の`host/motorctl.py`も共通である。`02_rotary_cursor_size`と`04_rotary_cursor_haptic`は、それぞれ単一の`host/cursor_size_host.py`内でWindows/macOSバックエンドを実行時に選択する。
 
 各演習は、原則として次を含む。
 
@@ -524,6 +530,20 @@ workspace/exercises/
 
 USBを使用しない演習では`usb_config.h`を省略してよい。PC側プログラムを使用しない演習では`host`を省略する。
 
+`03_vibration_motor_console`の構成:
+
+```text
+workspace/exercises/03_vibration_motor_console/
+├── README.md
+├── Makefile
+├── vibration_motor_console.c
+├── funconfig.h
+├── usb_config.h
+└── host/
+    ├── README.md
+    └── motorctl.py
+```
+
 `04_rotary_cursor_haptic`の構成:
 
 ```text
@@ -538,7 +558,7 @@ workspace/exercises/04_rotary_cursor_haptic/
     └── cursor_size_host.py
 ```
 
-この演習は`02_rotary_cursor_size`を複製して触覚フィードバックを追加した必須演習である。
+この演習は`02_rotary_cursor_size`のカーソル操作と、`03_vibration_motor_console`で配線・確認した振動モジュールを組み合わせる必須演習である。
 
 ### 8.4 各演習の`host`
 
