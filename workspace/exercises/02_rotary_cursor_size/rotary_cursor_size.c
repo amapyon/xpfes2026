@@ -1,8 +1,8 @@
 #include "ch32fun.h"
 #include "rv003usb.h"
 
-#define ENCODER_S1_PIN PC6
-#define ENCODER_S2_PIN PC7
+#define ENCODER_S1_PIN PC7
+#define ENCODER_S2_PIN PC6
 #define ENCODER_DIRECTION 1
 #define ENCODER_REPORT_SIZE 2u
 

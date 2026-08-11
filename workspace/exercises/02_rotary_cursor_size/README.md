@@ -1,10 +1,11 @@
 # 02_rotary_cursor_size
 
-[指定のセンタースイッチ付きロータリーエンコーダーモジュール](https://electronicwork.shop/items/64b9e54b9dd503007bc60458)の回転入力でOSのポインターサイズを変更する演習です。ファームウェアとUSB設定はWindows/macOS共通で、OS APIが異なるホスト処理だけを`host/win`と`host/mac`に分けています。
+[指定のセンタースイッチ付きロータリーエンコーダーモジュール](https://electronicwork.shop/items/64b9e54b9dd503007bc60458)の回転入力でOSのポインターサイズを変更する演習です。ファームウェア、USB設定、ホストアプリはWindows/macOS共通です。単一の`host/cursor_size_host.py`が実行時にOSを判定し、Windowsではレジストリと`SystemParametersInfoW`、macOSではCoreGraphics/SkyLightの非公開APIを使用します。
 
 ## 検証状態
 
-- 従来のOS別実装はWindows、macOSとも想定動作を実機確認済み
+- 統合後の共通ホストはWindowsで想定動作を実機確認済み
+- macOSは従来のOS別実装で確認済み。統合後の共通ホストは実機再確認待ち
 - 共通化後の単一ファームウェアは両OSで再確認が必要
 - VID:PID `1209:C004`とシリアル`TEST7-001`はPoC用一時値
 
@@ -16,9 +17,9 @@
 |---|---|---|
 | GND | GND | `01`から継続 |
 | D5 / PC3 | KEY | `01`から継続。`02`では未使用 |
-| D8 / PC6 | S1 | 追加 |
-| D9 / PC7 | S2 | 追加 |
-| 5V | 5V | 追加 |
+| D9 / PC7 | S1 | 追加 |
+| D8 / PC6 | S2 | 追加 |
+| 5V | 5V | 追加。赤い配線 |
 
 販売ページで指定されている動作電圧は5Vです。この演習では`S1`と`S2`を読み、`KEY`は配線したまま使用しません。5V接続時は、UIAPduinoのマイクロコントローラー電源が初期状態の5V設定であることを前提とします。
 

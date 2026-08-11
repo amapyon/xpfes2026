@@ -20,7 +20,7 @@ CH32FUN_ROOT := $(UIAP_WORKSPACE_POSIX)/deps/ch32fun
 CH32FUN := $(CH32FUN_ROOT)/ch32fun
 RV003USB := $(UIAP_WORKSPACE_POSIX)/deps/rv003usb
 MINICHLINK := $(UIAP_RUNTIME_POSIX)/bin
-CURSOR_HOST := $(CURDIR_POSIX)/host/$(UIAP_PLATFORM)/cursor_size_host.py
+CURSOR_HOST := $(CURDIR_POSIX)/host/cursor_size_host.py
 
 TARGET := rotary_cursor_size
 TARGET_MCU := CH32V003
@@ -43,7 +43,6 @@ doctor:
 report:
 	@report
 
-ifeq ($(UIAP_PLATFORM),win)
 hidcheck:
 	"$(UIAP_PYTHON)" "$(CURSOR_HOST)" hidcheck
 list:
@@ -58,20 +57,6 @@ restore:
 	"$(UIAP_PYTHON)" "$(CURSOR_HOST)" restore
 host-doctor:
 	"$(UIAP_PYTHON)" "$(CURSOR_HOST)" self-test
-else
-hidcheck: list
-list:
-	"$(UIAP_PYTHON)" "$(CURSOR_HOST)" --list
-app:
-	"$(UIAP_PYTHON)" "$(CURSOR_HOST)"
-app-dry-run:
-	"$(UIAP_PYTHON)" "$(CURSOR_HOST)" --dry-run
-cursor-test: host-doctor
-restore:
-	"$(UIAP_PYTHON)" "$(CURSOR_HOST)" --restore
-host-doctor:
-	"$(UIAP_PYTHON)" "$(CURSOR_HOST)" --self-test
-endif
 
 help:
 	@echo make

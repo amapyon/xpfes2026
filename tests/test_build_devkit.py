@@ -51,8 +51,6 @@ class BuildDevkitTests(unittest.TestCase):
                         self.assertIn(f"{preflight}/{relative}", names)
                     launcher = "start-uiap.cmd" if architecture == "win64" else "start-uiap.command"
                     self.assertIn(f"uiap-devkit-{architecture}/{launcher}", names)
-                    platform = "win" if architecture == "win64" else "mac"
-                    other = "mac" if platform == "win" else "win"
                     common_files = {
                         "00_onboard_led_blink": ("Makefile", "onboard_led_blink.c"),
                         "01_macro_keyboard": ("Makefile", "macro_keyboard.c", "usb_config.h", "host/hidcheck.py"),
@@ -62,9 +60,17 @@ class BuildDevkitTests(unittest.TestCase):
                         base = f"uiap-devkit-{architecture}/workspace/exercises/{exercise}"
                         for relative in required:
                             self.assertIn(f"{base}/{relative}", names)
-                    rotary_host = f"uiap-devkit-{architecture}/workspace/exercises/02_rotary_cursor_size/host"
-                    self.assertIn(f"{rotary_host}/{platform}/cursor_size_host.py", names)
-                    self.assertFalse(any(name.startswith(f"{rotary_host}/{other}/") for name in names))
+                    unified_host = (
+                        f"uiap-devkit-{architecture}/workspace/exercises/"
+                        "02_rotary_cursor_size/host/cursor_size_host.py"
+                    )
+                    self.assertIn(unified_host, names)
+                    rotary_host = (
+                        f"uiap-devkit-{architecture}/workspace/exercises/"
+                        "02_rotary_cursor_size/host"
+                    )
+                    self.assertFalse(any(name.startswith(f"{rotary_host}/win/") for name in names))
+                    self.assertFalse(any(name.startswith(f"{rotary_host}/mac/") for name in names))
                     self.assertFalse(any("\\" in item for item in names))
 
     def test_distribution_version_metadata_matches(self) -> None:
@@ -194,8 +200,9 @@ class UnifiedRepositoryTests(unittest.TestCase):
             self.assertFalse((root / "mac").exists())
 
         rotary_host = ROOT / "workspace" / "exercises" / "02_rotary_cursor_size" / "host"
-        for platform in ("win", "mac"):
-            self.assertTrue((rotary_host / platform / "cursor_size_host.py").is_file())
+        self.assertTrue((rotary_host / "cursor_size_host.py").is_file())
+        self.assertFalse((rotary_host / "win").exists())
+        self.assertFalse((rotary_host / "mac").exists())
 
     def test_macos_setup_builds_write_tool(self) -> None:
         setup = (ROOT / "scripts" / "setup.sh").read_text(encoding="utf-8")

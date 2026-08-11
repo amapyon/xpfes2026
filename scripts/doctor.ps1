@@ -55,7 +55,7 @@ $python = Join-Path $runtime 'python\python.exe'
 if (Test-Path -LiteralPath $python -PathType Leaf) {
     & $python (Join-Path $workspace 'exercises\01_macro_keyboard\host\hidcheck.py') --self-test
     if ($LASTEXITCODE -eq 0) { Pass 'Macro keyboard host self-test' } else { Fail 'Macro keyboard host self-test' }
-    & $python (Join-Path $workspace 'exercises\02_rotary_cursor_size\host\win\cursor_size_host.py') self-test
+    & $python (Join-Path $workspace 'exercises\02_rotary_cursor_size\host\cursor_size_host.py') self-test
     if ($LASTEXITCODE -eq 0) { Pass 'Rotary cursor host self-test' } else { Fail 'Rotary cursor host self-test' }
 }
 

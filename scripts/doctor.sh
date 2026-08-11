@@ -42,7 +42,7 @@ done
 
 if [ -x "$UIAP_PYTHON" ]; then
     "$UIAP_PYTHON" "$UIAP_WORKSPACE/exercises/01_macro_keyboard/host/hidcheck.py" --self-test >/dev/null 2>&1 && ok 'Macro keyboard host self-test' || bad 'Macro keyboard host self-test'
-    "$UIAP_PYTHON" "$UIAP_WORKSPACE/exercises/02_rotary_cursor_size/host/mac/cursor_size_host.py" --self-test >/dev/null 2>&1 && ok 'Rotary cursor host self-test' || bad 'Rotary cursor host self-test'
+    "$UIAP_PYTHON" "$UIAP_WORKSPACE/exercises/02_rotary_cursor_size/host/cursor_size_host.py" self-test >/dev/null 2>&1 && ok 'Rotary cursor host self-test' || bad 'Rotary cursor host self-test'
 fi
 
 warning 'Run make flash and make app with a connected UIAPduino to validate physical behavior.'
