@@ -188,7 +188,7 @@ macOS 26.5.2の実機では「スキップ」ボタンは表示されなかっ�
 |---|---|
 | `01_macro_keyboard` | GND→GND、KEY→D5 / PC3 |
 | `02_rotary_cursor_size` | S1→D9 / PC7、S2→D8 / PC6、5V→5V（赤い配線）を追加 |
-| `03_rotary_cursor_haptic` | `02`の5本を維持し、振動モジュールのVCC→5V、GND→GND、IN→D6/A2 / PC4を追加 |
+| `04_rotary_cursor_haptic` | `02`の5本を維持し、振動モジュールのVCC→5V、GND→GND、IN→D6/A2 / PC4を追加 |
 
 必要に応じて次も記載する。
 
@@ -227,7 +227,7 @@ macOS 26.5.2の実機では「スキップ」ボタンは表示されなかっ�
 | D8 / PC6 | S2 | 回転信号2 |
 | 5V | 5V | モジュール電源。赤い配線 |
 
-`03_rotary_cursor_haptic`へ進むとき、USBを外してからドライバー回路内蔵の5V振動モーターモジュールを追加する。エンコーダーの5本は変更しない。
+`04_rotary_cursor_haptic`へ進むとき、USBを外してからドライバー回路内蔵の5V振動モーターモジュールを追加する。エンコーダーの5本は変更しない。
 
 | UIAPduino | 振動モジュール | 用途 |
 |---|---|---|
@@ -235,7 +235,7 @@ macOS 26.5.2の実機では「スキップ」ボタンは表示されなかっ�
 | GND | GND | 共通GND |
 | D6/A2 / PC4 | IN | 約60msの振動ON/OFF制御 |
 
-モーター本体をGPIOへ直接接続せず、ドライバー回路内蔵モジュールのIN端子だけをGPIOで制御する。今回の`03_rotary_cursor_haptic`ではVCC-GND間コンデンサーを追加しない。
+モーター本体をGPIOへ直接接続せず、ドライバー回路内蔵モジュールのIN端子だけをGPIOで制御する。今回の`04_rotary_cursor_haptic`ではVCC-GND間コンデンサーを追加しない。
 
 注意:
 
@@ -243,7 +243,7 @@ macOS 26.5.2の実機では「スキップ」ボタンは表示されなかっ�
 - `01`はPC3の内部プルアップを使用するため5Vへ接続しない
 - `02`で5Vを追加し、UIAPduinoのマイクロコントローラー電源が初期状態の5V設定であることを確認する
 - `01_macro_keyboard`はKEYだけを読み、`02_rotary_cursor_size`はS1/S2だけを読む
-- `03_rotary_cursor_haptic`はS1/S2を読み、PC4で振動モジュールを制御する
+- `04_rotary_cursor_haptic`はS1/S2を読み、PC4で振動モジュールを制御する
 - 押し続けでは繰り返さず、押下エッジで動作する構成とチャタリング対策を明記する
 - 回転方向が逆の場合はS1とS2を入れ替える
 
@@ -446,9 +446,9 @@ TEST7-001
 | `00_onboard_led_blink` | ビルド、書き込み、基板上LED点滅 |
 | `01_macro_keyboard` | スイッチ1回で`AbCdE`、長押し抑止、キー解放 |
 | `02_rotary_cursor_size` | CW/CCW受信、カーソルサイズ変更、終了時復元 |
-| `03_rotary_cursor_haptic` | `02`の動作に加え、変更時の短い振動 |
+| `04_rotary_cursor_haptic` | `02`の動作に加え、変更時の短い振動 |
 
-必須演習には、配線、ビルド、書き込み、USB列挙、最小動作確認だけを含める。`03_rotary_cursor_haptic`ではドライバー内蔵5V振動モジュールを使用し、VCC-GND間コンデンサーは追加せず、モーター本体をGPIOへ直接接続しない。
+必須演習には、配線、ビルド、書き込み、USB列挙、最小動作確認だけを含める。`04_rotary_cursor_haptic`ではドライバー内蔵5V振動モジュールを使用し、VCC-GND間コンデンサーは追加せず、モーター本体をGPIOへ直接接続しない。
 
 PC側アプリやパラメーター変更を含む場合も、完成済みサンプルを実行するだけで基本動作へ到達できる構成にする。`02_rotary_cursor_size`はmacOS 26.5.2の1台で基本動作を確認したが、非公開APIを使用するため、別Mac、最低対応macOS、USB切断時復元を確認するまでは十分な予備時間と代替デモを用意する。
 
@@ -670,12 +670,12 @@ make restore
 
 ## 27. macOSロータリー触覚演習の手順記載
 
-`03_rotary_cursor_haptic`は、先に`02_rotary_cursor_size`の成功を確認してから開始する。
+`04_rotary_cursor_haptic`は、先に`02_rotary_cursor_size`の成功を確認してから開始する。
 
 実行場所:
 
 ```sh
-cd "$UIAP_WORKSPACE/exercises/03_rotary_cursor_haptic"
+cd "$UIAP_WORKSPACE/exercises/04_rotary_cursor_haptic"
 ```
 
 `make list`では`1209:C005`を1台検出する。`make app-dry-run`ではCW／CCWだけを確認し、振動しない。`make app`ではカーソルサイズの変更と再読取りに成功した時だけ、D6/A2 / PC4の振動モジュールが約60ms動作する。上限／下限、変更失敗時は振動しない。`Ctrl+C`終了時は起動前のカーソルサイズへ戻る。

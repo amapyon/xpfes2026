@@ -20,7 +20,7 @@ Required exercises:
   00_onboard_led_blink
   01_macro_keyboard
   02_rotary_cursor_size
-  03_rotary_cursor_haptic
+  04_rotary_cursor_haptic
 
 Exercise 02 uses one cross-platform host/cursor_size_host.py.
 Exercise 03 uses one cross-platform host/cursor_size_host.py with haptic support.

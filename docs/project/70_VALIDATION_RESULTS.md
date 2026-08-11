@@ -618,8 +618,8 @@ TEST7-001
 | Windowsポテンショメーター＋振動統合PoC v1.0.8 | 主要動作合格 |
 | ch32fun許可リストサブセット | 方針決定・未実装 |
 | 最終オフライン参加者向けZIP | 未確認 |
-| macOS Apple Silicon | `00`、`01`、`02`の当時の3演習は合格。現行`03_rotary_cursor_haptic`と統合後Pythonホストは実機再確認待ち |
-| ワークショップ必須演習としての採用 | `00`、`01`、`02`、`03`を採用済み |
+| macOS Apple Silicon | `00`、`01`、`02`の当時の3演習は合格。現行`04_rotary_cursor_haptic`と統合後Pythonホストは実機再確認待ち |
+| ワークショップ必須演習としての採用 | `00`、`01`、`02`、`04`を採用済み |
 
 PoC合格を、そのまま最終リリース合格または参加者向け採用済みとして扱わない。
 
@@ -2011,13 +2011,13 @@ PC3の内部プルアップを使用し、GNDとKEYの2本だけを接続した�
 
 ---
 
-## 2026-08-11 `03_rotary_cursor_haptic`共通ホスト静的確認
+## 2026-08-11 `04_rotary_cursor_haptic`共通ホスト静的確認
 
 ### 変更
 
 - Windows/macOS別ホストを`host/cursor_size_host.py`へ統合
 - `02`と同じOSバックエンド構成へ、Report ID 1の入力とFeature Report ID 2の触覚指示を追加
-- `03`専用のWindows/macOS状態ファイル名を維持
+- `04`専用のWindows/macOS状態ファイル名を維持
 
 ### 結果
 

@@ -389,7 +389,7 @@ OS差を単一ファイル内のバックエンドへ閉じ込める例:
 
 ```text
 workspace/exercises/02_rotary_cursor_size/host/cursor_size_host.py
-workspace/exercises/03_rotary_cursor_haptic/host/cursor_size_host.py
+workspace/exercises/04_rotary_cursor_haptic/host/cursor_size_host.py
 ```
 
 両ファイルではHID列挙、入力処理、CLIを共通化し、Windows/macOS固有のポインター設定だけを別クラスへ分離して実行時に選択する。ファイル分割が必要な演習は`host/<platform>`を使用してよい。

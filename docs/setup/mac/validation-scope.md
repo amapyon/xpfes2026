@@ -2,7 +2,7 @@
 
 更新日: 2026-08-01
 
-> この文書はtest13時点の検証範囲を記録した履歴資料です。現行の必須4演習と`02`／`03`の共通ホストに関する状態は、`required-exercises.md`と`../../project/70_VALIDATION_RESULTS.md`を参照してください。
+> この文書はtest13時点の検証範囲を記録した履歴資料です。現行の必須4演習と`02`／`04`の共通ホストに関する状態は、`required-exercises.md`と`../../project/70_VALIDATION_RESULTS.md`を参照してください。
 
 ## 既存の確認済み基準
 

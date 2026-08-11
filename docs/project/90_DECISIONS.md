@@ -1229,16 +1229,16 @@ Windows test18では`make app-dry-run`が成功し、HID受信まで正常だっ
 
 ---
 
-## 2026-08-11 `03_rotary_cursor_haptic`の必須演習追加
+## 2026-08-11 `04_rotary_cursor_haptic`の必須演習追加
 
 ### 決定
 
 - 振動なしの`02_rotary_cursor_size`は従来の独立した必須演習として維持する
-- `02_rotary_cursor_size`の内容を新しい`03_rotary_cursor_haptic`へコピーし、振動による触覚フィードバックだけを`03`へ追加する
-- `03`ではドライバー回路内蔵の5V振動モーターモジュールを使用し、VCC→5V、GND→GND、IN→D6/A2 / PC4とする
-- 今回の`03`では振動モジュールのVCC-GND間コンデンサーを追加せず、モーター本体をGPIOへ直接接続しない
-- `03`のUSB識別子は暫定VID:PID `1209:C005`、Product `UIAP Rotary Haptic`、Serial `TEST8-001`とする
-- `03`のHID入力を`[Report ID 1, delta, sequence]`とし、触覚指示にはFeature Report `[Report ID 2, 1]`を使用する
+- `02_rotary_cursor_size`の内容を新しい`04_rotary_cursor_haptic`へコピーし、振動による触覚フィードバックだけを`04`へ追加する
+- `04`ではドライバー回路内蔵の5V振動モーターモジュールを使用し、VCC→5V、GND→GND、IN→D6/A2 / PC4とする
+- 今回の`04`では振動モジュールのVCC-GND間コンデンサーを追加せず、モーター本体をGPIOへ直接接続しない
+- `04`のUSB識別子は暫定VID:PID `1209:C005`、Product `UIAP Rotary Haptic`、Serial `TEST8-001`とする
+- `04`のHID入力を`[Report ID 1, delta, sequence]`とし、触覚指示にはFeature Report `[Report ID 2, 1]`を使用する
 - ホストアプリがOSのカーソルサイズを変更して再読取りに成功した時だけ、約60msの振動を指示する
 - 上限／下限、`make app-dry-run`、カーソル変更失敗時は振動させない
 - 起動時はPC4をLowとし、指示後はファームウェア側のタイマーで必ずLowへ戻す
@@ -1253,11 +1253,11 @@ Windows test18では`make app-dry-run`が成功し、HID受信まで正常だっ
 
 - `02_rotary_cursor_size`の振動追加前状態への復元: 完了
 - Windows同梱ツールチェーンによる`02`ビルド: 合格（Flash 2,340 bytes、RAM 200 bytes）
-- Windows同梱ツールチェーンによる`03`ビルド: 合格（Flash 2,640 bytes、RAM 204 bytes）
-- `02`と`03`のWindows/macOSホストPython構文検査: 合格
-- `02`の従来プロトコル自己テストと`03`の入力Report ID・触覚コマンド自己テスト: 合格
+- Windows同梱ツールチェーンによる`04`ビルド: 合格（Flash 2,640 bytes、RAM 204 bytes）
+- `02`と`04`のWindows/macOSホストPython構文検査: 合格
+- `02`の従来プロトコル自己テストと`04`の入力Report ID・触覚コマンド自己テスト: 合格
 - 4演習のWindows/macOS配布キット生成を含む既存テスト11件: 合格
-- `03_rotary_cursor_haptic`のWindows/macOS実機動作: 再確認待ち
+- `04_rotary_cursor_haptic`のWindows/macOS実機動作: 再確認待ち
 
 ---
 
@@ -1270,7 +1270,7 @@ Windows test18では`make app-dry-run`が成功し、HID受信まで正常だっ
 - ポインター設定処理だけを`WindowsCursorBackend`と`MacCursorBackend`へ分離し、実行時にOSを選択する
 - コマンドを`list`、`hidcheck`、`dry-run`、`app`、`restore`、`cursor-test`、`self-test`、`version`へ統一する
 - WindowsのJSON状態ファイルと旧形式移行、macOSの倍率状態ファイルは従来形式を維持する
-- この時点では`03_rotary_cursor_haptic`を統合対象外として`host/win`と`host/mac`を維持した。後続の「`03_rotary_cursor_haptic`ホストのWindows/macOS共通化」で更新済みである
+- この時点では`04_rotary_cursor_haptic`を統合対象外として`host/win`と`host/mac`を維持した。後続の「`04_rotary_cursor_haptic`ホストのWindows/macOS共通化」で更新済みである
 
 ### 根拠
 
@@ -1290,13 +1290,13 @@ Windows test18では`make app-dry-run`が成功し、HID受信まで正常だっ
 
 ---
 
-## 2026-08-11 `03_rotary_cursor_haptic`ホストのWindows/macOS共通化
+## 2026-08-11 `04_rotary_cursor_haptic`ホストのWindows/macOS共通化
 
 ### 決定
 
 - `host/win/cursor_size_host.py`と`host/mac/cursor_size_host.py`を廃止し、`host/cursor_size_host.py`へ統合する
 - `02_rotary_cursor_size`と同じ共通HID・CLI・OSバックエンド構成を使用する
-- `03`固有のPID `C005`、入力Report ID 1、触覚Feature Report ID 2、専用状態ファイルを維持する
+- `04`固有のPID `C005`、入力Report ID 1、触覚Feature Report ID 2、専用状態ファイルを維持する
 - OSのカーソル変更と再読取りが成功した時だけ振動を指示する
 - 上限／下限、ドライラン、カーソル変更失敗時は振動させない
 

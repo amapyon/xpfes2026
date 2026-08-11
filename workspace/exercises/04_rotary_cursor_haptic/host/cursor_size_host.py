@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""03_rotary_cursor_haptic用のWindows/macOS共通ホストアプリ。"""
+"""04_rotary_cursor_haptic用のWindows/macOS共通ホストアプリ。"""
 
 from __future__ import annotations
 
@@ -148,7 +148,7 @@ class WindowsCursorBackend:
         return (
             devkit_root()
             / ".state"
-            / "03_rotary_cursor_haptic.cursor-size-before.json"
+            / "04_rotary_cursor_haptic.cursor-size-before.json"
         )
 
     @staticmethod
@@ -596,7 +596,7 @@ class MacCursorBackend:
         return (
             devkit_root()
             / ".state"
-            / "03_rotary_cursor_haptic.original-scale"
+            / "04_rotary_cursor_haptic.original-scale"
         )
 
     @staticmethod

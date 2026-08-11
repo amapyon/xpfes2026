@@ -1002,11 +1002,11 @@ OS固有ホストをファイル分割する場合:
 workspace/exercises/<exercise-name>/host/<platform>/<program>.py
 ```
 
-`02_rotary_cursor_size`と`03_rotary_cursor_haptic`の共通ホスト:
+`02_rotary_cursor_size`と`04_rotary_cursor_haptic`の共通ホスト:
 
 ```text
 workspace/exercises/02_rotary_cursor_size/host/cursor_size_host.py
-workspace/exercises/03_rotary_cursor_haptic/host/cursor_size_host.py
+workspace/exercises/04_rotary_cursor_haptic/host/cursor_size_host.py
 ```
 
 これらのホストは起動時にWindows/macOSバックエンドを選択する。`host/win`または`host/mac`を探す必要はない。
@@ -2115,4 +2115,4 @@ Windowsホストの`decode_delta`は、常に先頭バイトを移動量とし�
 
 修正後、同じMac test13ファームウェアをWindowsへ接続し、静止中は値が表示されず、回転時だけ期待するCW／CCWが表示されることを利用者実機で確認した。ファームウェアの再書き込みは不要である。
 
-2026-08-11追加の`03_rotary_cursor_haptic`は3バイトの`[Report ID 1, delta, sequence]`を使用する。`03`のホストは3バイト時だけReport IDを読み飛ばし、コピー元の`02`を含む旧2バイト形式では従来どおり先頭をdeltaとして扱う。
+2026-08-11追加の`04_rotary_cursor_haptic`は3バイトの`[Report ID 1, delta, sequence]`を使用する。`04`のホストは3バイト時だけReport IDを読み飛ばし、コピー元の`02`を含む旧2バイト形式では従来どおり先頭をdeltaとして扱う。

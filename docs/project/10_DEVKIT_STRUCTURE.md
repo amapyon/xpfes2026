@@ -108,7 +108,7 @@ uiap-devkit-win64/
         ├── 01_macro_keyboard/
         ├── 02_rotary_cursor_size/
         │   └── host/
-        └── 03_rotary_cursor_haptic/
+        └── 04_rotary_cursor_haptic/
             └── host/
 ```
 
@@ -345,7 +345,7 @@ Windows Command Promptの例:
 cd /d "%UIAP_WORKSPACE%\exercises\00_onboard_led_blink"
 cd /d "%UIAP_WORKSPACE%\exercises\01_macro_keyboard"
 cd /d "%UIAP_WORKSPACE%\exercises\02_rotary_cursor_size"
-cd /d "%UIAP_WORKSPACE%\exercises\03_rotary_cursor_haptic"
+cd /d "%UIAP_WORKSPACE%\exercises\04_rotary_cursor_haptic"
 ```
 
 macOSの例:
@@ -354,7 +354,7 @@ macOSの例:
 cd "$UIAP_WORKSPACE/exercises/00_onboard_led_blink"
 cd "$UIAP_WORKSPACE/exercises/01_macro_keyboard"
 cd "$UIAP_WORKSPACE/exercises/02_rotary_cursor_size"
-cd "$UIAP_WORKSPACE/exercises/03_rotary_cursor_haptic"
+cd "$UIAP_WORKSPACE/exercises/04_rotary_cursor_haptic"
 ```
 
 手順書では、対象演習ごとに実行する`cd`を明記する。参加者に演習番号や別名コマンドを暗記させない。
@@ -491,7 +491,7 @@ workspace/exercises/
 ├── 00_onboard_led_blink/
 ├── 01_macro_keyboard/
 ├── 02_rotary_cursor_size/
-└── 03_rotary_cursor_haptic/
+└── 04_rotary_cursor_haptic/
 ```
 
 役割:
@@ -501,11 +501,11 @@ workspace/exercises/
 | `00_onboard_led_blink` | 必須。基板上LEDとビルド・書き込み確認 |
 | `01_macro_keyboard` | 必須。5ピンエンコーダーモジュールのGND/KEYだけを接続するUSB HIDキーボード |
 | `02_rotary_cursor_size` | 必須。同じモジュールへS1/S2/5Vを追加する回転入力と共通ホストアプリ |
-| `03_rotary_cursor_haptic` | 必須。`02`へ振動モジュールを追加する触覚フィードバック |
+| `04_rotary_cursor_haptic` | 必須。`02`へ振動モジュールを追加する触覚フィードバック |
 
-4演習すべてをワークショップ必須演習として採用する。`02_rotary_cursor_size`は振動なしの基本演習として維持し、`03_rotary_cursor_haptic`で触覚フィードバックを追加する。
+4演習すべてをワークショップ必須演習として採用する。`02_rotary_cursor_size`は振動なしの基本演習として維持し、`04_rotary_cursor_haptic`で触覚フィードバックを追加する。
 
-4演習のファームウェアとビルド設定は演習直下へ置き、Windows/macOSで共用する。`02_rotary_cursor_size`と`03_rotary_cursor_haptic`は、それぞれ単一の`host/cursor_size_host.py`内でWindows/macOSバックエンドを実行時に選択する。
+4演習のファームウェアとビルド設定は演習直下へ置き、Windows/macOSで共用する。`02_rotary_cursor_size`と`04_rotary_cursor_haptic`は、それぞれ単一の`host/cursor_size_host.py`内でWindows/macOSバックエンドを実行時に選択する。
 
 各演習は、原則として次を含む。
 
@@ -524,10 +524,10 @@ workspace/exercises/
 
 USBを使用しない演習では`usb_config.h`を省略してよい。PC側プログラムを使用しない演習では`host`を省略する。
 
-`03_rotary_cursor_haptic`の構成:
+`04_rotary_cursor_haptic`の構成:
 
 ```text
-workspace/exercises/03_rotary_cursor_haptic/
+workspace/exercises/04_rotary_cursor_haptic/
 ├── README.md
 ├── Makefile
 ├── rotary_cursor_size.c

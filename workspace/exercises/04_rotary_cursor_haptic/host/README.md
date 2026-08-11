@@ -1,6 +1,6 @@
 # Cross-platform host application
 
-`cursor_size_host.py`は、Windows 11とmacOS Apple Siliconで共用する`03_rotary_cursor_haptic`のホストアプリケーションです。
+`cursor_size_host.py`は、Windows 11とmacOS Apple Siliconで共用する`04_rotary_cursor_haptic`のホストアプリケーションです。
 
 共通部分:
 
