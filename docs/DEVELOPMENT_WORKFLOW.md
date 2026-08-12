@@ -15,7 +15,11 @@
 
 `workspace/`はWindows版とmacOS版の両方へ収録します。`preflight/`は両OS共通のファームウェアとhidapiホスト診断を収録します。正式演習は共通Makefileを入口にし、現在の実機検証済み実装を`win/`と`mac/`へ分けて保持します。
 
-## PoCの開始
+## 受講者の自由制作
+
+受講者の標準作業場所は`workspace/poc/my_device1`です。追加案を自力で試す場合だけ、`my_device1`完成後に`my_device2`、`my_device3`を順番に使用できます。完成品は最大3件とし、ワークショップ資料と講師の通常サポートには`my_device1`だけを記載します。
+
+## 主催者用PoCの開始
 
 ```console
 python tools/new_poc.py <project-name>

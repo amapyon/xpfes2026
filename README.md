@@ -93,7 +93,9 @@ tests/
 
 演習とPoCはリポジトリ直下の`workspace/`を正本とします。OSによる実装差がないソースは演習直下へ置き、実装差が必要な場合だけ`win/`と`mac/`へ分けます。
 
-PoCは`workspace/poc/<project-name>/`へ追加します。`workspace/poc/`は参考・発展用として参加者向けDevkitにも収録しますが、正式演習は`workspace/exercises/`と区別します。プロジェクト内の共通ファイルは直下へ置き、どうしても異なる実装だけを`win/`、`mac/`へ分けます。配布時は対象OS側のディレクトリだけがそのDevkitへ入ります。
+受講者の自由制作は`workspace/poc/my_device1/`を標準作業場所とします。完成品は最大3件までとし、追加案を自力で試す場合だけ`my_device2/`、`my_device3/`を順番に使用します。ワークショップ資料と講師の通常サポートは`my_device1/`だけを対象とします。
+
+主催者用PoCは`workspace/poc/<project-name>/`へ追加します。`workspace/poc/`は参考・発展用として参加者向けDevkitにも収録しますが、正式演習は`workspace/exercises/`と区別します。プロジェクト内の共通ファイルは直下へ置き、どうしても異なる実装だけを`win/`、`mac/`へ分けます。配布時は対象OS側のディレクトリだけがそのDevkitへ入ります。
 
 ```console
 python tools/new_poc.py my_new_poc
