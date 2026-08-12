@@ -991,7 +991,7 @@ Devkit全体へ再帰的な隔離属性削除を行わない。`runtime/build`�
 - 入力アーカイブSHA-256の正式固定
 - `-I/usr/include/newlib`への暗黙依存除去
 - 最終オンライン`setup`の通し検証
-- Developer ID署名・公証または正式な個別許可方針
+- Developer ID署名・公証を行わない構成での正式な個別許可手順と実機検証
 - 別のApple Silicon Mac、別ユーザー、macOS 26以降の対象環境
 - 最終オンライン・ブートストラップ版の通し検証
 
