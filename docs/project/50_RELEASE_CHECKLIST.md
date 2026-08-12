@@ -1,6 +1,6 @@
 # 配布パッケージ作成・リリースチェックリスト
 
-更新日: 2026-08-05
+更新日: 2026-08-12
 
 ## 1. 対象成果物
 
@@ -71,7 +71,6 @@
 - 個人情報
 - 開発者固有の絶対パス
 - 実機のMCU UUID
-- 未採用PoC
 - 通常のビルド生成物
 - 完成途中のvenv
 - `.state`の個人別状態
@@ -478,9 +477,9 @@ macOS:
 - 参加者向け演習が`workspace/exercises`
 - 演習固有のPC側プログラムが各演習の`host`配下
 - トップレベルの`workspace/host`が存在しない
-- 主催者用PoCが`workspace/poc`
+- 参考・発展用PoCと`_template`が`workspace/poc`にあり、Windows版・macOS版のZIPへ収録されている
 - `workspace`直下に未移行の`*_poc`がない
-- 採用済み演習と未採用PoCが混在しない
+- 正式演習の`workspace/exercises`とPoCの`workspace/poc`が分離されている
 - 不要な`.git`がない
 - `logs/`に実行ログがない
 - `.state/`に個人状態がない

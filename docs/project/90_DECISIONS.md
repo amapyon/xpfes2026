@@ -49,7 +49,7 @@
 
 - 外部依存は`workspace/deps`
 - 参加者向け演習は`workspace/exercises`
-- 主催者用PoCは`workspace/poc`
+- 参考・発展用PoCは`workspace/poc`
 - 共通補助スクリプトはトップレベル`scripts`
 - 復旧用バイナリは`firmware`
 - ライセンスは`licenses`
@@ -180,7 +180,7 @@ C:\pj\uiap-devkit-win64\workspace\vibration_motor_poc
 workspace/poc/vibration_motor_poc
 ```
 
-必要なら旧PoCを標準位置へ移動し、Makefileの依存参照を`UIAP_WORKSPACE`ベースへ変更する。参加者向け配布版へ含めるかは別途判断する。
+必要なら旧PoCを標準位置へ移動し、Makefileの依存参照を`UIAP_WORKSPACE`ベースへ変更する。当時は参加者向け配布版への収録を保留していたが、2026-08-12の決定により収録対象とした。
 
 ---
 
@@ -199,7 +199,6 @@ workspace/poc/vibration_motor_poc
 - 使用するVS Code拡張機能
 - 配布する電子部品の最終構成
 - 当日のネットワーク接続を前提とするか
-- `workspace/poc`を参加者向け配布版へ含めるか
 - ブートローダーおよび復旧用ファームウェアの配布範囲
 - ブートローダー破損時の復旧手順と必要機材
 - `runtime`をどこまで最小化するか
@@ -1456,3 +1455,20 @@ Windows実機で休止期間が点灯する症状を確認したため、基板�
 - 詳細ログ、個々のコマンド出力、macOSバージョンは今回記録していない
 - `04_rotary_cursor_haptic`のmacOS実機動作は未確認
 - `02`のUSB切断時復元、別Mac・別ユーザーでの再現性は未確認
+
+---
+
+## 2026-08-12 PoCの参加者向けDevkit収録
+
+### 決定
+
+- `workspace/poc`の内容をWindows版・macOS版の参加者向けDevkitへ収録する
+- PoCは参考・発展用とし、`workspace/exercises`の正式演習とは区別する
+- `_template`も新規PoCのひな型として収録する
+- 各PoC直下の`win`はWindows版だけ、`mac`はmacOS版だけへ収録する
+- ログ、個人状態、通常のビルド生成物など、Devkit全体の除外規則はPoCにも適用する
+
+### 実装状態
+
+- `tools/build_devkit.py`はすでに`workspace`全体を配布対象としており、この方針と一致する
+- 配布ZIPの自動テストで、実在するPoCのファームウェアとホストプログラムの収録を確認する

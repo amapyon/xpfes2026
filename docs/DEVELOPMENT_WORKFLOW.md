@@ -25,6 +25,8 @@ python tools/new_poc.py <project-name>
 
 PoCが演習として確定したら、実機検証結果を記録して`workspace/exercises/`へ移します。検証途中のPoCを正式演習として説明しません。
 
+`workspace/poc/`は参考・発展用として参加者向けDevkitへ収録します。収録されていても正式演習への採用を意味しないため、参加者向けの必須手順は`workspace/exercises/`だけを基準にします。
+
 ## Devkitの生成
 
 ```console
@@ -36,7 +38,7 @@ python tools/build_devkit.py --target all
 1. ルートの起動ファイル、`scripts/`、`config/`、`workspace/`を収集する
 2. Windows版にはWindows用スクリプトと各演習の`win/`だけを収録する
 3. macOS版にはMac用スクリプトと各演習の`mac/`だけを収録する
-4. PoC内の反対OS用ディレクトリを除外する
+4. PoCを収録し、PoC内の反対OS用ディレクトリだけを除外する
 5. ビルド生成物の混入を検査する
 6. 再現可能なZIPとSHA-256を`dist/`へ生成する
 

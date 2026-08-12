@@ -75,7 +75,7 @@ uiap-devkit-macarm64-<version>.zip
 
 ## 4. Windows版の現行ディレクトリ構成
 
-2026-07-25時点で確認したWindows版のディレクトリ構成は次のとおり。
+参加者向けWindows版の標準ディレクトリ構成は次のとおり。
 
 `tree`コマンドではファイルが表示されないため、トップレベルの`README.md`、`VERSION`、`manifest.sha256`、`start-uiap.cmd`などは別途管理対象とする。
 
@@ -103,22 +103,25 @@ uiap-devkit-win64/
     │   ├── ch32fun/
     │   └── rv003usb/
     ├── preflight/
-    └── exercises/
-        ├── 00_onboard_led_blink/
-        ├── 01_macro_keyboard/
-        ├── 02_rotary_cursor_size/
-        │   └── host/
-        ├── 03_vibration_motor_console/
-        │   └── host/
-        └── 04_rotary_cursor_haptic/
-            └── host/
+    ├── exercises/
+    │   ├── 00_onboard_led_blink/
+    │   ├── 01_macro_keyboard/
+    │   ├── 02_rotary_cursor_size/
+    │   │   └── host/
+    │   ├── 03_vibration_motor_console/
+    │   │   └── host/
+    │   └── 04_rotary_cursor_haptic/
+    │       └── host/
+    └── poc/
+        ├── _template/
+        └── <project>/
 ```
 
 この構成をWindows版の標準とする。
 
 PC側ホストプログラムは、対応する演習の`host`ディレクトリへ配置する。トップレベルの`workspace/host`は作成しない。PC側プログラムを使用しない演習には、空の`host`ディレクトリを作成しない。
 
-`workspace/poc`は主催者用開発環境では使用できるが、現在の参加者向けツリーには存在しない。未採用PoCを参加者向け配布版へ追加しない。
+`workspace/poc`は参考・発展用として参加者向けDevkitへ収録する。PoCは正式演習ではなく、参加者向けの必須手順は`workspace/exercises`だけを基準にする。
 
 ## 5. トップレベル項目の責務
 
@@ -591,19 +594,19 @@ workspace/exercises/02_rotary_cursor_size/
 
 ### 8.5 `workspace/poc`
 
-現行の参加者向けツリーには存在しない。
-
-主催者用の未採用PoCを保持する場合は、内部開発版だけに次を追加してよい。
+検証中または実験用のPoCを保持し、参考・発展用として参加者向けDevkitへ収録する。
 
 ```text
 workspace/poc/
 ```
 
-参加者向けZIPへ未採用PoCを含めない。
+`_template/`を含むディレクトリ全体を配布対象とする。ただし、各PoC直下の`win/`はWindows版だけ、`mac/`はmacOS版だけへ収録する。ログ、個人状態、通常のビルド生成物など、Devkit全体の除外規則はPoCにも適用する。
+
+PoCは配布されていても正式演習への採用を意味しない。目的、前提、確認方法、検証状態を各PoCのREADMEなどへ明記する。
 
 PoCを演習へ採用するときは、次を行う。
 
-1. `workspace/exercises`へ移す
+1. `workspace/exercises`へ参加者向け演習を作成する
 2. 固定パスを除去する
 3. 参加者向けREADMEを作成する
 4. WindowsとmacOSで検証する
@@ -836,7 +839,7 @@ C:\Users\<user>
 - ダウンロード失敗、SHA-256不一致、途中再実行、キャッシュ再利用を検証する
 - 管理者権限不要
 - 実行ログと利用者の`.state`を配布ZIPから除外する
-- 未採用PoCを除外する
+- `workspace/poc`を参考・発展用として収録する
 - ライセンスと対応ソース情報を管理する
 
 ## 17. 参加者向けZIPから除外するもの
@@ -845,7 +848,6 @@ C:\Users\<user>
 - セットアップ途中の一時ファイル
 - 実行ログ
 - 利用者固有の`.state`
-- 未採用PoC
 - 不要な`.git`
 - 個人設定
 - パケットキャプチャ

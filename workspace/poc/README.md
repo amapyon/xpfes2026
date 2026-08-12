@@ -18,4 +18,4 @@ my_new_poc/
 
 新規作成時には`win/`と`mac/`は生成されません。共通ソースを複製して両方へ置かず、まず`src/`などプロジェクト直下へ共通実装を置いてください。OS API、起動処理、ホストアプリなど避けられない差分が生じた時だけ、必要なディレクトリを追加します。
 
-`tools/build_devkit.py`は`workspace/`全体を配布対象にします。ただし、各PoC直下の`win/`はWindows版だけ、`mac/`はmacOS版だけへ収録します。`_template/`は新規PoCのひな型です。
+`tools/build_devkit.py`は`workspace/`全体を参加者向け配布対象にするため、このディレクトリのPoCプログラムと`_template/`もDevkitへ収録されます。ただし、各PoC直下の`win/`はWindows版だけ、`mac/`はmacOS版だけへ収録します。PoCは参考・発展用であり、`workspace/exercises/`の正式演習とは区別します。

@@ -93,7 +93,7 @@ tests/
 
 演習とPoCはリポジトリ直下の`workspace/`を正本とします。OSによる実装差がないソースは演習直下へ置き、実装差が必要な場合だけ`win/`と`mac/`へ分けます。
 
-PoCは`workspace/poc/<project-name>/`へ追加します。プロジェクト内の共通ファイルは直下へ置き、どうしても異なる実装だけを`win/`、`mac/`へ分けます。配布時は対象OS側のディレクトリだけがそのDevkitへ入ります。
+PoCは`workspace/poc/<project-name>/`へ追加します。`workspace/poc/`は参考・発展用として参加者向けDevkitにも収録しますが、正式演習は`workspace/exercises/`と区別します。プロジェクト内の共通ファイルは直下へ置き、どうしても異なる実装だけを`win/`、`mac/`へ分けます。配布時は対象OS側のディレクトリだけがそのDevkitへ入ります。
 
 ```console
 python tools/new_poc.py my_new_poc

@@ -46,6 +46,24 @@ class BuildDevkitTests(unittest.TestCase):
                     self.assertIn(f"uiap-devkit-{architecture}/README.md", names)
                     self.assertIn(f"uiap-devkit-{architecture}/workspace/poc/README.md", names)
                     self.assertIn(f"uiap-devkit-{architecture}/workspace/poc/_template/README.md", names)
+                    poc_files = {
+                        "vibration_motor_hid": (
+                            "Makefile",
+                            "src/vibration_motor_hid.c",
+                            "src/usb_config.h",
+                            "host/motorctl.py",
+                        ),
+                        "ws2812b8_hid_poc": (
+                            "Makefile",
+                            "ws2812b8_hid.c",
+                            "usb_config.h",
+                            "host/ws2812b8_host.py",
+                        ),
+                    }
+                    for poc, required in poc_files.items():
+                        base = f"uiap-devkit-{architecture}/workspace/poc/{poc}"
+                        for relative in required:
+                            self.assertIn(f"{base}/{relative}", names)
                     preflight = f"uiap-devkit-{architecture}/workspace/preflight"
                     for relative in ("README.md", "Makefile", "preflight_hid.c", "usb_config.h", "host/preflight_hid.py"):
                         self.assertIn(f"{preflight}/{relative}", names)
