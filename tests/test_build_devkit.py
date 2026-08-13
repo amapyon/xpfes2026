@@ -10,7 +10,7 @@ import tempfile
 import unittest
 import zipfile
 
-from tools import build_devkit
+from tools import build_devkit, build_document_bundle
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -207,6 +207,43 @@ class BuildDevkitTests(unittest.TestCase):
             self.assertNotIn(PurePosixPath("workspace/my/device1/mac/host.py"), windows)
             self.assertIn(PurePosixPath("workspace/my/device1/mac/host.py"), macos)
             self.assertNotIn(PurePosixPath("workspace/my/device1/win/host.py"), macos)
+
+
+class DocumentBundleTests(unittest.TestCase):
+    def test_slide_bundle_is_deterministic_and_compact(self) -> None:
+        with tempfile.TemporaryDirectory() as output_raw:
+            output = Path(output_raw)
+            first = output / "first.zip"
+            second = output / "second.zip"
+            build_document_bundle.build(first, "slides")
+            build_document_bundle.build(second, "slides")
+            self.assertEqual(first.read_bytes(), second.read_bytes())
+
+            with zipfile.ZipFile(first) as bundle:
+                names = bundle.namelist()
+                self.assertEqual("00_READ_ME_FIRST.md", names[0])
+                for required in (
+                    "docs/project/00_PROJECT_OVERVIEW.md",
+                    "docs/project/40_WORKSHOP_GUIDE_RULES.md",
+                    "workspace/ai/README.md",
+                    "workspace/parts/PARTS_FOR_AI.md",
+                    "workspace/exercises/00_onboard_led_blink/README.md",
+                    "workspace/my/README.md",
+                ):
+                    self.assertIn(required, names)
+                self.assertNotIn("docs/project/99_FULL_PROJECT_GUIDE.md", names)
+                self.assertNotIn("docs/project/90_DECISIONS.md", names)
+                self.assertFalse(any(name.startswith("workspace/poc/") for name in names))
+
+    def test_full_profile_adds_internal_source_documents(self) -> None:
+        with tempfile.TemporaryDirectory() as output_raw:
+            archive = Path(output_raw) / "full.zip"
+            build_document_bundle.build(archive, "full")
+            with zipfile.ZipFile(archive) as bundle:
+                names = bundle.namelist()
+                self.assertIn("docs/project/90_DECISIONS.md", names)
+                self.assertIn("docs/project/20_BUILD_RULES.md", names)
+                self.assertNotIn("docs/project/99_FULL_PROJECT_GUIDE.md", names)
 
 
 class NewPocTests(unittest.TestCase):

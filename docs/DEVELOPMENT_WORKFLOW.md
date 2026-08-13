@@ -15,6 +15,24 @@
 | 設計・検証文書 | `docs/project/` |
 | 生成ZIP | `dist/`（Git管理外） |
 
+## 研修スライド作成AI向けドキュメントZIP
+
+研修スライドを作成する別の生成AIへ渡す資料は、リポジトリのルートで次を実行して更新します。
+
+```console
+python tools/build_document_bundle.py
+```
+
+`dist/workshop-slide-docs.zip`とSHA-256ファイルを生成します。通常は、研修内容の正本、正式演習、生成AI利用手順、部品情報、セットアップ手順を収録する`slides`プロファイルを使用します。ZIPの先頭に`00_READ_ME_FIRST.md`を自動生成し、別の生成AIへ文書の優先順位と意図的な除外対象を伝えます。
+
+トークン消費と重複を抑えるため、分割文書を結合した`99_FULL_PROJECT_GUIDE.md`、主催者用PoC、プログラム、ランタイムは収録しません。内部ビルド規約、リリース検査、判断履歴まで必要な場合だけ次を使用します。
+
+```console
+python tools/build_document_bundle.py --profile full
+```
+
+文書を更新した後は同じコマンドを再実行します。既存ZIPは同じ名前で安全に置き換えられます。
+
 `workspace/`はWindows版とmacOS版の両方へ収録します。`preflight/`は両OS共通のファームウェアとhidapiホスト診断を収録します。正式演習は共通Makefileを入口にし、現在の実機検証済み実装を`win/`と`mac/`へ分けて保持します。
 
 ## 受講者の自由制作

@@ -118,6 +118,14 @@ Python 3.11以降で実行します。外部パッケージは不要です。
 python tools/build_devkit.py --target all
 ```
 
+研修スライド作成AIへ渡す、重複を除いたドキュメントZIPは次で生成します。
+
+```console
+python tools/build_document_bundle.py
+```
+
+出力は`dist/workshop-slide-docs.zip`です。収録方針は[docs/DEVELOPMENT_WORKFLOW.md](docs/DEVELOPMENT_WORKFLOW.md)を参照してください。
+
 生成物は`dist/`へ出力されます。
 
 - `uiap-devkit-win64-<version>.zip`
