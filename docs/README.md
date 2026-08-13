@@ -8,6 +8,10 @@
 
 演習開始前のUSB HID事前診断は[workspace/preflight/README.md](../workspace/preflight/README.md)を参照してください。
 
+自由制作で生成AIへ渡す部品情報は[workspace/parts/PARTS_FOR_AI.md](../workspace/parts/PARTS_FOR_AI.md)を参照してください。このファイルは主催者が管理する正本であり、受講者の制作物からは変更しません。
+
+ローカル操作型とWeb・手動受け渡し型の生成AI利用手順は[workspace/ai/README.md](../workspace/ai/README.md)を参照してください。
+
 | 文書 | 内容 |
 |---|---|
 | [00_PROJECT_OVERVIEW.md](project/00_PROJECT_OVERVIEW.md) | 目的、対象、前提、優先順位 |

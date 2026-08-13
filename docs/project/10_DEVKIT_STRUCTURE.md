@@ -372,18 +372,51 @@ cd "$UIAP_WORKSPACE/exercises/04_rotary_cursor_haptic"
 
 ```text
 workspace/
+├── ai/
 ├── deps/
+├── parts/
 ├── preflight/
-└── exercises/
-    └── <exercise-name>/
-        └── host/    # PC側プログラムがある演習だけ
+├── exercises/
+│   └── <exercise-name>/
+│       └── host/    # PC側プログラムがある演習だけ
+└── poc/
 ```
 
 `workspace/host`は使用しない。ホストプログラムを演習と同じ単位で配布、検証、削除できる構成とする。
 
-`workspace/preflight`は演習開始前のDevkit共通診断としてWindows版とmacOS版の両方へ収録する。診断用ファームウェアと対応するホスト診断は同じディレクトリで管理し、`make preflight`を実行入口とする。ビルド生成物は配布元へ含めない。
+### 8.1 `workspace/ai`
 
-### 8.1 `workspace/deps`
+自由制作で生成AIを利用する共通手順と、生成AIへ渡す主催者管理資料を格納する。生成AIがローカルファイルを直接操作できる経路と、Web画面でファイルを手動受け渡しする経路の両方を扱う。
+
+```text
+workspace/ai/
+├── README.md
+├── BOARD_FOR_AI.md                 # 基板・端子・競合・ビルド条件
+├── PROGRAM_GENERATION_PROMPT.md    # 共通の生成指示
+├── WEB_UPLOAD_CHECKLIST.md         # Web経路の添付確認
+├── MY_DEVICE_ZIP_CHECKLIST.md      # 受領ZIPの確認
+├── BUILD_ERROR_TEMPLATE.txt        # エラー返却用ひな型
+└── PROJECT_TEMPLATE/               # 要件・配線・プログラムのひな型
+```
+
+両経路は、`PARTS_FOR_AI.md`、`BOARD_FOR_AI.md`、`my_device1/REQUIREMENTS.md`、`my_device1/WIRING.md`、任意の配線図画像、プロジェクトひな型を共通入力とし、`workspace/poc/my_device1`を共通成果物とする。Web経路だけは`my_device1.zip`のダウンロードと展開を受講者が行う。
+
+Web経路で生成AIへDevkit全体をアップロードさせない。必要な主催者資料、受講者が整理した要件・配線、必要最小限の参考ファイルだけを添付する。Web上で生成したプログラムは、受講者のPCでビルド、書き込み、実機確認が完了するまで検証済みとしない。
+
+### 8.2 `workspace/parts`
+
+主催者が作成し、生成AIと受講者へ提示する部品情報を格納する。
+
+```text
+workspace/parts/
+└── PARTS_FOR_AI.md
+```
+
+`PARTS_FOR_AI.md`を、自由制作で使用できる部品の型番、端子、電源・信号条件、確認済み事項、未確認事項、参考演習、注意事項の正本とする。文字情報だけを前提とし、画像の収録を必須にしない。
+
+参加者と生成AIはこの文書を参照専用として扱い、自由制作の成果物として編集しない。部品情報の追加・訂正は主催者が配布元で行い、Devkitを再生成する。
+
+### 8.3 `workspace/deps`
 
 固定済みの外部依存関係を格納する。
 
@@ -463,7 +496,7 @@ package.json
 
 `rv003usb`など他の依存関係をサブセット化する場合も、同じ許可リスト、来歴、ライセンス、再生成、検証の原則を適用する。
 
-### 8.2 `workspace/preflight`
+### 8.4 `workspace/preflight`
 
 UIAPduino Pro Micro CH32V003 V1.4をVendor-defined USB HIDとして動作させ、次を演習開始前に確認する。
 
@@ -487,7 +520,7 @@ workspace/preflight/
 
 WindowsとmacOSでファームウェアおよびPythonホスト診断を共用する。ホスト診断はDevkit同梱Pythonとhidapiを使用し、システムPythonや追加の`pip install`を要求しない。
 
-### 8.3 `workspace/exercises`
+### 8.5 `workspace/exercises`
 
 参加者向けまたは実機検証用の演習を格納する。
 
@@ -563,7 +596,7 @@ workspace/exercises/04_rotary_cursor_haptic/
 
 この演習は`02_rotary_cursor_size`のカーソル操作と、`03_vibration_motor_console`で配線・確認した振動モジュールを組み合わせる必須演習である。
 
-### 8.4 各演習の`host`
+### 8.6 各演習の`host`
 
 PC側ホストプログラムは、対応する演習ディレクトリの直下にある`host`へ格納する。
 
@@ -592,7 +625,7 @@ workspace/exercises/02_rotary_cursor_size/
 - macOS版DevkitにもPython・hidapiを含め、`02_rotary_cursor_size`の共通Pythonホストで使用する
 - OS固有コードが必要な場合も、当該演習の`host`配下で共通処理と分離する
 
-### 8.5 `workspace/poc`
+### 8.7 `workspace/poc`
 
 検証中または実験用のPoCを保持し、参考・発展用として参加者向けDevkitへ収録する。
 
@@ -611,6 +644,8 @@ workspace/poc/my_device1/
 workspace/poc/my_device2/
 workspace/poc/my_device3/
 ```
+
+`my_device1`には、完成ソースに加えて、生成AIと整理した要件を`REQUIREMENTS.md`、安全確認済みの文字による配線表を`WIRING.md`として保存する。配線図画像がある場合も`WIRING.md`を正本とし、画像だけを根拠にプログラムを生成しない。
 
 完成品は受講者1人あたり最大3件とし、1件目から順番に使用する。`my_device1`を飛ばして`my_device2`または`my_device3`から開始しない。ワークショップ資料、標準コマンド、生成AI向け共通案内、講師の通常サポートは`my_device1`だけを対象とする。`my_device2`と`my_device3`は、1件目を完成させた受講者が追加案を自力で試すための任意枠であり、標準資料では案内しない。
 

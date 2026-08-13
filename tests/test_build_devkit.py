@@ -46,6 +46,29 @@ class BuildDevkitTests(unittest.TestCase):
                     self.assertIn(f"uiap-devkit-{architecture}/README.md", names)
                     self.assertIn(f"uiap-devkit-{architecture}/workspace/poc/README.md", names)
                     self.assertIn(f"uiap-devkit-{architecture}/workspace/poc/_template/README.md", names)
+                    self.assertIn(f"uiap-devkit-{architecture}/workspace/ai/README.md", names)
+                    ai_files = (
+                        "BOARD_FOR_AI.md",
+                        "PROGRAM_GENERATION_PROMPT.md",
+                        "WEB_UPLOAD_CHECKLIST.md",
+                        "MY_DEVICE_ZIP_CHECKLIST.md",
+                        "BUILD_ERROR_TEMPLATE.txt",
+                        "PROJECT_TEMPLATE/README.md",
+                        "PROJECT_TEMPLATE/REQUIREMENTS.md",
+                        "PROJECT_TEMPLATE/WIRING.md",
+                        "PROJECT_TEMPLATE/Makefile",
+                        "PROJECT_TEMPLATE/my_device1.c",
+                        "PROJECT_TEMPLATE/funconfig.h",
+                        "PROJECT_TEMPLATE/.gitignore",
+                    )
+                    ai_base = f"uiap-devkit-{architecture}/workspace/ai"
+                    for relative in ai_files:
+                        self.assertIn(f"{ai_base}/{relative}", names)
+                    parts_catalog = f"uiap-devkit-{architecture}/workspace/parts/PARTS_FOR_AI.md"
+                    self.assertIn(parts_catalog, names)
+                    parts_text = bundle.read(parts_catalog).decode("utf-8")
+                    for part_number in range(1, 10):
+                        self.assertIn(f"## PART-{part_number:02d}", parts_text)
                     poc_files = {
                         "vibration_motor_hid": (
                             "Makefile",
@@ -189,6 +212,20 @@ class NewPocTests(unittest.TestCase):
 
 
 class UnifiedRepositoryTests(unittest.TestCase):
+    def test_ai_project_template_has_safe_buildable_layout(self) -> None:
+        root = ROOT / "workspace" / "ai" / "PROJECT_TEMPLATE"
+        for relative in ("README.md", "REQUIREMENTS.md", "WIRING.md", "Makefile", "my_device1.c", "funconfig.h"):
+            self.assertTrue((root / relative).is_file(), relative)
+
+        makefile = (root / "Makefile").read_text(encoding="utf-8")
+        source = (root / "my_device1.c").read_text(encoding="utf-8")
+        wiring = (root / "WIRING.md").read_text(encoding="utf-8")
+        self.assertIn("TARGET := my_device1", makefile)
+        self.assertIn("TARGET_MCU := CH32V003", makefile)
+        self.assertIn("funDigitalWrite(BUILTIN_LED_PIN, FUN_LOW)", source)
+        self.assertNotIn("rv003usb", makefile)
+        self.assertIn("状態: 未確認 / 確認済み", wiring)
+
     def test_macos_commands_are_git_executable(self) -> None:
         paths = ["start-uiap.command"]
         paths.extend(path.relative_to(ROOT).as_posix() for path in (ROOT / "scripts").rglob("*.sh"))

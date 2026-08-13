@@ -5,6 +5,8 @@
 | 対象 | 正本 |
 |---|---|
 | USB HID事前診断 | `workspace/preflight/` |
+| 生成AI利用手順・共通入力 | `workspace/ai/` |
+| 生成AI向け部品情報 | `workspace/parts/PARTS_FOR_AI.md` |
 | 正式演習 | `workspace/exercises/` |
 | PoC | `workspace/poc/` |
 | Windows起動・依存定義 | `start-uiap.cmd`、`config/win/` |
@@ -18,6 +20,8 @@
 ## 受講者の自由制作
 
 受講者の標準作業場所は`workspace/poc/my_device1`です。追加案を自力で試す場合だけ、`my_device1`完成後に`my_device2`、`my_device3`を順番に使用できます。完成品は最大3件とし、ワークショップ資料と講師の通常サポートには`my_device1`だけを記載します。
+
+自由制作は、生成AIがローカルファイルを直接編集する経路と、Web画面へ必要資料を添付して`my_device1.zip`を受け取る経路の両方を支援します。共通手順は`workspace/ai/README.md`を正本とし、どちらも最終的に`workspace/poc/my_device1`をPC上のDevkitでビルド・書き込み・実機確認します。
 
 ## 主催者用PoCの開始
 
