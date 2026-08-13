@@ -303,6 +303,13 @@ class UnifiedRepositoryTests(unittest.TestCase):
         self.assertNotIn("rv003usb", makefile)
         self.assertIn("状態: 未確認 / 確認済み", wiring)
 
+    def test_program_generation_prompt_requires_human_wiring_approval(self) -> None:
+        prompt = (ROOT / "workspace" / "ai" / "PROGRAM_GENERATION_PROMPT.md").read_text(encoding="utf-8")
+        self.assertIn("## プログラム生成開始条件", prompt)
+        self.assertIn("自ら「配線安全確認」を`確認済み`へ変更してはいけません", prompt)
+        self.assertIn("実行可能なコードを生成してはいけません", prompt)
+        self.assertIn("`device1.zip`を生成しないでください", prompt)
+
     def test_macos_commands_are_git_executable(self) -> None:
         paths = ["start-uiap.command"]
         paths.extend(path.relative_to(ROOT).as_posix() for path in (ROOT / "scripts").rglob("*.sh"))
