@@ -1,12 +1,12 @@
-# my_device1.zip確認表
+# device1.zip確認表
 
 Web版生成AIから受け取った成果物を、Devkitへ配置する前に確認します。
 
 ## ZIP構造
 
-- [ ] ZIP直下に`my_device1/`が1つある
-- [ ] `my_device1/my_device1/`という二重ディレクトリではない
-- [ ] 展開後に`workspace/poc/my_device1/README.md`となる
+- [ ] ZIP直下に`device1/`が1つある
+- [ ] `device1/device1/`という二重ディレクトリではない
+- [ ] 展開後に`workspace/my/device1/README.md`となる
 
 ## 必須ファイル
 
@@ -14,7 +14,7 @@ Web版生成AIから受け取った成果物を、Devkitへ配置する前に確
 - [ ] `REQUIREMENTS.md`
 - [ ] `WIRING.md`
 - [ ] `Makefile`
-- [ ] `my_device1.c`
+- [ ] `device1.c`
 - [ ] `funconfig.h`
 
 ## 内容
@@ -37,7 +37,7 @@ Web版生成AIから受け取った成果物を、Devkitへ配置する前に確
 
 ## PC上での確認
 
-- [ ] 旧`workspace/poc/my_device1`と混在させず配置した
+- [ ] 旧`workspace/my/device1`と混在させず配置した
 - [ ] Devkit環境で`make`に成功した
 - [ ] `make size`に成功した
 - [ ] USBを外した状態で配線を目視確認した

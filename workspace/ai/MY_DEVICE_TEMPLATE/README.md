@@ -1,4 +1,4 @@
-# my_device1
+# device1
 
 受講者が生成AIと相談して作る物理UIデバイスのプロジェクトです。このディレクトリは生成開始時のひな型で、初期状態では外付け部品を使用せず、基板上LEDを消灯したまま待機します。
 
@@ -7,11 +7,11 @@
 1. `REQUIREMENTS.md`に目的、使用部品、動作、完成条件を記載する
 2. `WIRING.md`に全配線、GPIO、電源、信号条件、資源競合を記載する
 3. 講師または受講者が配線表を目視確認し、`配線安全確認`を`確認済み`にする
-4. `my_device1.c`を要件と配線に合わせて生成する
+4. `device1.c`を要件と配線に合わせて生成する
 
 ## ビルド
 
-Windowsでは`start-uiap.cmd`、macOSでは`start-uiap.command`からDevkit環境を開始します。`workspace/poc/my_device1`へ移動して実行します。
+Windowsでは`start-uiap.cmd`、macOSでは`start-uiap.command`からDevkit環境を開始します。`workspace/my/device1`へ移動して実行します。
 
 ```text
 make
@@ -40,7 +40,7 @@ make flash
 - このREADMEの目的、使用部品、操作方法、停止方法、確認方法、未確認事項
 - `REQUIREMENTS.md`
 - `WIRING.md`
-- `my_device1.c`
+- `device1.c`
 - 必要に応じた`.c`、`.h`、`usb_config.h`、`host/`
 
 ## 使用部品

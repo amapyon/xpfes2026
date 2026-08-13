@@ -102,6 +102,10 @@ uiap-devkit-win64/
     ├── deps/
     │   ├── ch32fun/
     │   └── rv003usb/
+    ├── ai/                       # 主催者管理の生成AI向け資料
+    ├── parts/                    # 主催者管理の部品情報
+    ├── my/                       # 受講者が編集する自由制作
+    │   └── README.md
     ├── preflight/
     ├── exercises/
     │   ├── 00_onboard_led_blink/
@@ -113,7 +117,7 @@ uiap-devkit-win64/
     │   └── 04_rotary_cursor_haptic/
     │       └── host/
     └── poc/
-        ├── _template/
+        ├── _poc_template/          # 主催者専用、参加者向けZIP対象外
         └── <project>/
 ```
 
@@ -133,7 +137,7 @@ PC側ホストプログラムは、対応する演習の`host`ディレクトリ
 | `start-uiap.cmd` | Windowsネイティブ開発コンソールの起動 |
 | `runtime` | Make、シェル互換ツール、RISC-V GCC、Pythonなど |
 | `scripts` | セットアップ、診断、書き込み、HID確認、復旧 |
-| `workspace` | 固定依存、USB HID事前診断、参加者向け演習、および各演習内のホスト側ソース |
+| `workspace` | 固定依存、主催者提供資料、USB HID事前診断、参加者向け演習、受講者の自由制作、検証用PoC |
 | `docs` | セットアップ、演習、配線、既知問題 |
 | `firmware` | ブートローダー、復旧用などの配布済みバイナリ |
 | `licenses` | ライセンス、第三者通知、対応ソース情報 |
@@ -396,10 +400,11 @@ workspace/ai/
 ├── WEB_UPLOAD_CHECKLIST.md         # Web経路の添付確認
 ├── MY_DEVICE_ZIP_CHECKLIST.md      # 受領ZIPの確認
 ├── BUILD_ERROR_TEMPLATE.txt        # エラー返却用ひな型
-└── PROJECT_TEMPLATE/               # 要件・配線・プログラムのひな型
+├── new_my_device.py                # device1初期化ツール
+└── MY_DEVICE_TEMPLATE/             # 要件・配線・プログラムのひな型
 ```
 
-両経路は、`PARTS_FOR_AI.md`、`BOARD_FOR_AI.md`、`my_device1/REQUIREMENTS.md`、`my_device1/WIRING.md`、任意の配線図画像、プロジェクトひな型を共通入力とし、`workspace/poc/my_device1`を共通成果物とする。Web経路だけは`my_device1.zip`のダウンロードと展開を受講者が行う。
+両経路は、`PARTS_FOR_AI.md`、`BOARD_FOR_AI.md`、`device1/REQUIREMENTS.md`、`device1/WIRING.md`、任意の配線図画像、プロジェクトひな型を共通入力とし、`workspace/my/device1`を共通成果物とする。Web経路だけは`device1.zip`のダウンロードと展開を受講者が行う。
 
 Web経路で生成AIへDevkit全体をアップロードさせない。必要な主催者資料、受講者が整理した要件・配線、必要最小限の参考ファイルだけを添付する。Web上で生成したプログラムは、受講者のPCでビルド、書き込み、実機確認が完了するまで検証済みとしない。
 
@@ -633,23 +638,11 @@ workspace/exercises/02_rotary_cursor_size/
 workspace/poc/
 ```
 
-`_template/`を含むディレクトリ全体を配布対象とする。ただし、各PoC直下の`win/`はWindows版だけ、`mac/`はmacOS版だけへ収録する。ログ、個人状態、通常のビルド生成物など、Devkit全体の除外規則はPoCにも適用する。
+検証用PoCを参加者向けDevkitへ収録する。ただし、主催者がPoCを新規作成するための`_poc_template/`は配布対象外とする。各PoC直下の`win/`はWindows版だけ、`mac/`はmacOS版だけへ収録する。ログ、個人状態、通常のビルド生成物など、Devkit全体の除外規則はPoCにも適用する。
 
 PoCは配布されていても正式演習への採用を意味しない。目的、前提、確認方法、検証状態を各PoCのREADMEなどへ明記する。
 
-受講者の自由制作用プログラムには、一般のPoC名とは別に次の固定パスを使用する。
-
-```text
-workspace/poc/my_device1/
-workspace/poc/my_device2/
-workspace/poc/my_device3/
-```
-
-`my_device1`には、完成ソースに加えて、生成AIと整理した要件を`REQUIREMENTS.md`、安全確認済みの文字による配線表を`WIRING.md`として保存する。配線図画像がある場合も`WIRING.md`を正本とし、画像だけを根拠にプログラムを生成しない。
-
-完成品は受講者1人あたり最大3件とし、1件目から順番に使用する。`my_device1`を飛ばして`my_device2`または`my_device3`から開始しない。ワークショップ資料、標準コマンド、生成AI向け共通案内、講師の通常サポートは`my_device1`だけを対象とする。`my_device2`と`my_device3`は、1件目を完成させた受講者が追加案を自力で試すための任意枠であり、標準資料では案内しない。
-
-主催者が検証用PoCを作成するときは、従来どおり`workspace/poc/<project-name>`と`tools/new_poc.py`を使用できる。受講者の自由制作と主催者用PoCの命名規則を混同しない。
+主催者が検証用PoCを作成するときは、ソースリポジトリで`workspace/poc/_poc_template`と`tools/new_poc.py`を使用する。
 
 PoCを演習へ採用するときは、次を行う。
 
@@ -659,6 +652,24 @@ PoCを演習へ採用するときは、次を行う。
 4. WindowsとmacOSで検証する
 5. `70_VALIDATION_RESULTS.md`へ記録する
 6. `90_DECISIONS.md`へ採用決定を記録する
+
+### 8.8 `workspace/my`
+
+受講者自身が編集する自由制作だけを保持する。主催者管理の`workspace/ai`、`workspace/parts`と、主催者の検証用`workspace/poc`をこの中へ置かない。
+
+```text
+workspace/my/
+├── README.md
+├── device1/
+├── device2/
+└── device3/
+```
+
+`device1`には、完成ソースに加えて、生成AIと整理した要件を`REQUIREMENTS.md`、安全確認済みの文字による配線表を`WIRING.md`として保存する。配線図画像がある場合も`WIRING.md`を正本とし、画像だけを根拠にプログラムを生成しない。
+
+完成品は受講者1人あたり最大3件とし、1件目から順番に使用する。`device1`を飛ばして`device2`または`device3`から開始しない。ワークショップ資料、標準コマンド、生成AI向け共通案内、講師の通常サポートは`device1`だけを対象とする。`device2`と`device3`は、1件目を完成させた受講者が追加案を自力で試すための任意枠であり、標準資料では案内しない。
+
+受講者はDevkitに収録された`workspace/ai/new_my_device.py`で`device1`を初期化する。生成AIがローカルファイルを操作する場合は、`workspace/ai`と`workspace/parts`を参照専用、`workspace/my/device1`だけを編集可能とする。
 
 ## 9. `docs`
 

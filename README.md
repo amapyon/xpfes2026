@@ -72,6 +72,7 @@ runtime/
   mac/              # macOS setup生成物（Git管理外）
 workspace/
   ai/                # 自由制作で生成AIを使う共通手順
+  my/                # 受講者が編集する自由制作
   deps/              # setup生成物（Git管理外）
   preflight/         # UIAPduino USB HID事前診断
   parts/             # 生成AI向け部品情報
@@ -82,7 +83,7 @@ workspace/
       win/           # OS差が必要な場合だけ
       mac/           # OS差が必要な場合だけ
   poc/
-    _template/       # PoC作成用テンプレート
+    _poc_template/   # 主催者用PoC作成テンプレート（配布ZIP対象外）
     <project>/       # PoCプロジェクト
 docs/
   project/           # 設計、規約、検証履歴
@@ -93,15 +94,17 @@ tests/
 .github/workflows/
 ```
 
-演習とPoCはリポジトリ直下の`workspace/`を正本とします。OSによる実装差がないソースは演習直下へ置き、実装差が必要な場合だけ`win/`と`mac/`へ分けます。
+演習、受講者の自由制作、PoCはリポジトリ直下の`workspace/`を正本とします。OSによる実装差がないソースは各プロジェクト直下へ置き、実装差が必要な場合だけ`win/`と`mac/`へ分けます。
 
-受講者の自由制作は`workspace/poc/my_device1/`を標準作業場所とします。完成品は最大3件までとし、追加案を自力で試す場合だけ`my_device2/`、`my_device3/`を順番に使用します。ワークショップ資料と講師の通常サポートは`my_device1/`だけを対象とします。
+受講者の自由制作は`workspace/my/device1/`を標準作業場所とします。完成品は最大3件までとし、追加案を自力で試す場合だけ`device2/`、`device3/`を順番に使用します。ワークショップ資料と講師の通常サポートは`device1/`だけを対象とします。
+
+Devkit環境の`workspace`で`python ai/new_my_device.py`を実行すると、受講者用ひな型から`my/device1`を作成できます。既存の`device1`は上書きしません。
 
 自由制作を生成AIへ相談するときは、主催者が管理する`workspace/parts/PARTS_FOR_AI.md`を部品情報の正本として参照させます。未確認事項を一般的な同名部品の仕様で補わず、配線とプログラムは記載済みの条件に基づいて作成します。
 
-生成AIがローカルファイルを直接操作できる場合と、Web画面でファイルを手動受け渡しする場合の両方を正式経路とします。入力資料と完成物の仕様は共通とし、Web経路では生成AIから`my_device1.zip`を受け取り、`workspace/poc/my_device1/`へ展開してPC上のDevkitでビルドします。詳細は[workspace/ai/README.md](workspace/ai/README.md)を参照してください。
+生成AIがローカルファイルを直接操作できる場合と、Web画面でファイルを手動受け渡しする場合の両方を正式経路とします。入力資料と完成物の仕様は共通とし、Web経路では生成AIから`device1.zip`を受け取り、`workspace/my/device1/`へ展開してPC上のDevkitでビルドします。詳細は[workspace/ai/README.md](workspace/ai/README.md)を参照してください。
 
-主催者用PoCは`workspace/poc/<project-name>/`へ追加します。`workspace/poc/`は参考・発展用として参加者向けDevkitにも収録しますが、正式演習は`workspace/exercises/`と区別します。プロジェクト内の共通ファイルは直下へ置き、どうしても異なる実装だけを`win/`、`mac/`へ分けます。配布時は対象OS側のディレクトリだけがそのDevkitへ入ります。
+主催者用PoCは`workspace/poc/<project-name>/`へ追加します。`workspace/poc/_poc_template`と`tools/new_poc.py`は主催者用リポジトリだけで使用し、参加者向けDevkitには収録しません。検証済みのPoCは参考・発展用としてDevkitへ収録しますが、正式演習は`workspace/exercises/`と区別します。プロジェクト内の共通ファイルは直下へ置き、どうしても異なる実装だけを`win/`、`mac/`へ分けます。配布時は対象OS側のディレクトリだけがそのDevkitへ入ります。
 
 ```console
 python tools/new_poc.py my_new_poc

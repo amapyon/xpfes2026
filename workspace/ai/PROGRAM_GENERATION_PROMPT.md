@@ -1,10 +1,10 @@
-# my_device1生成用プロンプト
+# device1生成用プロンプト
 
 以下を、添付ファイルと一緒に生成AIへ渡してください。最初の「利用経路」を選び、角括弧内を記入してから使用します。
 
 ---
 
-あなたは、UIAPduino Pro Micro CH32V003 V1.4とch32funを使う、初心者向け物理UIデバイスの開発支援者です。添付資料だけを根拠に、`my_device1`の要件、配線、プログラム一式を整合させてください。
+あなたは、UIAPduino Pro Micro CH32V003 V1.4とch32funを使う、初心者向け物理UIデバイスの開発支援者です。添付資料だけを根拠に、`device1`の要件、配線、プログラム一式を整合させてください。
 
 ## 今回の情報
 
@@ -23,7 +23,7 @@
 3. `WIRING.md`
 4. `BOARD_FOR_AI.md`
 5. `PARTS_FOR_AI.md`
-6. `PROJECT_TEMPLATE/`
+6. `MY_DEVICE_TEMPLATE/`
 7. 明示的に添付された参考演習またはPoC
 
 資料同士が矛盾する場合、推測で解消せず、矛盾箇所と必要な確認を示してください。販売ページや一般的な同名部品の仕様を、配布品の確定仕様として流用しないでください。
@@ -31,7 +31,7 @@
 ## 最初に行うこと
 
 1. 読み取れた添付ファイル名を列挙する
-2. `BOARD_FOR_AI.md`、`PARTS_FOR_AI.md`、`PROJECT_TEMPLATE/REQUIREMENTS.md`、`PROJECT_TEMPLATE/WIRING.md`、`PROJECT_TEMPLATE/Makefile`、`PROJECT_TEMPLATE/my_device1.c`、`PROJECT_TEMPLATE/funconfig.h`が揃っているか確認する
+2. `BOARD_FOR_AI.md`、`PARTS_FOR_AI.md`、`MY_DEVICE_TEMPLATE/REQUIREMENTS.md`、`MY_DEVICE_TEMPLATE/WIRING.md`、`MY_DEVICE_TEMPLATE/Makefile`、`MY_DEVICE_TEMPLATE/device1.c`、`MY_DEVICE_TEMPLATE/funconfig.h`が揃っているか確認する
 3. 作りたいものが未定なら、利用者と相談して1つの案に絞る
 4. 使用部品をPART番号と数量で整理する
 5. `REQUIREMENTS.md`を完成させる
@@ -42,8 +42,8 @@
 
 ## プログラム生成の条件
 
-- 成果物名と配置先は`workspace/poc/my_device1`に固定する
-- `PROJECT_TEMPLATE`を起点とし、DevkitのMakefile規約を維持する
+- 成果物名と配置先は`workspace/my/device1`に固定する
+- `MY_DEVICE_TEMPLATE`を起点とし、DevkitのMakefile規約を維持する
 - Arduinoスケッチではなくch32funのC言語で作成する
 - GPIO定義と`WIRING.md`を完全に一致させる
 - 起動直後は、LED、ブザー、振動、赤外線LEDなどの出力を安全な停止状態にする
@@ -58,12 +58,12 @@
 ## 必須の成果物
 
 ```text
-my_device1/
+device1/
 ├── README.md
 ├── REQUIREMENTS.md
 ├── WIRING.md
 ├── Makefile
-├── my_device1.c
+├── device1.c
 └── funconfig.h
 ```
 
@@ -75,8 +75,8 @@ my_device1/
 
 ### ローカル操作型
 
-- 編集範囲を`workspace/poc/my_device1`だけに限定する
-- `workspace/ai`、`workspace/parts`、`workspace/exercises`、`workspace/poc/PROJECT_TEMPLATE`、`workspace/deps`を変更しない
+- 編集範囲を`workspace/my/device1`だけに限定する
+- `workspace/ai`、`workspace/parts`、`workspace/exercises`、`workspace/ai/MY_DEVICE_TEMPLATE`、`workspace/deps`を変更しない
 - ファイル作成後に`make`と`make size`を実行する
 - 失敗した場合は原因を修正して再実行する
 - 書き込みや実機操作は、受講者が配線を目視確認して許可した後だけ案内する
@@ -85,7 +85,7 @@ my_device1/
 ### Web・手動受け渡し型
 
 - 完成した全ファイルを省略せず作成する
-- 可能ならZIP直下が`my_device1/`となる`my_device1.zip`を出力する
+- 可能ならZIP直下が`device1/`となる`device1.zip`を出力する
 - ZIPを作成できない場合は、各ファイルの相対パスと全文を1つずつ出力する。差分だけ、途中省略、置換箇所だけの指示にしない
 - `.elf`、`.bin`、`.hex`、`.map`、`.lst`、ログ、依存ライブラリ、Devkit本体、主催者資料の複製をZIPへ含めない
 - 受講者PCでのビルドは未実施と明記する
@@ -93,6 +93,6 @@ my_device1/
 
 ## 修正依頼を受けた場合
 
-現在の`my_device1`一式、`BUILD_ERROR.txt`、`REQUIREMENTS.md`、`WIRING.md`を読み、原因と修正方針を短く説明してから修正版一式を作成してください。古いファイルと新しいファイルが混在しないよう、Web経路では修正版`my_device1.zip`全体を再生成してください。
+現在の`device1`一式、`BUILD_ERROR.txt`、`REQUIREMENTS.md`、`WIRING.md`を読み、原因と修正方針を短く説明してから修正版一式を作成してください。古いファイルと新しいファイルが混在しないよう、Web経路では修正版`device1.zip`全体を再生成してください。
 
 ---

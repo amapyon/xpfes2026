@@ -45,7 +45,8 @@ class BuildDevkitTests(unittest.TestCase):
                     names = bundle.namelist()
                     self.assertIn(f"uiap-devkit-{architecture}/README.md", names)
                     self.assertIn(f"uiap-devkit-{architecture}/workspace/poc/README.md", names)
-                    self.assertIn(f"uiap-devkit-{architecture}/workspace/poc/_template/README.md", names)
+                    self.assertIn(f"uiap-devkit-{architecture}/workspace/my/README.md", names)
+                    self.assertNotIn(f"uiap-devkit-{architecture}/workspace/poc/_poc_template/README.md", names)
                     self.assertIn(f"uiap-devkit-{architecture}/workspace/ai/README.md", names)
                     ai_files = (
                         "BOARD_FOR_AI.md",
@@ -53,13 +54,14 @@ class BuildDevkitTests(unittest.TestCase):
                         "WEB_UPLOAD_CHECKLIST.md",
                         "MY_DEVICE_ZIP_CHECKLIST.md",
                         "BUILD_ERROR_TEMPLATE.txt",
-                        "PROJECT_TEMPLATE/README.md",
-                        "PROJECT_TEMPLATE/REQUIREMENTS.md",
-                        "PROJECT_TEMPLATE/WIRING.md",
-                        "PROJECT_TEMPLATE/Makefile",
-                        "PROJECT_TEMPLATE/my_device1.c",
-                        "PROJECT_TEMPLATE/funconfig.h",
-                        "PROJECT_TEMPLATE/.gitignore",
+                        "new_my_device.py",
+                        "MY_DEVICE_TEMPLATE/README.md",
+                        "MY_DEVICE_TEMPLATE/REQUIREMENTS.md",
+                        "MY_DEVICE_TEMPLATE/WIRING.md",
+                        "MY_DEVICE_TEMPLATE/Makefile",
+                        "MY_DEVICE_TEMPLATE/device1.c",
+                        "MY_DEVICE_TEMPLATE/funconfig.h",
+                        "MY_DEVICE_TEMPLATE/.gitignore",
                     )
                     ai_base = f"uiap-devkit-{architecture}/workspace/ai"
                     for relative in ai_files:
@@ -171,9 +173,16 @@ class BuildDevkitTests(unittest.TestCase):
             (project / "src").mkdir(parents=True)
             (project / "win").mkdir()
             (project / "mac").mkdir()
+            (workspace / "poc" / "_poc_template").mkdir()
+            participant = workspace / "my" / "device1"
+            (participant / "win").mkdir(parents=True)
+            (participant / "mac").mkdir()
             (project / "src" / "common.c").write_text("common\n", encoding="utf-8")
             (project / "win" / "host.py").write_text("win\n", encoding="utf-8")
             (project / "mac" / "host.py").write_text("mac\n", encoding="utf-8")
+            (workspace / "poc" / "_poc_template" / "README.md").write_text("organizer only\n", encoding="utf-8")
+            (participant / "win" / "host.py").write_text("win\n", encoding="utf-8")
+            (participant / "mac" / "host.py").write_text("mac\n", encoding="utf-8")
             (workspace / "deps" / "generated").mkdir(parents=True)
             (workspace / "deps" / "generated" / "tool.bin").write_bytes(b"generated")
             original = build_devkit.WORKSPACE
@@ -192,13 +201,19 @@ class BuildDevkitTests(unittest.TestCase):
             self.assertNotIn(base / "win/host.py", macos)
             self.assertNotIn(PurePosixPath("workspace/deps/generated/tool.bin"), windows)
             self.assertNotIn(PurePosixPath("workspace/deps/generated/tool.bin"), macos)
+            self.assertNotIn(PurePosixPath("workspace/poc/_poc_template/README.md"), windows)
+            self.assertNotIn(PurePosixPath("workspace/poc/_poc_template/README.md"), macos)
+            self.assertIn(PurePosixPath("workspace/my/device1/win/host.py"), windows)
+            self.assertNotIn(PurePosixPath("workspace/my/device1/mac/host.py"), windows)
+            self.assertIn(PurePosixPath("workspace/my/device1/mac/host.py"), macos)
+            self.assertNotIn(PurePosixPath("workspace/my/device1/win/host.py"), macos)
 
 
 class NewPocTests(unittest.TestCase):
     def test_creates_common_project_from_template(self) -> None:
         with tempfile.TemporaryDirectory() as projects_raw:
             projects = Path(projects_raw)
-            shutil.copytree(ROOT / "workspace" / "poc" / "_template", projects / "_template")
+            shutil.copytree(ROOT / "workspace" / "poc" / "_poc_template", projects / "_poc_template")
             subprocess.run(
                 [sys.executable, str(ROOT / "tools" / "new_poc.py"), "sample_probe", "--poc-dir", str(projects)],
                 cwd=ROOT,
@@ -210,17 +225,42 @@ class NewPocTests(unittest.TestCase):
             self.assertFalse((project / "win").exists())
             self.assertFalse((project / "mac").exists())
 
+    def test_creates_device1_without_overwriting(self) -> None:
+        with tempfile.TemporaryDirectory() as workspace_raw:
+            workspace = Path(workspace_raw)
+            shutil.copytree(ROOT / "workspace" / "ai", workspace / "ai")
+            tool = workspace / "ai" / "new_my_device.py"
+            first = subprocess.run(
+                [sys.executable, str(tool), "--workspace", str(workspace)],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(0, first.returncode, first.stdout + first.stderr)
+            project = workspace / "my" / "device1"
+            self.assertTrue((project / "Makefile").is_file())
+            self.assertTrue((project / "REQUIREMENTS.md").is_file())
+
+            second = subprocess.run(
+                [sys.executable, str(tool), "--workspace", str(workspace)],
+                check=False,
+                capture_output=True,
+                text=True,
+            )
+            self.assertEqual(1, second.returncode)
+            self.assertIn("上書きしません", second.stdout)
+
 
 class UnifiedRepositoryTests(unittest.TestCase):
-    def test_ai_project_template_has_safe_buildable_layout(self) -> None:
-        root = ROOT / "workspace" / "ai" / "PROJECT_TEMPLATE"
-        for relative in ("README.md", "REQUIREMENTS.md", "WIRING.md", "Makefile", "my_device1.c", "funconfig.h"):
+    def test_my_device_template_has_safe_buildable_layout(self) -> None:
+        root = ROOT / "workspace" / "ai" / "MY_DEVICE_TEMPLATE"
+        for relative in ("README.md", "REQUIREMENTS.md", "WIRING.md", "Makefile", "device1.c", "funconfig.h"):
             self.assertTrue((root / relative).is_file(), relative)
 
         makefile = (root / "Makefile").read_text(encoding="utf-8")
-        source = (root / "my_device1.c").read_text(encoding="utf-8")
+        source = (root / "device1.c").read_text(encoding="utf-8")
         wiring = (root / "WIRING.md").read_text(encoding="utf-8")
-        self.assertIn("TARGET := my_device1", makefile)
+        self.assertIn("TARGET := device1", makefile)
         self.assertIn("TARGET_MCU := CH32V003", makefile)
         self.assertIn("funDigitalWrite(BUILTIN_LED_PIN, FUN_LOW)", source)
         self.assertNotIn("rv003usb", makefile)

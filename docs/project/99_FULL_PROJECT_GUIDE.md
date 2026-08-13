@@ -100,12 +100,12 @@
 - 受講者は生成AIと相談しながら、使用する部品、機能、配線、実装手順を決める
 - 生成AIへ渡す部品情報は、主催者が管理する`workspace/parts/PARTS_FOR_AI.md`を正本とする
 - 生成AIがローカルファイルを直接操作する経路と、Web画面でファイルを手動受け渡しする経路の両方を正式に支援する
-- どちらの経路も、要件、配線、安全確認、`workspace/poc/my_device1`の成果物仕様、ローカルでのビルド・書き込み・実機確認を共通とする
+- どちらの経路も、要件、配線、安全確認、`workspace/my/device1`の成果物仕様、ローカルでのビルド・書き込み・実機確認を共通とする
 - 必須演習の標準配線は講師側で提示するが、その後の自由制作におけるUIAPduinoのピン割り当ては講師側で一元管理しない
 - 自由制作の配線は、使用ピン、入出力方向、電圧、電流、競合、安全性を制作ごとに確認する
-- 受講者の自由制作用プログラムは`workspace/poc/my_device1`、`my_device2`、`my_device3`の最大3件に限定する
-- 多くの受講者は1件の完成を目標とし、ワークショップ資料、標準手順、講師の通常サポートは`my_device1`だけを対象とする
-- `my_device2`と`my_device3`は、`my_device1`を完成させた受講者が自力で追加案を試すための任意枠とする
+- 受講者の自由制作用プログラムは`workspace/my/device1`、`device2`、`device3`の最大3件に限定する
+- 多くの受講者は1件の完成を目標とし、ワークショップ資料、標準手順、講師の通常サポートは`device1`だけを対象とする
+- `device2`と`device3`は、`device1`を完成させた受講者が自力で追加案を試すための任意枠とする
 
 ## 4. 対象OS
 
@@ -534,6 +534,10 @@ uiap-devkit-win64/
     ├── deps/
     │   ├── ch32fun/
     │   └── rv003usb/
+    ├── ai/                       # 主催者管理の生成AI向け資料
+    ├── parts/                    # 主催者管理の部品情報
+    ├── my/                       # 受講者が編集する自由制作
+    │   └── README.md
     ├── preflight/
     ├── exercises/
     │   ├── 00_onboard_led_blink/
@@ -545,7 +549,7 @@ uiap-devkit-win64/
     │   └── 04_rotary_cursor_haptic/
     │       └── host/
     └── poc/
-        ├── _template/
+        ├── _poc_template/          # 主催者専用、参加者向けZIP対象外
         └── <project>/
 ```
 
@@ -565,7 +569,7 @@ PC側ホストプログラムは、対応する演習の`host`ディレクトリ
 | `start-uiap.cmd` | Windowsネイティブ開発コンソールの起動 |
 | `runtime` | Make、シェル互換ツール、RISC-V GCC、Pythonなど |
 | `scripts` | セットアップ、診断、書き込み、HID確認、復旧 |
-| `workspace` | 固定依存、USB HID事前診断、参加者向け演習、および各演習内のホスト側ソース |
+| `workspace` | 固定依存、主催者提供資料、USB HID事前診断、参加者向け演習、受講者の自由制作、検証用PoC |
 | `docs` | セットアップ、演習、配線、既知問題 |
 | `firmware` | ブートローダー、復旧用などの配布済みバイナリ |
 | `licenses` | ライセンス、第三者通知、対応ソース情報 |
@@ -828,10 +832,11 @@ workspace/ai/
 ├── WEB_UPLOAD_CHECKLIST.md         # Web経路の添付確認
 ├── MY_DEVICE_ZIP_CHECKLIST.md      # 受領ZIPの確認
 ├── BUILD_ERROR_TEMPLATE.txt        # エラー返却用ひな型
-└── PROJECT_TEMPLATE/               # 要件・配線・プログラムのひな型
+├── new_my_device.py                # device1初期化ツール
+└── MY_DEVICE_TEMPLATE/             # 要件・配線・プログラムのひな型
 ```
 
-両経路は、`PARTS_FOR_AI.md`、`BOARD_FOR_AI.md`、`my_device1/REQUIREMENTS.md`、`my_device1/WIRING.md`、任意の配線図画像、プロジェクトひな型を共通入力とし、`workspace/poc/my_device1`を共通成果物とする。Web経路だけは`my_device1.zip`のダウンロードと展開を受講者が行う。
+両経路は、`PARTS_FOR_AI.md`、`BOARD_FOR_AI.md`、`device1/REQUIREMENTS.md`、`device1/WIRING.md`、任意の配線図画像、プロジェクトひな型を共通入力とし、`workspace/my/device1`を共通成果物とする。Web経路だけは`device1.zip`のダウンロードと展開を受講者が行う。
 
 Web経路で生成AIへDevkit全体をアップロードさせない。必要な主催者資料、受講者が整理した要件・配線、必要最小限の参考ファイルだけを添付する。Web上で生成したプログラムは、受講者のPCでビルド、書き込み、実機確認が完了するまで検証済みとしない。
 
@@ -1065,23 +1070,11 @@ workspace/exercises/02_rotary_cursor_size/
 workspace/poc/
 ```
 
-`_template/`を含むディレクトリ全体を配布対象とする。ただし、各PoC直下の`win/`はWindows版だけ、`mac/`はmacOS版だけへ収録する。ログ、個人状態、通常のビルド生成物など、Devkit全体の除外規則はPoCにも適用する。
+検証用PoCを参加者向けDevkitへ収録する。ただし、主催者がPoCを新規作成するための`_poc_template/`は配布対象外とする。各PoC直下の`win/`はWindows版だけ、`mac/`はmacOS版だけへ収録する。ログ、個人状態、通常のビルド生成物など、Devkit全体の除外規則はPoCにも適用する。
 
 PoCは配布されていても正式演習への採用を意味しない。目的、前提、確認方法、検証状態を各PoCのREADMEなどへ明記する。
 
-受講者の自由制作用プログラムには、一般のPoC名とは別に次の固定パスを使用する。
-
-```text
-workspace/poc/my_device1/
-workspace/poc/my_device2/
-workspace/poc/my_device3/
-```
-
-`my_device1`には、完成ソースに加えて、生成AIと整理した要件を`REQUIREMENTS.md`、安全確認済みの文字による配線表を`WIRING.md`として保存する。配線図画像がある場合も`WIRING.md`を正本とし、画像だけを根拠にプログラムを生成しない。
-
-完成品は受講者1人あたり最大3件とし、1件目から順番に使用する。`my_device1`を飛ばして`my_device2`または`my_device3`から開始しない。ワークショップ資料、標準コマンド、生成AI向け共通案内、講師の通常サポートは`my_device1`だけを対象とする。`my_device2`と`my_device3`は、1件目を完成させた受講者が追加案を自力で試すための任意枠であり、標準資料では案内しない。
-
-主催者が検証用PoCを作成するときは、従来どおり`workspace/poc/<project-name>`と`tools/new_poc.py`を使用できる。受講者の自由制作と主催者用PoCの命名規則を混同しない。
+主催者が検証用PoCを作成するときは、ソースリポジトリで`workspace/poc/_poc_template`と`tools/new_poc.py`を使用する。
 
 PoCを演習へ採用するときは、次を行う。
 
@@ -1091,6 +1084,24 @@ PoCを演習へ採用するときは、次を行う。
 4. WindowsとmacOSで検証する
 5. `70_VALIDATION_RESULTS.md`へ記録する
 6. `90_DECISIONS.md`へ採用決定を記録する
+
+### 8.8 `workspace/my`
+
+受講者自身が編集する自由制作だけを保持する。主催者管理の`workspace/ai`、`workspace/parts`と、主催者の検証用`workspace/poc`をこの中へ置かない。
+
+```text
+workspace/my/
+├── README.md
+├── device1/
+├── device2/
+└── device3/
+```
+
+`device1`には、完成ソースに加えて、生成AIと整理した要件を`REQUIREMENTS.md`、安全確認済みの文字による配線表を`WIRING.md`として保存する。配線図画像がある場合も`WIRING.md`を正本とし、画像だけを根拠にプログラムを生成しない。
+
+完成品は受講者1人あたり最大3件とし、1件目から順番に使用する。`device1`を飛ばして`device2`または`device3`から開始しない。ワークショップ資料、標準コマンド、生成AI向け共通案内、講師の通常サポートは`device1`だけを対象とする。`device2`と`device3`は、1件目を完成させた受講者が追加案を自力で試すための任意枠であり、標準資料では案内しない。
+
+受講者はDevkitに収録された`workspace/ai/new_my_device.py`で`device1`を初期化する。生成AIがローカルファイルを操作する場合は、`workspace/ai`と`workspace/parts`を参照専用、`workspace/my/device1`だけを編集可能とする。
 
 ## 9. `docs`
 
@@ -3609,14 +3620,15 @@ PC3の内部プルアップを使用するため、`01`ではモジュールの5
 - 必須演習の標準配線後は、講師側で参加者ごとのUIAPduinoピン割り当てを一元管理しない
 - 生成AIが提示した配線は、安全性、電圧、電流、GPIO機能の競合、部品の端子配置を確認してから実施する
 - 生成AIへ診断情報を渡す場合も、個人情報、認証情報、秘密情報を含めない
-- 自由制作の標準作業場所は`workspace/poc/my_device1`とし、参加者向け資料、画面例、コマンド例、生成AI向け共通プロンプトには`my_device1`だけを記載する
+- 自由制作の標準作業場所は`workspace/my/device1`とし、参加者向け資料、画面例、コマンド例、生成AI向け共通プロンプトには`device1`だけを記載する
 - 生成AIへ要件整理、配線設計、プログラム作成を依頼する前に、`workspace/parts/PARTS_FOR_AI.md`を参照させる
 - `PARTS_FOR_AI.md`を主催者提供の参照専用正本とし、生成AIに編集させない
 - 生成AIがDevkit内のファイルを直接操作できる「ローカル操作型」と、添付ファイルとダウンロードを使う「Web・手動受け渡し型」の両方を正式経路として案内する
 - 製品名や画面名ではなく、生成AIがローカルファイルを直接操作できるかどうかで経路を選ぶ
 - 両経路の要件、配線、安全確認、成果物、ビルド、書き込み、実機確認の基準を共通化し、ファイルの受け渡し方法だけを分岐させる
-- 完成品は最大3件までとし、追加案を自力で試せる受講者だけが`my_device2`、`my_device3`を順番に使用できる
-- `my_device2`と`my_device3`は標準資料と講師の通常サポートの対象外とし、`my_device1`の完成を優先する
+- 制作開始時はDevkit環境の`workspace`で`python ai/new_my_device.py`を実行し、受講者用ひな型から`workspace/my/device1`を作成する
+- 完成品は最大3件までとし、追加案を自力で試せる受講者だけが`device2`、`device3`を順番に使用できる
+- `device2`と`device3`は標準資料と講師の通常サポートの対象外とし、`device1`の完成を優先する
 
 ### 1.2 自由制作の共通入力と中間成果物
 
@@ -3624,10 +3636,11 @@ PC3の内部プルアップを使用するため、`01`ではモジュールの5
 
 - `workspace/parts/PARTS_FOR_AI.md`: 配布部品情報の正本
 - `workspace/ai/BOARD_FOR_AI.md`: UIAPduinoのピン、電源、周辺機能、競合、ビルド条件
-- `workspace/poc/my_device1/REQUIREMENTS.md`: 受講者が作るもの、使用部品、操作、PC側動作、完成条件
-- `workspace/poc/my_device1/WIRING.md`: 配線表、電源、信号、入出力方向、抵抗・保護回路、GPIO競合、安全確認結果
+- `workspace/my/device1/REQUIREMENTS.md`: 受講者が作るもの、使用部品、操作、PC側動作、完成条件
+- `workspace/my/device1/WIRING.md`: 配線表、電源、信号、入出力方向、抵抗・保護回路、GPIO競合、安全確認結果
 - 任意の配線図画像: 視覚的な補助。文字による`WIRING.md`を正本とする
-- `workspace/ai/PROJECT_TEMPLATE/`: `my_device1`の構成とビルド規約
+- `workspace/ai/MY_DEVICE_TEMPLATE/`: `device1`の構成とビルド規約
+- `workspace/ai/new_my_device.py`: ひな型を`workspace/my/device1`へ配置する初期化ツール
 - `workspace/ai/PROGRAM_GENERATION_PROMPT.md`: プログラム一式を生成する共通指示
 
 配線設計とプログラム生成の間に安全確認を置く。`WIRING.md`の確認が終わるまで実物を配線せず、プログラム生成へ進まない。配線図を画像で作る場合も、文字で読める`WIRING.md`の配線表を正本とする。
@@ -3635,7 +3648,7 @@ PC3の内部プルアップを使用するため、`01`ではモジュールの5
 ### 1.3 ローカル操作型
 
 - 生成AIへ必要なローカルフォルダーだけを許可する
-- 編集可能範囲を`workspace/poc/my_device1`へ限定する
+- 編集可能範囲を`workspace/my/device1`へ限定する
 - `workspace/parts`、`workspace/ai`、`workspace/exercises`、`workspace/deps`を参照専用とする
 - 生成AIにローカルでビルドさせ、実行したコマンドと結果を確認する
 - 書き込みと実機動作は受講者が配線を再確認してから行う
@@ -3645,13 +3658,13 @@ PC3の内部プルアップを使用するため、`01`ではモジュールの5
 - 受講者のPCにはローカル操作型と同じDevkit一式がセットアップ済みであることを前提とする
 - 共通入力をプログラム生成プロンプトと一緒にWeb画面へ添付する
 - Devkit全体、個人情報、認証情報、秘密情報、不要なログをアップロードしない
-- 生成AIにはZIP直下を`my_device1/`とした`my_device1.zip`を生成させる
+- 生成AIにはZIP直下を`device1/`とした`device1.zip`を生成させる
 - ZIPを生成できない場合は、完成したファイル名と全文を1ファイルずつ出力させる。差分や一部置換だけを初心者向け標準手順にしない
-- 受講者がZIPを展開し、`workspace/poc/my_device1/README.md`となるよう配置する。`my_device1/my_device1`の二重配置を避ける
+- 受講者がZIPを展開し、`workspace/my/device1/README.md`となるよう配置する。`device1/device1`の二重配置を避ける
 - Web上での生成を、受講者PCでのビルド、書き込み、実機確認の完了とみなさない
-- 修正時は現在の`my_device1.zip`、`BUILD_ERROR.txt`、`REQUIREMENTS.md`、`WIRING.md`を渡し、修正版一式を再生成させる
+- 修正時は現在の`device1.zip`、`BUILD_ERROR.txt`、`REQUIREMENTS.md`、`WIRING.md`を渡し、修正版一式を再生成させる
 
-`my_device1.zip`にはソース一式を収録し、ビルド生成物、Devkit本体、依存ライブラリ、主催者管理資料の複製を含めない。生成AIが作成したREADMEには、目的、使用部品、配線、ビルド、書き込み、確認方法、未確認事項を記載させる。
+`device1.zip`にはソース一式を収録し、ビルド生成物、Devkit本体、依存ライブラリ、主催者管理資料の複製を含めない。生成AIが作成したREADMEには、目的、使用部品、配線、ビルド、書き込み、確認方法、未確認事項を記載させる。
 
 ## 2. 文書の検証状態
 
@@ -4861,7 +4874,7 @@ macOS:
 - 参加者向け演習が`workspace/exercises`
 - 演習固有のPC側プログラムが各演習の`host`配下
 - トップレベルの`workspace/host`が存在しない
-- 参考・発展用PoCと`_template`が`workspace/poc`にあり、Windows版・macOS版のZIPへ収録されている
+- 参考・発展用PoCがWindows版・macOS版のZIPへ収録され、主催者専用の`_poc_template`は収録されていない
 - `workspace`直下に未移行の`*_poc`がない
 - 正式演習の`workspace/exercises`とPoCの`workspace/poc`が分離されている
 - 不要な`.git`がない
@@ -5091,8 +5104,9 @@ make help
 - Windows版・macOS版の両方に`workspace/ai/README.md`が収録されている
 - ローカル操作型とWeb・手動受け渡し型の両方について、開始条件、入力資料、成果物、配置、ビルド、修正手順が記載されている
 - Web経路で添付する資料が必要最小限であり、Devkit全体や秘密情報をアップロードさせない
-- Web経路の`my_device1.zip`が、二重ディレクトリなしで`workspace/poc/my_device1`へ配置できる
-- `BOARD_FOR_AI.md`、`PROGRAM_GENERATION_PROMPT.md`、`PROJECT_TEMPLATE/`が完成し、対象Devkit版と整合している
+- Web経路の`device1.zip`が、二重ディレクトリなしで`workspace/my/device1`へ配置できる
+- `BOARD_FOR_AI.md`、`PROGRAM_GENERATION_PROMPT.md`、`MY_DEVICE_TEMPLATE/`、`new_my_device.py`が完成し、対象Devkit版と整合している
+- `new_my_device.py`が`device1`を初期化でき、既存の`device1`を上書きしない
 - `REQUIREMENTS.md`と`WIRING.md`のひな型、および配線安全確認の中間ゲートが参加者向け資料にある
 - Web経路で生成したサンプルをPC上のDevkitへ配置し、WindowsとmacOSでビルドから実機確認まで検証している
 - 各部品の写真、基板表記、端子配置、電源電圧、信号電圧を記録
@@ -11166,7 +11180,7 @@ Windows実機で休止期間が点灯する症状を確認したため、基板�
 
 - `workspace/poc`の内容をWindows版・macOS版の参加者向けDevkitへ収録する
 - PoCは参考・発展用とし、`workspace/exercises`の正式演習とは区別する
-- `_template`も新規PoCのひな型として収録する
+- `_template`も新規PoCのひな型として収録する（後の決定で`_poc_template`へ改名し、参加者向けZIPから除外）
 - 各PoC直下の`win`はWindows版だけ、`mac`はmacOS版だけへ収録する
 - ログ、個人状態、通常のビルド生成物など、Devkit全体の除外規則はPoCにも適用する
 
@@ -11216,14 +11230,14 @@ Windows実機で休止期間が点灯する症状を確認したため、基板�
 
 - 受講者が作成する完成品は1人あたり最大3件とする
 - 自由制作用プログラムの保存先を、1件目から順に次の固定パスとする
-  - `workspace/poc/my_device1`
-  - `workspace/poc/my_device2`
-  - `workspace/poc/my_device3`
-- 多くの受講者は1件だけ完成すると想定し、`my_device1`の完成を標準目標とする
-- ワークショップ資料、標準コマンド、画面例、生成AI向け共通プロンプトには`my_device1`だけを記載する
-- 講師の通常サポートは`my_device1`を対象とする
-- `my_device2`と`my_device3`は、`my_device1`を完成させた後、追加のアイデアを自力で試せる受講者が順番に使用する任意枠とする
-- `my_device4`以降は作成しない
+  - `workspace/my/device1`
+  - `workspace/my/device2`
+  - `workspace/my/device3`
+- 多くの受講者は1件だけ完成すると想定し、`device1`の完成を標準目標とする
+- ワークショップ資料、標準コマンド、画面例、生成AI向け共通プロンプトには`device1`だけを記載する
+- 講師の通常サポートは`device1`を対象とする
+- `device2`と`device3`は、`device1`を完成させた後、追加のアイデアを自力で試せる受講者が順番に使用する任意枠とする
+- `device4`以降は作成しない
 
 ### 理由
 
@@ -11274,7 +11288,7 @@ Windows実機で休止期間が点灯する症状を確認したため、基板�
 - `PARTS_FOR_AI.md`をWindows版・macOS版の参加者向けDevkitへ収録する
 - 部品ごとに、部品ID、名称、型番、分類、できること、端子、電源・信号条件、数量、加工状態、確認済み事項、未確認事項、参考演習・PoC、注意事項を記載する
 - 受講者と生成AIは参照専用として扱い、部品情報の追加・訂正は主催者が配布元で行う
-- 自由制作では、生成AIに`PARTS_FOR_AI.md`を読ませてから要件整理、配線設計、`workspace/poc/my_device1`へのプログラム作成を依頼する
+- 自由制作では、生成AIに`PARTS_FOR_AI.md`を読ませてから要件整理、配線設計、`workspace/my/device1`へのプログラム作成を依頼する
 - 配布を決定した9種類を`PART-01`〜`PART-09`として登録する
 - 型番や電気仕様が未確認の部品は、配布決定だけを確認済み事項とし、一般的な同名部品の仕様で補完しない
 - 参加者1人あたりの配布数量は、`PART-06`タクトスイッチを3個、その他8種類を各1個とする
@@ -11292,7 +11306,7 @@ Windows実機で休止期間が点灯する症状を確認したため、基板�
 ### 理由
 
 - 自由制作のプログラムと同じ`workspace`内に置き、両OSで共通の相対パスを使用できる
-- `my_device1`〜`my_device3`へ複製せず、主催者管理の単一正本を参照できる
+- `device1`〜`device3`へ複製せず、主催者管理の単一正本を参照できる
 - 型番未確認や未検証の条件を生成AIが一般的な部品仕様で補うことを防ぐ
 
 ---
@@ -11305,18 +11319,18 @@ Windows実機で休止期間が点灯する症状を確認したため、基板�
 - 生成AIがDevkit内のファイルを直接操作できる「ローカル操作型」と、Web画面で添付・ダウンロードを行う「Web・手動受け渡し型」の両方を正式経路として支援する
 - 経路の判定は特定の製品名ではなく、生成AIがローカルファイルを直接操作できるかどうかで行う
 - 両経路で、部品情報、ボード情報、要件、配線、安全確認、プロジェクトひな型、完成条件を共通化する
-- 要件は`workspace/poc/my_device1/REQUIREMENTS.md`、文字による配線表と安全確認結果は`workspace/poc/my_device1/WIRING.md`へ保存する
+- 要件は`workspace/my/device1/REQUIREMENTS.md`、文字による配線表と安全確認結果は`workspace/my/device1/WIRING.md`へ保存する
 - 配線図画像は補助資料として利用できるが、`WIRING.md`を正本とする
 - 配線の安全確認が完了するまで、実物の配線とプログラム生成へ進まない
-- ローカル操作型では、生成AIの編集範囲を`workspace/poc/my_device1`に限定する
-- Web・手動受け渡し型では、必要資料をプロンプトとともに添付し、生成AIから`my_device1.zip`一式を受け取る
-- Web経路のZIPは直下を`my_device1/`とし、受講者が`workspace/poc/my_device1`へ二重ディレクトリなしで配置する
+- ローカル操作型では、生成AIの編集範囲を`workspace/my/device1`に限定する
+- Web・手動受け渡し型では、必要資料をプロンプトとともに添付し、生成AIから`device1.zip`一式を受け取る
+- Web経路のZIPは直下を`device1/`とし、受講者が`workspace/my/device1`へ二重ディレクトリなしで配置する
 - Web上の生成をビルド済み・書き込み済み・実機確認済みと扱わず、受講者PCのDevkitで確認する
 - Web経路の修正時は、現行ZIP、エラー全文、要件、配線を渡し、修正版一式を再生成させる
 - 共通手順の正本を`workspace/ai/README.md`とする
-- `BOARD_FOR_AI.md`、`PROGRAM_GENERATION_PROMPT.md`、`PROJECT_TEMPLATE/`、`REQUIREMENTS.md`と`WIRING.md`のひな型を`workspace/ai`に配置する
+- `BOARD_FOR_AI.md`、`PROGRAM_GENERATION_PROMPT.md`、`MY_DEVICE_TEMPLATE/`、`REQUIREMENTS.md`と`WIRING.md`のひな型を`workspace/ai`に配置する
 - Web経路向けに`WEB_UPLOAD_CHECKLIST.md`、`MY_DEVICE_ZIP_CHECKLIST.md`、`BUILD_ERROR_TEMPLATE.txt`を配置する
-- `PROJECT_TEMPLATE`は外付け部品を駆動しない安全な初期状態とし、USB設定は要件で必要な場合だけ互換する演習またはPoCから追加する
+- `MY_DEVICE_TEMPLATE`は外付け部品を駆動しない安全な初期状態とし、USB設定は要件で必要な場合だけ互換する演習またはPoCから追加する
 
 ### 理由
 
@@ -11324,3 +11338,43 @@ Windows実機で休止期間が点灯する症状を確認したため、基板�
 - ファイル操作方法だけを分岐させ、講師が確認する成果物とビルド結果を共通化できる
 - 完成ファイル一式を受け渡すことで、初心者による差分適用、コピー漏れ、旧版との混在を減らせる
 - 配線設計とプログラム生成の間に安全確認を置き、画像だけを根拠とした誤配線を防げる
+
+---
+
+## 2026-08-13 PoC用と受講者用テンプレートの分離
+
+### 決定
+
+- 主催者・開発者が検証用PoCを作るひな型を`workspace/poc/_poc_template`とする
+- `tools/new_poc.py`はソースリポジトリで主催者・開発者だけが使用する
+- `_poc_template`は参加者向けDevkitへ収録しない
+- 受講者が自由制作を始めるひな型を`workspace/ai/MY_DEVICE_TEMPLATE`とする
+- `workspace/ai/new_my_device.py`を参加者向けDevkitへ収録し、既存ファイルを上書きせず`workspace/my/device1`を初期化する
+- 生成AI向け資料では`MY_DEVICE_TEMPLATE`を正本とし、主催者用PoCテンプレートを案内しない
+
+### 理由
+
+- 仮説検証用PoCと受講者の完成品では、利用者、完成条件、必要な文書、ビルド要件が異なる
+- 役割をディレクトリ名で判別できるようにし、生成AIと受講者が誤ったひな型を選ぶことを防ぐ
+- 配布Devkitに実行できない主催者用手順を残さず、受講者の開始操作を1つのコマンドに統一する
+
+---
+
+## 2026-08-13 受講者成果物を`workspace/my`へ分離
+
+### 決定
+
+- 受講者が作成する物理UIデバイスの保存先を`workspace/my/device1`、`device2`、`device3`とする
+- ワークショップ資料と講師の通常サポートは`workspace/my/device1`だけを対象とする
+- `workspace/my`には受講者自身が編集する成果物だけを置く
+- `workspace/ai`と`workspace/parts`は現在の位置を維持し、主催者管理の参照専用領域とする
+- `workspace/poc`は主催者・開発者の検証用PoCだけを置く
+- 生成AIのローカル編集範囲を`workspace/my/device1`に限定する
+- Web経路の成果物を`device1.zip`、ZIP直下を`device1/`とする
+- ファームウェアの主ソースを`device1.c`、ビルド対象名を`device1`とする
+
+### 理由
+
+- 受講者の完成品と、主催者の未完成な検証用PoCを同じディレクトリへ置くと、受講者と生成AIが選択を誤る可能性がある
+- 主催者管理の入力資料と受講者が変更する出力領域を分けることで、編集許可範囲を明確にできる
+- ディレクトリ名、ZIP名、ソース名、ビルド対象名を`device1`へ統一し、初心者向け手順の表記揺れをなくす

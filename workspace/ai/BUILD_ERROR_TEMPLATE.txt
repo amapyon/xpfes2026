@@ -1,4 +1,4 @@
-my_device1 ビルド・動作エラー報告
+device1 ビルド・動作エラー報告
 
 使用OS: Windows / macOS
 利用経路: ローカル操作型 / Web・手動受け渡し型
@@ -19,7 +19,7 @@ USBを外して配線を変更した: はい / いいえ / 配線変更なし
 異常な発熱・臭い・音: なし / あり（内容を記載）
 
 添付するもの:
-- 現在のmy_device1一式、またはmy_device1.zip
+- 現在のdevice1一式、またはdevice1.zip
 - REQUIREMENTS.md
 - WIRING.md
 - このBUILD_ERROR.txt

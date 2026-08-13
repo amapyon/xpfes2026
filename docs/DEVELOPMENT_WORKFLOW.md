@@ -19,15 +19,17 @@
 
 ## 受講者の自由制作
 
-受講者の標準作業場所は`workspace/poc/my_device1`です。追加案を自力で試す場合だけ、`my_device1`完成後に`my_device2`、`my_device3`を順番に使用できます。完成品は最大3件とし、ワークショップ資料と講師の通常サポートには`my_device1`だけを記載します。
+受講者の標準作業場所は`workspace/my/device1`です。追加案を自力で試す場合だけ、`device1`完成後に`device2`、`device3`を順番に使用できます。完成品は最大3件とし、ワークショップ資料と講師の通常サポートには`device1`だけを記載します。
 
-自由制作は、生成AIがローカルファイルを直接編集する経路と、Web画面へ必要資料を添付して`my_device1.zip`を受け取る経路の両方を支援します。共通手順は`workspace/ai/README.md`を正本とし、どちらも最終的に`workspace/poc/my_device1`をPC上のDevkitでビルド・書き込み・実機確認します。
+自由制作は、生成AIがローカルファイルを直接編集する経路と、Web画面へ必要資料を添付して`device1.zip`を受け取る経路の両方を支援します。共通手順は`workspace/ai/README.md`を正本とし、どちらも最終的に`workspace/my/device1`をPC上のDevkitでビルド・書き込み・実機確認します。
 
 ## 主催者用PoCの開始
 
 ```console
 python tools/new_poc.py <project-name>
 ```
+
+これは主催者・開発者がソースリポジトリで検証用PoCを作るコマンドです。参加者向けDevkitの自由制作には使用しません。
 
 作成後は`workspace/poc/<project-name>/README.md`へ目的、前提、確認方法を記載し、共通コードを`src/`へ追加します。OS差分が避けられない場合だけ、プロジェクト直下へ`win/`または`mac/`を追加します。
 

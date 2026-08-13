@@ -1,6 +1,6 @@
 # UIAPduinoの情報（生成AI向け）
 
-このファイルは、自由制作`my_device1`の要件整理、配線設計、ch32funによるプログラム作成に使用する正本です。対象は`UIAPduino Pro Micro CH32V003 V1.4`と、このDevkitに収録された開発環境です。
+このファイルは、自由制作`device1`の要件整理、配線設計、ch32funによるプログラム作成に使用する正本です。対象は`UIAPduino Pro Micro CH32V003 V1.4`と、このDevkitに収録された開発環境です。
 
 ## 絶対条件
 
@@ -71,7 +71,7 @@
 
 ## Devkitのビルド規約
 
-成果物は`workspace/poc/my_device1`に配置します。Devkitの起動ファイルから専用環境を開き、成果物のディレクトリで次を使用します。
+成果物は`workspace/my/device1`に配置します。Devkitの起動ファイルから専用環境を開き、成果物のディレクトリで次を使用します。
 
 ```text
 make          ビルド
@@ -86,7 +86,7 @@ make report   問い合わせ用レポート
 - `TARGET_MCU := CH32V003`、`MCU_PACKAGE := 1`、`PREFIX := riscv-none-elf`を使用する
 - 書き込みコマンドは既存演習の`FLASH_COMMAND`を維持する
 - 依存ライブラリやツールチェーンを成果物へコピーしない
-- `.elf`、`.bin`、`.hex`、`.map`、`.lst`などのビルド生成物を`my_device1.zip`へ含めない
+- `.elf`、`.bin`、`.hex`、`.map`、`.lst`などのビルド生成物を`device1.zip`へ含めない
 - ビルドに成功してから、配線の目視確認、USBを外した状態での配線、書き込み、実機確認の順に進む
 
 ## 参照できる確認済み実装

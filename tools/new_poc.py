@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Create a PoC project from workspace/poc/_template."""
+"""Create an organizer PoC project from workspace/poc/_poc_template."""
 
 from __future__ import annotations
 
@@ -29,7 +29,7 @@ def main() -> int:
         return 2
 
     poc_dir = args.poc_dir.resolve()
-    template = poc_dir / "_template"
+    template = poc_dir / "_poc_template"
     destination = poc_dir / args.name
     if not template.is_dir():
         print(f"テンプレートがありません: {template}", file=sys.stderr)

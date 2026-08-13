@@ -17,14 +17,15 @@
 - 必須演習の標準配線後は、講師側で参加者ごとのUIAPduinoピン割り当てを一元管理しない
 - 生成AIが提示した配線は、安全性、電圧、電流、GPIO機能の競合、部品の端子配置を確認してから実施する
 - 生成AIへ診断情報を渡す場合も、個人情報、認証情報、秘密情報を含めない
-- 自由制作の標準作業場所は`workspace/poc/my_device1`とし、参加者向け資料、画面例、コマンド例、生成AI向け共通プロンプトには`my_device1`だけを記載する
+- 自由制作の標準作業場所は`workspace/my/device1`とし、参加者向け資料、画面例、コマンド例、生成AI向け共通プロンプトには`device1`だけを記載する
 - 生成AIへ要件整理、配線設計、プログラム作成を依頼する前に、`workspace/parts/PARTS_FOR_AI.md`を参照させる
 - `PARTS_FOR_AI.md`を主催者提供の参照専用正本とし、生成AIに編集させない
 - 生成AIがDevkit内のファイルを直接操作できる「ローカル操作型」と、添付ファイルとダウンロードを使う「Web・手動受け渡し型」の両方を正式経路として案内する
 - 製品名や画面名ではなく、生成AIがローカルファイルを直接操作できるかどうかで経路を選ぶ
 - 両経路の要件、配線、安全確認、成果物、ビルド、書き込み、実機確認の基準を共通化し、ファイルの受け渡し方法だけを分岐させる
-- 完成品は最大3件までとし、追加案を自力で試せる受講者だけが`my_device2`、`my_device3`を順番に使用できる
-- `my_device2`と`my_device3`は標準資料と講師の通常サポートの対象外とし、`my_device1`の完成を優先する
+- 制作開始時はDevkit環境の`workspace`で`python ai/new_my_device.py`を実行し、受講者用ひな型から`workspace/my/device1`を作成する
+- 完成品は最大3件までとし、追加案を自力で試せる受講者だけが`device2`、`device3`を順番に使用できる
+- `device2`と`device3`は標準資料と講師の通常サポートの対象外とし、`device1`の完成を優先する
 
 ### 1.2 自由制作の共通入力と中間成果物
 
@@ -32,10 +33,11 @@
 
 - `workspace/parts/PARTS_FOR_AI.md`: 配布部品情報の正本
 - `workspace/ai/BOARD_FOR_AI.md`: UIAPduinoのピン、電源、周辺機能、競合、ビルド条件
-- `workspace/poc/my_device1/REQUIREMENTS.md`: 受講者が作るもの、使用部品、操作、PC側動作、完成条件
-- `workspace/poc/my_device1/WIRING.md`: 配線表、電源、信号、入出力方向、抵抗・保護回路、GPIO競合、安全確認結果
+- `workspace/my/device1/REQUIREMENTS.md`: 受講者が作るもの、使用部品、操作、PC側動作、完成条件
+- `workspace/my/device1/WIRING.md`: 配線表、電源、信号、入出力方向、抵抗・保護回路、GPIO競合、安全確認結果
 - 任意の配線図画像: 視覚的な補助。文字による`WIRING.md`を正本とする
-- `workspace/ai/PROJECT_TEMPLATE/`: `my_device1`の構成とビルド規約
+- `workspace/ai/MY_DEVICE_TEMPLATE/`: `device1`の構成とビルド規約
+- `workspace/ai/new_my_device.py`: ひな型を`workspace/my/device1`へ配置する初期化ツール
 - `workspace/ai/PROGRAM_GENERATION_PROMPT.md`: プログラム一式を生成する共通指示
 
 配線設計とプログラム生成の間に安全確認を置く。`WIRING.md`の確認が終わるまで実物を配線せず、プログラム生成へ進まない。配線図を画像で作る場合も、文字で読める`WIRING.md`の配線表を正本とする。
@@ -43,7 +45,7 @@
 ### 1.3 ローカル操作型
 
 - 生成AIへ必要なローカルフォルダーだけを許可する
-- 編集可能範囲を`workspace/poc/my_device1`へ限定する
+- 編集可能範囲を`workspace/my/device1`へ限定する
 - `workspace/parts`、`workspace/ai`、`workspace/exercises`、`workspace/deps`を参照専用とする
 - 生成AIにローカルでビルドさせ、実行したコマンドと結果を確認する
 - 書き込みと実機動作は受講者が配線を再確認してから行う
@@ -53,13 +55,13 @@
 - 受講者のPCにはローカル操作型と同じDevkit一式がセットアップ済みであることを前提とする
 - 共通入力をプログラム生成プロンプトと一緒にWeb画面へ添付する
 - Devkit全体、個人情報、認証情報、秘密情報、不要なログをアップロードしない
-- 生成AIにはZIP直下を`my_device1/`とした`my_device1.zip`を生成させる
+- 生成AIにはZIP直下を`device1/`とした`device1.zip`を生成させる
 - ZIPを生成できない場合は、完成したファイル名と全文を1ファイルずつ出力させる。差分や一部置換だけを初心者向け標準手順にしない
-- 受講者がZIPを展開し、`workspace/poc/my_device1/README.md`となるよう配置する。`my_device1/my_device1`の二重配置を避ける
+- 受講者がZIPを展開し、`workspace/my/device1/README.md`となるよう配置する。`device1/device1`の二重配置を避ける
 - Web上での生成を、受講者PCでのビルド、書き込み、実機確認の完了とみなさない
-- 修正時は現在の`my_device1.zip`、`BUILD_ERROR.txt`、`REQUIREMENTS.md`、`WIRING.md`を渡し、修正版一式を再生成させる
+- 修正時は現在の`device1.zip`、`BUILD_ERROR.txt`、`REQUIREMENTS.md`、`WIRING.md`を渡し、修正版一式を再生成させる
 
-`my_device1.zip`にはソース一式を収録し、ビルド生成物、Devkit本体、依存ライブラリ、主催者管理資料の複製を含めない。生成AIが作成したREADMEには、目的、使用部品、配線、ビルド、書き込み、確認方法、未確認事項を記載させる。
+`device1.zip`にはソース一式を収録し、ビルド生成物、Devkit本体、依存ライブラリ、主催者管理資料の複製を含めない。生成AIが作成したREADMEには、目的、使用部品、配線、ビルド、書き込み、確認方法、未確認事項を記載させる。
 
 ## 2. 文書の検証状態
 

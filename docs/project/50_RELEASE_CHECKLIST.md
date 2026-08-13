@@ -477,7 +477,7 @@ macOS:
 - 参加者向け演習が`workspace/exercises`
 - 演習固有のPC側プログラムが各演習の`host`配下
 - トップレベルの`workspace/host`が存在しない
-- 参考・発展用PoCと`_template`が`workspace/poc`にあり、Windows版・macOS版のZIPへ収録されている
+- 参考・発展用PoCがWindows版・macOS版のZIPへ収録され、主催者専用の`_poc_template`は収録されていない
 - `workspace`直下に未移行の`*_poc`がない
 - 正式演習の`workspace/exercises`とPoCの`workspace/poc`が分離されている
 - 不要な`.git`がない
@@ -707,8 +707,9 @@ make help
 - Windows版・macOS版の両方に`workspace/ai/README.md`が収録されている
 - ローカル操作型とWeb・手動受け渡し型の両方について、開始条件、入力資料、成果物、配置、ビルド、修正手順が記載されている
 - Web経路で添付する資料が必要最小限であり、Devkit全体や秘密情報をアップロードさせない
-- Web経路の`my_device1.zip`が、二重ディレクトリなしで`workspace/poc/my_device1`へ配置できる
-- `BOARD_FOR_AI.md`、`PROGRAM_GENERATION_PROMPT.md`、`PROJECT_TEMPLATE/`が完成し、対象Devkit版と整合している
+- Web経路の`device1.zip`が、二重ディレクトリなしで`workspace/my/device1`へ配置できる
+- `BOARD_FOR_AI.md`、`PROGRAM_GENERATION_PROMPT.md`、`MY_DEVICE_TEMPLATE/`、`new_my_device.py`が完成し、対象Devkit版と整合している
+- `new_my_device.py`が`device1`を初期化でき、既存の`device1`を上書きしない
 - `REQUIREMENTS.md`と`WIRING.md`のひな型、および配線安全確認の中間ゲートが参加者向け資料にある
 - Web経路で生成したサンプルをPC上のDevkitへ配置し、WindowsとmacOSでビルドから実機確認まで検証している
 - 各部品の写真、基板表記、端子配置、電源電圧、信号電圧を記録
