@@ -55,6 +55,7 @@ class BuildDevkitTests(unittest.TestCase):
                         "MY_DEVICE_ZIP_CHECKLIST.md",
                         "BUILD_ERROR_TEMPLATE.txt",
                         "new_my_device.py",
+                        "prepare_web_handoff.py",
                         "MY_DEVICE_TEMPLATE/README.md",
                         "MY_DEVICE_TEMPLATE/REQUIREMENTS.md",
                         "MY_DEVICE_TEMPLATE/WIRING.md",

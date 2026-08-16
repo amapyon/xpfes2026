@@ -1,6 +1,6 @@
 # 参加者向け手順書の作成規約
 
-更新日: 2026-08-13
+更新日: 2026-08-16
 
 ## 1. 対象読者
 
@@ -38,6 +38,7 @@
 - 任意の配線図画像: 視覚的な補助。文字による`WIRING.md`を正本とする
 - `workspace/ai/MY_DEVICE_TEMPLATE/`: `device1`の構成とビルド規約
 - `workspace/ai/new_my_device.py`: ひな型を`workspace/my/device1`へ配置する初期化ツール
+- `workspace/ai/prepare_web_handoff.py`: Web版生成AIへ渡す資料を検査し、フォルダー、ZIP、単一Markdownへまとめるツール
 - `workspace/ai/PROGRAM_GENERATION_PROMPT.md`: プログラム一式を生成する共通指示
 
 配線設計とプログラム生成の間に安全確認を置く。`WIRING.md`の確認が終わるまで実物を配線せず、プログラム生成へ進まない。配線図を画像で作る場合も、文字で読める`WIRING.md`の配線表を正本とする。
@@ -45,21 +46,25 @@
 ### 1.3 ローカル操作型
 
 - 生成AIへ必要なローカルフォルダーだけを許可する
+- 添付ファイルを要求せず、Devkit内の正本をローカルファイルとして直接読ませる
 - 編集可能範囲を`workspace/my/device1`へ限定する
+- 安全確認済みの`REQUIREMENTS.md`と`WIRING.md`は読み取り専用とし、生成AIに変更させない
 - `workspace/parts`、`workspace/ai`、`workspace/exercises`、`workspace/deps`を参照専用とする
-- 生成AIにローカルでビルドさせ、実行したコマンドと結果を確認する
+- 生成AIに`make clean`、`make`、`make size`の順で実行させ、コマンドと結果を確認する
 - 書き込みと実機動作は受講者が配線を再確認してから行う
 
 ### 1.4 Web・手動受け渡し型
 
 - 受講者のPCにはローカル操作型と同じDevkit一式がセットアップ済みであることを前提とする
-- 共通入力をプログラム生成プロンプトと一緒にWeb画面へ添付する
+- `workspace`で`python ai/prepare_web_handoff.py`を実行する
+- Gemini向けフォルダー、Copilot Cowork向けZIP、汎用の単一Markdownのうち、利用する生成AIに対応するものを1つだけ渡す
+- 受け渡しパックの`AI_HANDOFF_MANIFEST.md`で元の相対パス、サイズ、SHA-256、選択された参考実装、除外したビルド生成物を確認する
 - Devkit全体、個人情報、認証情報、秘密情報、不要なログをアップロードしない
 - 生成AIにはZIP直下を`device1/`とした`device1.zip`を生成させる
 - ZIPを生成できない場合は、完成したファイル名と全文を1ファイルずつ出力させる。差分や一部置換だけを初心者向け標準手順にしない
 - 受講者がZIPを展開し、`workspace/my/device1/README.md`となるよう配置する。`device1/device1`の二重配置を避ける
 - Web上での生成を、受講者PCでのビルド、書き込み、実機確認の完了とみなさない
-- 修正時は現在の`device1.zip`、`BUILD_ERROR.txt`、`REQUIREMENTS.md`、`WIRING.md`を渡し、修正版一式を再生成させる
+- 修正時は`BUILD_ERROR.txt`を`workspace/my/device1`へ保存して受け渡しパックを`--force`で再生成し、修正版一式を生成させる
 
 `device1.zip`にはソース一式を収録し、ビルド生成物、Devkit本体、依存ライブラリ、主催者管理資料の複製を含めない。生成AIが作成したREADMEには、目的、使用部品、配線、ビルド、書き込み、確認方法、未確認事項を記載させる。
 

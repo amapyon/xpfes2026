@@ -1,7 +1,7 @@
 # XP祭り2026 物理UIワークショップ
 # 完全版プロジェクトガイド
 
-更新日: 2026-08-13
+更新日: 2026-08-16
 
 この文書は、分割された詳細指示を1つに統合した参照用完全版である。
 
@@ -432,7 +432,7 @@ Windows版Devkitは、専用Command PromptおよびWindows PowerShellをPATH検�
 
 # 開発環境とディレクトリ構成
 
-更新日: 2026-08-13
+更新日: 2026-08-16
 
 ## 1. この文書の目的
 
@@ -833,12 +833,15 @@ workspace/ai/
 ├── MY_DEVICE_ZIP_CHECKLIST.md      # 受領ZIPの確認
 ├── BUILD_ERROR_TEMPLATE.txt        # エラー返却用ひな型
 ├── new_my_device.py                # device1初期化ツール
+├── prepare_web_handoff.py          # Web受け渡しパック作成ツール
 └── MY_DEVICE_TEMPLATE/             # 要件・配線・プログラムのひな型
 ```
 
 両経路は、`PARTS_FOR_AI.md`、`BOARD_FOR_AI.md`、`device1/REQUIREMENTS.md`、`device1/WIRING.md`、任意の配線図画像、プロジェクトひな型を共通入力とし、`workspace/my/device1`を共通成果物とする。Web経路だけは`device1.zip`のダウンロードと展開を受講者が行う。
 
-Web経路で生成AIへDevkit全体をアップロードさせない。必要な主催者資料、受講者が整理した要件・配線、必要最小限の参考ファイルだけを添付する。Web上で生成したプログラムは、受講者のPCでビルド、書き込み、実機確認が完了するまで検証済みとしない。
+ローカル操作型では添付を要求せず、生成AIにDevkit内の正本を直接読ませ、編集範囲を`workspace/my/device1`へ限定する。確認済みの`REQUIREMENTS.md`と`WIRING.md`はプログラム生成中も読み取り専用とする。
+
+Web経路では`python ai/prepare_web_handoff.py`を実行し、必要資料、現在の`device1`、明示された参考実装だけを`workspace/my/WEB_HANDOFF_device1`へまとめる。Gemini向けフォルダー、ZIP、単一Markdownのうち対応する1つだけを生成AIへ渡し、Devkit全体や複数フォルダーから手作業でファイルを選んでアップロードさせない。受け渡しパックは元パス、サイズ、SHA-256のマニフェストを含み、ビルド生成物と秘密情報の可能性があるファイルを収録しない。Web上で生成したプログラムは、受講者のPCでビルド、書き込み、実機確認が完了するまで検証済みとしない。
 
 ### 8.2 `workspace/parts`
 
@@ -3603,7 +3606,7 @@ PC3の内部プルアップを使用するため、`01`ではモジュールの5
 
 # 参加者向け手順書の作成規約
 
-更新日: 2026-08-13
+更新日: 2026-08-16
 
 ## 1. 対象読者
 
@@ -3641,6 +3644,7 @@ PC3の内部プルアップを使用するため、`01`ではモジュールの5
 - 任意の配線図画像: 視覚的な補助。文字による`WIRING.md`を正本とする
 - `workspace/ai/MY_DEVICE_TEMPLATE/`: `device1`の構成とビルド規約
 - `workspace/ai/new_my_device.py`: ひな型を`workspace/my/device1`へ配置する初期化ツール
+- `workspace/ai/prepare_web_handoff.py`: Web版生成AIへ渡す資料を検査し、フォルダー、ZIP、単一Markdownへまとめるツール
 - `workspace/ai/PROGRAM_GENERATION_PROMPT.md`: プログラム一式を生成する共通指示
 
 配線設計とプログラム生成の間に安全確認を置く。`WIRING.md`の確認が終わるまで実物を配線せず、プログラム生成へ進まない。配線図を画像で作る場合も、文字で読める`WIRING.md`の配線表を正本とする。
@@ -3648,21 +3652,25 @@ PC3の内部プルアップを使用するため、`01`ではモジュールの5
 ### 1.3 ローカル操作型
 
 - 生成AIへ必要なローカルフォルダーだけを許可する
+- 添付ファイルを要求せず、Devkit内の正本をローカルファイルとして直接読ませる
 - 編集可能範囲を`workspace/my/device1`へ限定する
+- 安全確認済みの`REQUIREMENTS.md`と`WIRING.md`は読み取り専用とし、生成AIに変更させない
 - `workspace/parts`、`workspace/ai`、`workspace/exercises`、`workspace/deps`を参照専用とする
-- 生成AIにローカルでビルドさせ、実行したコマンドと結果を確認する
+- 生成AIに`make clean`、`make`、`make size`の順で実行させ、コマンドと結果を確認する
 - 書き込みと実機動作は受講者が配線を再確認してから行う
 
 ### 1.4 Web・手動受け渡し型
 
 - 受講者のPCにはローカル操作型と同じDevkit一式がセットアップ済みであることを前提とする
-- 共通入力をプログラム生成プロンプトと一緒にWeb画面へ添付する
+- `workspace`で`python ai/prepare_web_handoff.py`を実行する
+- Gemini向けフォルダー、Copilot Cowork向けZIP、汎用の単一Markdownのうち、利用する生成AIに対応するものを1つだけ渡す
+- 受け渡しパックの`AI_HANDOFF_MANIFEST.md`で元の相対パス、サイズ、SHA-256、選択された参考実装、除外したビルド生成物を確認する
 - Devkit全体、個人情報、認証情報、秘密情報、不要なログをアップロードしない
 - 生成AIにはZIP直下を`device1/`とした`device1.zip`を生成させる
 - ZIPを生成できない場合は、完成したファイル名と全文を1ファイルずつ出力させる。差分や一部置換だけを初心者向け標準手順にしない
 - 受講者がZIPを展開し、`workspace/my/device1/README.md`となるよう配置する。`device1/device1`の二重配置を避ける
 - Web上での生成を、受講者PCでのビルド、書き込み、実機確認の完了とみなさない
-- 修正時は現在の`device1.zip`、`BUILD_ERROR.txt`、`REQUIREMENTS.md`、`WIRING.md`を渡し、修正版一式を再生成させる
+- 修正時は`BUILD_ERROR.txt`を`workspace/my/device1`へ保存して受け渡しパックを`--force`で再生成し、修正版一式を生成させる
 
 `device1.zip`にはソース一式を収録し、ビルド生成物、Devkit本体、依存ライブラリ、主催者管理資料の複製を含めない。生成AIが作成したREADMEには、目的、使用部品、配線、ビルド、書き込み、確認方法、未確認事項を記載させる。
 
@@ -4397,7 +4405,7 @@ versions
 
 # 配布パッケージ作成・リリースチェックリスト
 
-更新日: 2026-08-12
+更新日: 2026-08-16
 
 ## 1. 対象成果物
 
@@ -5103,9 +5111,14 @@ make help
 - 参加者向け生成AIプロンプトが`PARTS_FOR_AI.md`を参照専用正本として指定している
 - Windows版・macOS版の両方に`workspace/ai/README.md`が収録されている
 - ローカル操作型とWeb・手動受け渡し型の両方について、開始条件、入力資料、成果物、配置、ビルド、修正手順が記載されている
+- ローカル操作型で添付を要求せず、Devkit内の正本を直接読み、`REQUIREMENTS.md`と`WIRING.md`を変更しない指示になっている
+- Windows版・macOS版の両方に`workspace/ai/prepare_web_handoff.py`が収録されている
+- `prepare_web_handoff.py`がGemini向けフォルダー、ZIP、単一Markdown、SHA-256付きマニフェストを生成できる
+- 参考演習・PoCが正本文書の記載から自動選択され、workspace外の参照、秘密情報、ビルド生成物が受け渡しパックへ混入しない
+- 再実行時に既存の任意ディレクトリを上書きせず、このツール自身の出力だけを`--force`で置き換えられる
 - Web経路で添付する資料が必要最小限であり、Devkit全体や秘密情報をアップロードさせない
 - Web経路の`device1.zip`が、二重ディレクトリなしで`workspace/my/device1`へ配置できる
-- `BOARD_FOR_AI.md`、`PROGRAM_GENERATION_PROMPT.md`、`MY_DEVICE_TEMPLATE/`、`new_my_device.py`が完成し、対象Devkit版と整合している
+- `BOARD_FOR_AI.md`、`PROGRAM_GENERATION_PROMPT.md`、`MY_DEVICE_TEMPLATE/`、`new_my_device.py`、`prepare_web_handoff.py`が完成し、対象Devkit版と整合している
 - `new_my_device.py`が`device1`を初期化でき、既存の`device1`を上書きしない
 - `REQUIREMENTS.md`と`WIRING.md`のひな型、および配線安全確認の中間ゲートが参加者向け資料にある
 - Web経路で生成したサンプルをPC上のDevkitへ配置し、WindowsとmacOSでビルドから実機確認まで検証している
@@ -11378,3 +11391,27 @@ Windows実機で休止期間が点灯する症状を確認したため、基板�
 - 受講者の完成品と、主催者の未完成な検証用PoCを同じディレクトリへ置くと、受講者と生成AIが選択を誤る可能性がある
 - 主催者管理の入力資料と受講者が変更する出力領域を分けることで、編集許可範囲を明確にできる
 - ディレクトリ名、ZIP名、ソース名、ビルド対象名を`device1`へ統一し、初心者向け手順の表記揺れをなくす
+
+---
+
+## 2026-08-16 Web受け渡しパックの自動生成
+
+### 決定
+
+- Web・手動受け渡し型では、複数フォルダーから受講者がファイルを手選択せず、`workspace/ai/prepare_web_handoff.py`を標準経路とする
+- ツールは、生成プロンプト、基板情報、部品情報、チェックリスト、現在の`workspace/my/device1`、正本文書で明示された参考演習・PoCを収録する
+- 出力をGemini向けフォルダー、ZIP対応AI向けZIP、汎用の単一Markdownの3形式とする
+- 各収録ファイルの元の相対パス、サイズ、SHA-256、選択した参考実装、除外したビルド生成物をマニフェストへ記録する
+- 参考実装は`workspace/exercises`と`workspace/poc`の直下に限定し、workspace外の参照、シンボリックリンク、秘密情報の可能性があるファイルを拒否する
+- `.elf`、`.bin`、`.hex`、`.map`、`.lst`、`.o`、ログ、アーカイブを受け渡しパックから除外する
+- 出力先を`workspace/my/WEB_HANDOFF_device1`とし、`--force`でもツール自身の識別情報がある出力だけを置き換える
+- ローカル操作型では添付を使わず、Devkit内のファイルを直接読ませる
+- プログラム生成中は、確認済みの`REQUIREMENTS.md`と`WIRING.md`を読み取り専用の正本として扱う
+
+### 理由
+
+- 複数フォルダーからの選択作業と、同名ファイルや古いファイルの取り違えをなくす
+- WebサービスへDevkit全体、依存ライブラリ、ビルド生成物、秘密情報を誤って送る危険を下げる
+- Gemini、Copilot Cowork、通常のWebチャットで同じ正本と参考実装を利用できるようにする
+- 修正依頼でも現在の成果物、エラー全文、正本、参考実装を1回の操作で揃える
+- 正本のハッシュと元パスを残し、生成AIが読んだ入力を受講者と講師が確認できるようにする

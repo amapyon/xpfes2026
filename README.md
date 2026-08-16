@@ -104,6 +104,8 @@ Devkit環境の`workspace`で`python ai/new_my_device.py`を実行すると、�
 
 生成AIがローカルファイルを直接操作できる場合と、Web画面でファイルを手動受け渡しする場合の両方を正式経路とします。入力資料と完成物の仕様は共通とし、Web経路では生成AIから`device1.zip`を受け取り、`workspace/my/device1/`へ展開してPC上のDevkitでビルドします。詳細は[workspace/ai/README.md](workspace/ai/README.md)を参照してください。
 
+Web経路では`workspace`で`python ai/prepare_web_handoff.py`を実行すると、必要資料と現在の`device1`、明示された参考実装を検査して、Gemini向けフォルダー、Copilot Cowork向けZIP、汎用の単一Markdownを`workspace/my/WEB_HANDOFF_device1/`へ生成します。複数フォルダーから手作業で添付ファイルを選びません。
+
 主催者用PoCは`workspace/poc/<project-name>/`へ追加します。`workspace/poc/_poc_template`と`tools/new_poc.py`は主催者用リポジトリだけで使用し、参加者向けDevkitには収録しません。検証済みのPoCは参考・発展用としてDevkitへ収録しますが、正式演習は`workspace/exercises/`と区別します。プロジェクト内の共通ファイルは直下へ置き、どうしても異なる実装だけを`win/`、`mac/`へ分けます。配布時は対象OS側のディレクトリだけがそのDevkitへ入ります。
 
 ```console

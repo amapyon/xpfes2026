@@ -25,6 +25,7 @@ python ai/new_my_device.py
 - 制作手順: `workspace/ai/README.md`
 - 生成AI向け基板情報: `workspace/ai/BOARD_FOR_AI.md`
 - 生成AI向け共通プロンプト: `workspace/ai/PROGRAM_GENERATION_PROMPT.md`
+- Web受け渡しパック作成: `workspace/ai/prepare_web_handoff.py`
 - 部品情報: `workspace/parts/PARTS_FOR_AI.md`
 
 `workspace/ai`と`workspace/parts`は主催者管理の参照専用領域です。生成AIがローカルファイルを操作する場合も、編集可能範囲は`workspace/my/device1`だけに限定します。

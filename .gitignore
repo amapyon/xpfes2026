@@ -10,6 +10,7 @@
 /logs/
 /workspace/deps/*
 !/workspace/deps/README.md
+/workspace/my/WEB_HANDOFF_*/
 
 # Local caches and generated firmware outputs.
 __pycache__/

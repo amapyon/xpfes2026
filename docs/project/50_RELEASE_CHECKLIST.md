@@ -1,6 +1,6 @@
 # 配布パッケージ作成・リリースチェックリスト
 
-更新日: 2026-08-12
+更新日: 2026-08-16
 
 ## 1. 対象成果物
 
@@ -706,9 +706,14 @@ make help
 - 参加者向け生成AIプロンプトが`PARTS_FOR_AI.md`を参照専用正本として指定している
 - Windows版・macOS版の両方に`workspace/ai/README.md`が収録されている
 - ローカル操作型とWeb・手動受け渡し型の両方について、開始条件、入力資料、成果物、配置、ビルド、修正手順が記載されている
+- ローカル操作型で添付を要求せず、Devkit内の正本を直接読み、`REQUIREMENTS.md`と`WIRING.md`を変更しない指示になっている
+- Windows版・macOS版の両方に`workspace/ai/prepare_web_handoff.py`が収録されている
+- `prepare_web_handoff.py`がGemini向けフォルダー、ZIP、単一Markdown、SHA-256付きマニフェストを生成できる
+- 参考演習・PoCが正本文書の記載から自動選択され、workspace外の参照、秘密情報、ビルド生成物が受け渡しパックへ混入しない
+- 再実行時に既存の任意ディレクトリを上書きせず、このツール自身の出力だけを`--force`で置き換えられる
 - Web経路で添付する資料が必要最小限であり、Devkit全体や秘密情報をアップロードさせない
 - Web経路の`device1.zip`が、二重ディレクトリなしで`workspace/my/device1`へ配置できる
-- `BOARD_FOR_AI.md`、`PROGRAM_GENERATION_PROMPT.md`、`MY_DEVICE_TEMPLATE/`、`new_my_device.py`が完成し、対象Devkit版と整合している
+- `BOARD_FOR_AI.md`、`PROGRAM_GENERATION_PROMPT.md`、`MY_DEVICE_TEMPLATE/`、`new_my_device.py`、`prepare_web_handoff.py`が完成し、対象Devkit版と整合している
 - `new_my_device.py`が`device1`を初期化でき、既存の`device1`を上書きしない
 - `REQUIREMENTS.md`と`WIRING.md`のひな型、および配線安全確認の中間ゲートが参加者向け資料にある
 - Web経路で生成したサンプルをPC上のDevkitへ配置し、WindowsとmacOSでビルドから実機確認まで検証している

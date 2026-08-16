@@ -17,6 +17,7 @@
 | `PROGRAM_GENERATION_PROMPT.md` | ローカル操作型とWeb型で共通使用する生成指示 |
 | `MY_DEVICE_TEMPLATE/` | `device1`の要件、配線、Cプログラム、Makefileのひな型 |
 | `new_my_device.py` | ひな型を`workspace/my/device1`へ安全にコピーする初期化ツール |
+| `prepare_web_handoff.py` | Web版生成AIへ渡す資料を安全に1つへまとめるツール |
 | `WEB_UPLOAD_CHECKLIST.md` | Web型で生成AIへ渡すファイルの確認 |
 | `MY_DEVICE_ZIP_CHECKLIST.md` | Web型で受け取ったZIPの構造と内容の確認 |
 | `BUILD_ERROR_TEMPLATE.txt` | ビルド・書き込み・実機エラーを生成AIへ返す書式 |
@@ -72,7 +73,21 @@ Web経路で添付するファイルは`WEB_UPLOAD_CHECKLIST.md`、受け取っ�
 
 ### 1. ファイルを添付する
 
-共通資料をプロンプトと一緒に添付します。生成AIが添付資料を読めたことを確認してから、プログラム生成へ進みます。
+`REQUIREMENTS.md`と`WIRING.md`を完成させた後、Devkit環境の`workspace`で次を実行します。
+
+```text
+python ai/prepare_web_handoff.py
+```
+
+ツールは現在の`workspace/my/device1`一式を収録し、両文書に記載された参考演習・PoCも自動検出して、`workspace/my/WEB_HANDOFF_device1`へ次を作成します。明示的に追加する場合は、例えば`--reference exercises/01_macro_keyboard`を指定します。
+
+- `UPLOAD_THIS_FOLDER/`: Geminiの「Import Code」でこのフォルダーを1回選択する
+- `AI_HANDOFF.zip`: ZIPを扱えるCopilot Coworkなどへ1ファイルだけ添付する
+- `AI_HANDOFF.md`: ZIPやフォルダーを扱えないWeb版生成AIへ1ファイルだけ添付する
+
+既存の出力を確認して作り直す場合だけ、`python ai/prepare_web_handoff.py --force`を使用します。ツールは必須ファイルの不足、workspace外の参照、秘密鍵形式、非テキストファイルを検出すると停止します。`.elf`、`.bin`、`.hex`などのビルド生成物は自動的に除外し、マニフェストへ記録します。
+
+生成AIが受け渡しパック内の`AI_HANDOFF_MANIFEST.md`と必須資料を読めたことを確認してから、プログラム生成へ進みます。Devkit全体から手作業でファイルを選んで添付しません。
 
 ### 2. `device1.zip`を生成する
 
@@ -116,13 +131,13 @@ Web上の生成AIは、受講者のPC上でビルド、書き込み、実機確�
 
 ### 5. エラーを返して修正する
 
-失敗した場合は、次を生成AIへ渡します。
+失敗した場合は`BUILD_ERROR_TEMPLATE.txt`をコピーし、エラー全文を記入した`BUILD_ERROR.txt`を`workspace/my/device1`へ保存します。続けて次を実行します。
 
-- 現在の`device1.zip`
-- `BUILD_ERROR_TEMPLATE.txt`をコピーし、エラー全文を保存した`BUILD_ERROR.txt`
-- `device1/REQUIREMENTS.md`
-- `device1/WIRING.md`
-- 修正依頼
+```text
+python ai/prepare_web_handoff.py --force
+```
+
+再生成されたフォルダー、ZIP、または単一Markdownのうち、利用する生成AIに対応するものを1つだけ渡して修正を依頼します。パックには現在の`device1`一式、`BUILD_ERROR.txt`、正本、必要な参考実装が収録されます。
 
 修正時も、変更箇所だけではなく修正版`device1.zip`一式を生成させ、旧版と混在させません。
 

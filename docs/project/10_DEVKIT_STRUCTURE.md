@@ -1,6 +1,6 @@
 # 開発環境とディレクトリ構成
 
-更新日: 2026-08-13
+更新日: 2026-08-16
 
 ## 1. この文書の目的
 
@@ -401,12 +401,15 @@ workspace/ai/
 ├── MY_DEVICE_ZIP_CHECKLIST.md      # 受領ZIPの確認
 ├── BUILD_ERROR_TEMPLATE.txt        # エラー返却用ひな型
 ├── new_my_device.py                # device1初期化ツール
+├── prepare_web_handoff.py          # Web受け渡しパック作成ツール
 └── MY_DEVICE_TEMPLATE/             # 要件・配線・プログラムのひな型
 ```
 
 両経路は、`PARTS_FOR_AI.md`、`BOARD_FOR_AI.md`、`device1/REQUIREMENTS.md`、`device1/WIRING.md`、任意の配線図画像、プロジェクトひな型を共通入力とし、`workspace/my/device1`を共通成果物とする。Web経路だけは`device1.zip`のダウンロードと展開を受講者が行う。
 
-Web経路で生成AIへDevkit全体をアップロードさせない。必要な主催者資料、受講者が整理した要件・配線、必要最小限の参考ファイルだけを添付する。Web上で生成したプログラムは、受講者のPCでビルド、書き込み、実機確認が完了するまで検証済みとしない。
+ローカル操作型では添付を要求せず、生成AIにDevkit内の正本を直接読ませ、編集範囲を`workspace/my/device1`へ限定する。確認済みの`REQUIREMENTS.md`と`WIRING.md`はプログラム生成中も読み取り専用とする。
+
+Web経路では`python ai/prepare_web_handoff.py`を実行し、必要資料、現在の`device1`、明示された参考実装だけを`workspace/my/WEB_HANDOFF_device1`へまとめる。Gemini向けフォルダー、ZIP、単一Markdownのうち対応する1つだけを生成AIへ渡し、Devkit全体や複数フォルダーから手作業でファイルを選んでアップロードさせない。受け渡しパックは元パス、サイズ、SHA-256のマニフェストを含み、ビルド生成物と秘密情報の可能性があるファイルを収録しない。Web上で生成したプログラムは、受講者のPCでビルド、書き込み、実機確認が完了するまで検証済みとしない。
 
 ### 8.2 `workspace/parts`
 

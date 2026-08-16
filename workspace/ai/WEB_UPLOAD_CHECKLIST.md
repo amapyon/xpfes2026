@@ -1,6 +1,15 @@
 # Web版生成AIへ渡すファイル
 
-Web・手動受け渡し型で、新規作成を依頼する前に確認します。
+Web・手動受け渡し型で、新規作成を依頼する前に確認します。通常は`workspace`で`python ai/prepare_web_handoff.py`を実行し、生成されたものを1つだけ渡します。
+
+## 自動作成した受け渡しパック
+
+- [ ] Geminiでは`WEB_HANDOFF_device1/UPLOAD_THIS_FOLDER`を「Import Code」で選択した
+- [ ] Copilot Coworkなどでは`WEB_HANDOFF_device1/AI_HANDOFF.zip`だけを添付した
+- [ ] 上記を使えない場合は`WEB_HANDOFF_device1/AI_HANDOFF.md`だけを添付した
+- [ ] 生成AIが`AI_HANDOFF_MANIFEST.md`と収録ファイルを読めたことを確認した
+
+以下は、ツールを使用できない場合の手動確認項目です。
 
 ## 必須
 

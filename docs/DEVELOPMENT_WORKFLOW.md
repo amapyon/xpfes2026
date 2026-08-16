@@ -41,6 +41,14 @@ python tools/build_document_bundle.py --profile full
 
 自由制作は、生成AIがローカルファイルを直接編集する経路と、Web画面へ必要資料を添付して`device1.zip`を受け取る経路の両方を支援します。共通手順は`workspace/ai/README.md`を正本とし、どちらも最終的に`workspace/my/device1`をPC上のDevkitでビルド・書き込み・実機確認します。
 
+ローカル操作型では添付を要求せず、生成AIにDevkit内の正本を直接読ませます。Web・手動受け渡し型では、受講者が`workspace`で次を実行し、生成された3形式のうち利用する生成AIに対応する1つだけを渡します。
+
+```console
+python ai/prepare_web_handoff.py
+```
+
+受け渡しパックには元の相対パス、サイズ、SHA-256を記録したマニフェストを含めます。参考演習・PoCは`REQUIREMENTS.md`または`WIRING.md`で明示されたものだけを自動収録し、ビルド生成物、秘密情報の可能性があるファイル、workspace外の参照を排除します。
+
 ## 主催者用PoCの開始
 
 ```console
