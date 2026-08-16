@@ -137,6 +137,8 @@ python tools/build_document_bundle.py
 
 個別に作る場合は`--target win`または`--target mac`を指定します。版番号はルートの`VERSION`、`config/win/bootstrap.lock.json`、`config/mac/bootstrap.lock`で同じ値に更新します。`--version`を指定する場合も`VERSION`と同じ値でなければビルドは停止します。
 
+配布元に`.elf`、`.bin`、`.hex`、`.lst`、`.map`、`.log`、`.pyc`が残っている場合は、元ファイルを変更せずZIPから自動除外し、除外件数を表示して生成を継続します。
+
 ```console
 python tools/build_devkit.py --target win
 python tools/build_devkit.py --target mac

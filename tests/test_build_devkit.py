@@ -43,6 +43,9 @@ class BuildDevkitTests(unittest.TestCase):
                 )
                 with zipfile.ZipFile(archive) as bundle:
                     names = bundle.namelist()
+                    self.assertFalse(
+                        any(PurePosixPath(name).suffix.lower() in build_devkit.FORBIDDEN_SUFFIXES for name in names)
+                    )
                     self.assertIn(f"uiap-devkit-{architecture}/README.md", names)
                     self.assertIn(f"uiap-devkit-{architecture}/workspace/poc/README.md", names)
                     self.assertIn(f"uiap-devkit-{architecture}/workspace/my/README.md", names)
@@ -167,6 +170,32 @@ class BuildDevkitTests(unittest.TestCase):
                 expected, filename = sidecar.read_text(encoding="ascii").split()
                 self.assertEqual(expected, hashlib.sha256((output / filename).read_bytes()).hexdigest())
 
+    def test_forbidden_artifacts_are_excluded_without_modifying_sources(self) -> None:
+        with tempfile.TemporaryDirectory() as clean_raw, tempfile.TemporaryDirectory() as dirty_raw:
+            clean = Path(clean_raw)
+            dirty = Path(dirty_raw)
+            (clean / "src").mkdir()
+            (dirty / "src").mkdir()
+            (clean / "src" / "keep.c").write_text("keep\n", encoding="utf-8")
+            (dirty / "src" / "keep.c").write_text("keep\n", encoding="utf-8")
+
+            artifact_paths = []
+            for index, suffix in enumerate(sorted(build_devkit.FORBIDDEN_SUFFIXES)):
+                artifact = dirty / "src" / f"artifact-{index}{suffix.upper()}"
+                artifact.write_bytes(f"artifact-{suffix}\n".encode("ascii"))
+                artifact_paths.append(artifact)
+
+            excluded: set[Path] = set()
+            clean_files = build_devkit.relative_files(clean)
+            dirty_files = build_devkit.relative_files(dirty, excluded_artifacts=excluded)
+
+            self.assertEqual(set(clean_files), set(dirty_files))
+            self.assertEqual({PurePosixPath("src/keep.c")}, set(dirty_files))
+            self.assertEqual(set(artifact_paths), excluded)
+            for artifact in artifact_paths:
+                self.assertTrue(artifact.is_file())
+                self.assertTrue(artifact.read_bytes().startswith(b"artifact-"))
+
     def test_poc_platform_directories_are_filtered(self) -> None:
         with tempfile.TemporaryDirectory() as workspace_raw:
             workspace = Path(workspace_raw)
@@ -179,6 +208,7 @@ class BuildDevkitTests(unittest.TestCase):
             (participant / "win").mkdir(parents=True)
             (participant / "mac").mkdir()
             (project / "src" / "common.c").write_text("common\n", encoding="utf-8")
+            (project / "src" / "firmware.bin").write_bytes(b"generated\n")
             (project / "win" / "host.py").write_text("win\n", encoding="utf-8")
             (project / "mac" / "host.py").write_text("mac\n", encoding="utf-8")
             (workspace / "poc" / "_poc_template" / "README.md").write_text("organizer only\n", encoding="utf-8")
@@ -189,12 +219,18 @@ class BuildDevkitTests(unittest.TestCase):
             original = build_devkit.WORKSPACE
             try:
                 build_devkit.WORKSPACE = workspace
-                windows = build_devkit.merged_files("win")
-                macos = build_devkit.merged_files("mac")
+                windows_excluded: set[Path] = set()
+                macos_excluded: set[Path] = set()
+                windows = build_devkit.merged_files("win", windows_excluded)
+                macos = build_devkit.merged_files("mac", macos_excluded)
             finally:
                 build_devkit.WORKSPACE = original
             base = PurePosixPath("workspace/poc/probe")
             self.assertIn(base / "src/common.c", windows)
+            self.assertNotIn(base / "src/firmware.bin", windows)
+            self.assertNotIn(base / "src/firmware.bin", macos)
+            self.assertIn(project / "src" / "firmware.bin", windows_excluded)
+            self.assertIn(project / "src" / "firmware.bin", macos_excluded)
             self.assertIn(base / "win/host.py", windows)
             self.assertNotIn(base / "mac/host.py", windows)
             self.assertIn(base / "src/common.c", macos)

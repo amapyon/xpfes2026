@@ -4,6 +4,7 @@
 from __future__ import annotations
 
 import argparse
+from collections.abc import Callable
 import hashlib
 import json
 from pathlib import Path, PurePosixPath
@@ -22,6 +23,7 @@ TARGETS = {
 FORBIDDEN_SUFFIXES = {".elf", ".bin", ".hex", ".lst", ".map", ".log", ".pyc"}
 FORBIDDEN_PARTS = {"__pycache__", ".state"}
 ZIP_TIME = (2026, 1, 1, 0, 0, 0)
+FileFilter = Callable[[PurePosixPath], bool]
 
 
 class BuildError(RuntimeError):
@@ -64,7 +66,11 @@ def validate_version_metadata(targets: tuple[str, ...], version: str, root: Path
             )
 
 
-def relative_files(source: Path) -> dict[PurePosixPath, Path]:
+def relative_files(
+    source: Path,
+    include: FileFilter | None = None,
+    excluded_artifacts: set[Path] | None = None,
+) -> dict[PurePosixPath, Path]:
     result: dict[PurePosixPath, Path] = {}
     for path in sorted(source.rglob("*")):
         if path.is_symlink():
@@ -76,8 +82,12 @@ def relative_files(source: Path) -> dict[PurePosixPath, Path]:
             continue
         if FORBIDDEN_PARTS.intersection(relative.parts):
             continue
+        if include is not None and not include(relative):
+            continue
         if path.suffix.lower() in FORBIDDEN_SUFFIXES:
-            raise BuildError(f"配布禁止の生成物が含まれています: {source.name}/{relative}")
+            if excluded_artifacts is not None:
+                excluded_artifacts.add(path)
+            continue
         result[relative] = path
     return result
 
@@ -86,11 +96,10 @@ def add_files(
     destination: dict[PurePosixPath, Path],
     source: Path,
     prefix: PurePosixPath = PurePosixPath(),
-    include: object | None = None,
+    include: FileFilter | None = None,
+    excluded_artifacts: set[Path] | None = None,
 ) -> None:
-    for relative, path in relative_files(source).items():
-        if include is not None and not include(relative):  # type: ignore[operator]
-            continue
+    for relative, path in relative_files(source, include, excluded_artifacts).items():
         packaged = prefix / relative
         if packaged in destination:
             raise BuildError(f"配布パスが重複しています: {packaged}")
@@ -119,19 +128,46 @@ def script_file_for_target(relative: PurePosixPath, target: str) -> bool:
     )
 
 
-def merged_files(target: str) -> dict[PurePosixPath, Path]:
+def merged_files(target: str, excluded_artifacts: set[Path] | None = None) -> dict[PurePosixPath, Path]:
     files: dict[PurePosixPath, Path] = {
         PurePosixPath("README.md"): ROOT / "README.md",
         PurePosixPath("VERSION"): ROOT / "VERSION",
     }
     launcher = "start-uiap.cmd" if target == "win" else "start-uiap.command"
     files[PurePosixPath(launcher)] = ROOT / launcher
-    add_files(files, WORKSPACE, PurePosixPath("workspace"), lambda path: workspace_file_for_target(path, target))
-    add_files(files, ROOT / "scripts", PurePosixPath("scripts"), lambda path: script_file_for_target(path, target))
-    add_files(files, ROOT / "config" / target, PurePosixPath("config") / target)
-    add_files(files, ROOT / "docs" / "setup" / target, PurePosixPath("docs"))
-    add_files(files, ROOT / "licenses" / target, PurePosixPath("licenses"))
-    add_files(files, ROOT / "firmware", PurePosixPath("firmware"))
+    add_files(
+        files,
+        WORKSPACE,
+        PurePosixPath("workspace"),
+        lambda path: workspace_file_for_target(path, target),
+        excluded_artifacts,
+    )
+    add_files(
+        files,
+        ROOT / "scripts",
+        PurePosixPath("scripts"),
+        lambda path: script_file_for_target(path, target),
+        excluded_artifacts,
+    )
+    add_files(
+        files,
+        ROOT / "config" / target,
+        PurePosixPath("config") / target,
+        excluded_artifacts=excluded_artifacts,
+    )
+    add_files(
+        files,
+        ROOT / "docs" / "setup" / target,
+        PurePosixPath("docs"),
+        excluded_artifacts=excluded_artifacts,
+    )
+    add_files(
+        files,
+        ROOT / "licenses" / target,
+        PurePosixPath("licenses"),
+        excluded_artifacts=excluded_artifacts,
+    )
+    add_files(files, ROOT / "firmware", PurePosixPath("firmware"), excluded_artifacts=excluded_artifacts)
     return files
 
 
@@ -142,11 +178,16 @@ def executable(relative: PurePosixPath) -> bool:
     )
 
 
-def build_zip(target: str, version: str, output: Path) -> tuple[Path, str]:
+def build_zip(
+    target: str,
+    version: str,
+    output: Path,
+    excluded_artifacts: set[Path] | None = None,
+) -> tuple[Path, str]:
     architecture = TARGETS[target]
     root_name = f"uiap-devkit-{architecture}"
     archive = output / f"{root_name}-{version}.zip"
-    files = merged_files(target)
+    files = merged_files(target, excluded_artifacts)
     output.mkdir(parents=True, exist_ok=True)
 
     with zipfile.ZipFile(archive, "w", compression=zipfile.ZIP_DEFLATED, compresslevel=9) as bundle:
@@ -208,11 +249,13 @@ def main() -> int:
     output = args.output.resolve()
     clean_known_outputs(output)
     checksums: list[tuple[str, str]] = []
+    archives: list[Path] = []
+    excluded_artifacts: set[Path] = set()
     try:
         for target in targets:
-            archive, digest = build_zip(target, version, output)
+            archive, digest = build_zip(target, version, output, excluded_artifacts)
+            archives.append(archive)
             checksums.append((archive.name, digest))
-            print(f"created: {archive}")
     except BuildError as exc:
         print(f"build error: {exc}", file=sys.stderr)
         return 1
@@ -221,6 +264,10 @@ def main() -> int:
         encoding="ascii",
         newline="\n",
     )
+    if excluded_artifacts:
+        print(f"excluded forbidden build artifacts: {len(excluded_artifacts)}")
+    for archive in archives:
+        print(f"created: {archive}")
     return 0
 
 

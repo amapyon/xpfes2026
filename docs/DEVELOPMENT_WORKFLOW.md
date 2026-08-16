@@ -75,7 +75,7 @@ python tools/build_devkit.py --target all
 2. Windows版にはWindows用スクリプトと各演習の`win/`だけを収録する
 3. macOS版にはMac用スクリプトと各演習の`mac/`だけを収録する
 4. PoCを収録し、PoC内の反対OS用ディレクトリだけを除外する
-5. ビルド生成物の混入を検査する
+5. `.elf`、`.bin`、`.hex`、`.lst`、`.map`、`.log`、`.pyc`を元ファイルの変更なしで自動除外し、除外件数を表示する
 6. 再現可能なZIPとSHA-256を`dist/`へ生成する
 
 `workspace/preflight/`は両OS版へ共通収録します。配布検査では、README、ファームウェアソース、USB設定、Makefile、ホスト診断が揃っていることを確認します。
