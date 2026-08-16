@@ -88,6 +88,7 @@ help:
 	@echo "make app on           All 8 LEDs on at safe white RGB 64,64,64"
 	@echo "make app off          All LEDs off"
 	@echo "make app status       Read current LED state"
+	@echo "make app demo         Visual demo: individual LEDs and RGB brightness steps"
 	@echo "make app 1:255,255,255"
 	@echo "make app 1:255,255,255,8:255,128,0"
 

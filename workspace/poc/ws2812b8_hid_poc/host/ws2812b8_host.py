@@ -6,6 +6,7 @@ from __future__ import annotations
 import re
 import platform
 import sys
+import time
 from dataclasses import dataclass
 from typing import Iterable, Sequence
 
@@ -17,6 +18,9 @@ LED_COUNT = 8
 REPORT_PAYLOAD_SIZE = LED_COUNT * 3
 REPORT_TOTAL_SIZE = 1 + REPORT_PAYLOAD_SIZE
 SAFE_ON_VALUE = 64
+DEMO_INDIVIDUAL_SECONDS = 0.6
+DEMO_BRIGHTNESS_SECONDS = 0.8
+DEMO_BRIGHTNESS_LEVELS = (16, 64, 128, 255)
 
 # Conservative, simple workshop estimate: 20 mA per full-scale color channel.
 EST_MA_PER_CHANNEL = 20.0
@@ -38,6 +42,7 @@ def usage() -> str:
   make app on
   make app off
   make app status
+  make app demo
   make app 1:255,255,255
   make app 8:255,128,0
   make app 1:255,255,255,8:255,128,0
@@ -48,6 +53,7 @@ Rules:
   R,G,B:      0..255
   Unspecified LEDs are OFF.
   'on' lights all 8 LEDs white at RGB 64,64,64 as a conservative USB-power default.
+  'demo' lights LEDs 1..8 individually, then shows red, green, and blue brightness steps.
 """
 
 
@@ -202,11 +208,64 @@ def send_state(leds: Sequence[RGB]) -> None:
     report = encode_report(leds)
     dev = open_one_device()
     try:
-        result = dev.send_feature_report(bytes(report))
-        if result is not None and result < 0:
-            raise RuntimeError("send_feature_report returned an error")
+        send_state_to_open_device(dev, report)
     finally:
         dev.close()
+
+
+def send_state_to_open_device(dev, report: Sequence[int]) -> None:
+    result = dev.send_feature_report(bytes(report))
+    if result is not None and result < 0:
+        raise RuntimeError("send_feature_report returned an error")
+
+
+def demo_steps() -> list[tuple[str, list[RGB], float]]:
+    steps: list[tuple[str, list[RGB], float]] = []
+    for led_index in range(LED_COUNT):
+        leds = [RGB(0, 0, 0) for _ in range(LED_COUNT)]
+        leds[led_index] = RGB(SAFE_ON_VALUE, SAFE_ON_VALUE, SAFE_ON_VALUE)
+        steps.append(
+            (
+                f"Individual LED {led_index + 1}/{LED_COUNT}: white {SAFE_ON_VALUE}",
+                leds,
+                DEMO_INDIVIDUAL_SECONDS,
+            )
+        )
+
+    channels = (
+        ("Red", lambda value: RGB(value, 0, 0)),
+        ("Green", lambda value: RGB(0, value, 0)),
+        ("Blue", lambda value: RGB(0, 0, value)),
+    )
+    for channel_name, color_for_value in channels:
+        for value in DEMO_BRIGHTNESS_LEVELS:
+            color = color_for_value(value)
+            steps.append(
+                (
+                    f"{channel_name} brightness {value}/255: all LEDs",
+                    [color for _ in range(LED_COUNT)],
+                    DEMO_BRIGHTNESS_SECONDS,
+                )
+            )
+    return steps
+
+
+def run_demo() -> None:
+    off = [RGB(0, 0, 0) for _ in range(LED_COUNT)]
+    dev = open_one_device()
+    print("Visual demo started. Confirm each LED and each RGB brightness step by eye.")
+    try:
+        send_state_to_open_device(dev, encode_report(off))
+        for label, leds, duration in demo_steps():
+            print(label, flush=True)
+            send_state_to_open_device(dev, encode_report(leds))
+            time.sleep(duration)
+    finally:
+        try:
+            send_state_to_open_device(dev, encode_report(off))
+            print("Demo finished. All LEDs are OFF.")
+        finally:
+            dev.close()
 
 
 def read_state() -> list[RGB]:
@@ -248,6 +307,26 @@ def self_test() -> int:
         else:
             raise AssertionError(f"invalid specification accepted: {spec}")
 
+    steps = demo_steps()
+    if len(steps) != LED_COUNT + 3 * len(DEMO_BRIGHTNESS_LEVELS):
+        raise AssertionError("demo step count mismatch")
+    for led_index, (_, leds, _) in enumerate(steps[:LED_COUNT]):
+        expected = [RGB(0, 0, 0) for _ in range(LED_COUNT)]
+        expected[led_index] = RGB(SAFE_ON_VALUE, SAFE_ON_VALUE, SAFE_ON_VALUE)
+        if leds != expected:
+            raise AssertionError(f"individual demo mismatch for LED {led_index + 1}")
+
+    expected_colors = [
+        RGB(value, 0, 0) for value in DEMO_BRIGHTNESS_LEVELS
+    ] + [
+        RGB(0, value, 0) for value in DEMO_BRIGHTNESS_LEVELS
+    ] + [
+        RGB(0, 0, value) for value in DEMO_BRIGHTNESS_LEVELS
+    ]
+    actual_colors = [leds[0] for _, leds, _ in steps[LED_COUNT:]]
+    if actual_colors != expected_colors:
+        raise AssertionError("RGB brightness demo sequence mismatch")
+
     print("Host parser/report self-test: PASS")
     return 0
 
@@ -268,6 +347,16 @@ def main(argv: Sequence[str]) -> int:
         return 2
 
     spec = argv[1].strip()
+    if spec == "demo":
+        try:
+            run_demo()
+        except KeyboardInterrupt:
+            print("Demo interrupted.", file=sys.stderr)
+            return 130
+        except (RuntimeError, OSError) as exc:
+            print(f"ERROR: {exc}", file=sys.stderr)
+            return 1
+        return 0
     if spec == "status":
         try:
             leds = read_state()
