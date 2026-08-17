@@ -141,7 +141,7 @@ xcrun --sdk macosx --show-sdk-path
 - USBハブを外してMacへ直結したか
 - データ通信対応ケーブルか
 
-期待するアプリケーションVID:PIDはPoC用の`1209:C004`です。
+期待するアプリケーションVID:PIDは共有テスト用の`1209:0001`です。演習02ではProduct文字列`UIAP Rotary Cursor`も確認します。
 
 ## test10: `make app`でポインターサイズが変わらない
 

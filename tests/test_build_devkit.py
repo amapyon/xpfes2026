@@ -338,14 +338,19 @@ class UnifiedRepositoryTests(unittest.TestCase):
         self.assertIn("TARGET_MCU := CH32V003", makefile)
         self.assertIn("funDigitalWrite(BUILTIN_LED_PIN, FUN_LOW)", source)
         self.assertNotIn("rv003usb", makefile)
-        self.assertIn("状態: 未確認 / 確認済み", wiring)
+        self.assertIn("## 設計結果", wiring)
+        self.assertIn("結果: 配線OK / 要確認", wiring)
+        self.assertIn("## 配線前30秒チェック", wiring)
+        self.assertIn("## 要確認事項", wiring)
 
-    def test_program_generation_prompt_requires_human_wiring_approval(self) -> None:
+    def test_program_generation_prompt_enforces_simplified_safety_gate(self) -> None:
         prompt = (ROOT / "workspace" / "ai" / "PROGRAM_GENERATION_PROMPT.md").read_text(encoding="utf-8")
-        self.assertIn("## プログラム生成開始条件", prompt)
-        self.assertIn("自ら「配線安全確認」を`確認済み`へ変更してはいけません", prompt)
-        self.assertIn("実行可能なコードを生成してはいけません", prompt)
-        self.assertIn("`device1.zip`を生成しないでください", prompt)
+        self.assertIn("## 最初に確認すること", prompt)
+        self.assertIn("WIRING.mdの`設計結果`が`要確認`ではない", prompt)
+        self.assertIn("## 要確認で停止する場合", prompt)
+        self.assertIn("- WIRING.mdが`要確認`", prompt)
+        self.assertIn("### 物理配線の変更が必要な場合", prompt)
+        self.assertIn("`プログラム生成OK`", prompt)
 
     def test_macos_commands_are_git_executable(self) -> None:
         paths = ["start-uiap.command"]

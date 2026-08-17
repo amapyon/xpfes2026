@@ -4,7 +4,7 @@
 
 共通部分:
 
-- `1209:C005`のHID列挙、1台接続確認、`open_path`
+- 共有テスト用`1209:0001`とProduct文字列`UIAP Rotary Haptic`によるHID列挙、1台接続確認、`open_path`
 - Report ID 1の`[delta, sequence]`入力デコード
 - Feature Report ID 2による触覚指示
 - CW／CCWイベントループ、ドライラン、終了時復元

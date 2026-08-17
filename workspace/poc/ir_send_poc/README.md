@@ -118,7 +118,9 @@ make raw CODE=F20D03FC0190010090
 
 ## USBレポート
 
-USB IDは`1209:D00A`、Productは`UIAP IR Sender PoC`、Feature Reportは14byteです。
+USB IDは共有テスト用`1209:0001`、Productは`UIAP IR Sender PoC`、Feature Reportは14byteです。
+
+`1209:0001`は世界で一意ではなく、教育目的の試作とワークショップ内テスト専用です。製品、製造、販売、再配布には使用できません。
 
 | byte | SET時 | GET時 |
 |---:|---|---|
@@ -152,8 +154,8 @@ USB IDは`1209:D00A`、Productは`UIAP IR Sender PoC`、Feature Reportは14byte�
 
 ### 送信機と受信機を2台同時に使う場合
 
-通常モードでは、送信機は`1209:D00A UIAP IR Sender PoC`、受信機は
-`1209:D009 UIAP IR Receiver PoC`として別々に認識されます。各ディレクトリで
+通常モードでは、送信機と受信機は同じ共有テスト用VID:PID `1209:0001`を使用し、Product文字列`UIAP IR Sender PoC`と
+`UIAP IR Receiver PoC`で区別します。各ディレクトリで
 `make list`を実行し、それぞれ1台と表示されることを確認してからアプリを起動します。
 
 送信機が0台の場合は、いったん受信機を外し、送信機だけを接続して`make list`を試します。

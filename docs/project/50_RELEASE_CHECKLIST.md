@@ -331,7 +331,7 @@ USB HIDを含む場合、次を同一リリース内で一致させる。
 - USBシリアル番号の扱い
 - デバイス役割
 
-PoC用一時値を検索する。
+旧PoC用VID:PIDが現行コードに残っていないことを検索する。
 
 ```text
 1209:C003
@@ -347,9 +347,11 @@ TEST9-001
 
 確認事項:
 
-- 一時値であることが明記
-- 正式値へ変更する箇所が特定済み
-- 公開配布へそのまま使用しない
+- アプリケーションVID:PIDがすべて共有テスト用`1209:0001`
+- Product文字列が演習ごと、自由制作ごとに設定されている
+- VID/PIDを定義または直接埋め込むコードにテスト専用警告がある
+- 警告に「世界で一意ではない」「教育目的の試作とワークショップ内テスト専用」「製品、製造、販売、再配布に使用しない」が含まれる
+- ブートローダー`1209:B803`が変更されていない
 - MCU UUIDなど実機固有値がログや文書へ不要に残っていない
 
 ## 11. HIDマクロキーボード演習確認
@@ -826,7 +828,7 @@ package.json
 ### HIDとホストアプリ
 
 - `make doctor`がPASS
-- `make hidcheck`で`1209:D003`、Usage Page `0xFF00`、Usage `0x0001`を確認
+- `make hidcheck`で`1209:0001`、Product文字列、Usage Page `0xFF00`、Usage `0x0001`を確認
 - Windows Embedded Pythonで演習内ローカルモジュールをimportできる
 - `make cursor-test`でポインターサイズが即時変化し、起動前設定へ復元
 - `make haptic-test HAPTIC_LEVEL=4`で80ms×2、間隔40msを確認
@@ -844,7 +846,8 @@ package.json
 ### リリース判定上の制限
 
 - Windows 11 x64 PoCとして確認済み
-- 正式VID:PIDとUSBシリアル番号は未決定
+- アプリケーションVID:PIDは共有テスト用`1209:0001`へ決定済み。識別子変更後の実機再検証が必要
+- USBシリアル番号の生成方式は未決定
 - macOS相当ホスト処理は未実装
 - USB切断時、強制終了時、スリープ復帰、複数個体、長時間動作は追加検証対象
 - ワークショップ必須演習としての採用は未決定
@@ -995,9 +998,9 @@ ch32funの具体的な入力値は`15_CH32FUN_SUBSET_RULES.md`を参照し、こ
 - [ ] rv003usbの取得URLがコミット`75d926abe89a3002020b989015eab97ce5ad0470`を含む
 - [ ] rv003usb取得時の実測SHA-256を`SOURCE_FILES.sha256`へ記録
 - [ ] 3演習で`make -n build`が成功
-- [ ] `01_macro_keyboard`でビルド、書き込み、`1209:C003`列挙、`AbCdE`入力を実機確認
-- [ ] `02_rotary_cursor_size`でビルド、書き込み、`1209:C004`列挙、CW／CCW、サイズ変更、`Ctrl+C`復元を実機確認
-- [ ] PoC用VID:PIDとシリアル番号を正式識別子として扱っていない
+- [ ] `01_macro_keyboard`でビルド、書き込み、`1209:0001`とProduct `UIAP Macro Keyboard`の列挙、`AbCdE`入力を実機確認
+- [ ] `02_rotary_cursor_size`でビルド、書き込み、`1209:0001`とProduct `UIAP Rotary Cursor`の列挙、CW／CCW、サイズ変更、`Ctrl+C`復元を実機確認
+- [ ] `1209:0001`を共有テスト専用として警告し、製品、製造、販売、再配布へ使用していない
 - [ ] rv003usbファイル単位SHA-256を最終リリース用期待値として固定
 
 最後の4つの実機・正式固定項目が未完了の間、test17を参加者向け最終版として扱わない。
@@ -1040,12 +1043,12 @@ ch32funの具体的な入力値は`15_CH32FUN_SUBSET_RULES.md`を参照し、こ
 
 - [ ] 必須演習が`00`、`01`、`02`、`03`、`04`の5フォルダーに分かれている
 - [ ] `02_rotary_cursor_size`に振動モジュール制御、Feature Report、PC4出力が含まれていない
-- [ ] `02_rotary_cursor_size`が従来の`1209:C004`、`UIAP Rotary Cursor`、`TEST7-001`を維持している
-- [ ] `03_vibration_motor_console`が`1209:C006`、`UIAP Vibration Console`、`TEST9-001`を使用する
+- [ ] `02_rotary_cursor_size`が`1209:0001`、`UIAP Rotary Cursor`、`TEST7-001`を使用する
+- [ ] `03_vibration_motor_console`が`1209:0001`、`UIAP Vibration Console`、`TEST9-001`を使用する
 - [ ] `03`がFeature Report ID 1でLEVEL、ON時間、OFF時間、回数を一括受信し、`make pulse`、`make pattern`、`make on`、`make status`、`make off`を提供する
 - [ ] `make pulse LEVEL=25`、`75`、`100`で指定レベルへ変更でき、`LEVEL=100`が連続Highになる
 - [ ] `03`で振動モジュールを追加し、`04`では配線を変更しない
-- [ ] `04_rotary_cursor_haptic`が`1209:C005`、`UIAP Rotary Haptic`、`TEST8-001`を使用する
+- [ ] `04_rotary_cursor_haptic`が`1209:0001`、`UIAP Rotary Haptic`、`TEST8-001`を使用する
 - [ ] `04`の入力Report ID 1と、LEVEL・ON時間・OFF時間・回数を含む触覚Feature Report ID 2をWindows/macOSホストが処理する
 - [ ] `03`と`04`の`haptic_pattern.h`および`haptic_pattern_protocol.h`が同一で、パターン実行と自動停止をデバイス側で行う
 - [ ] `04`で回転中は振動せず、操作停止200ms後に通常変更はレベル95の80ms×2回（間隔40ms）、上限／下限は250ms×1回振動し、ドライランでは振動しない

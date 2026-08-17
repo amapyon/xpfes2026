@@ -16,7 +16,7 @@ This PoC does not vendor ch32fun or rv003usb. It uses the fixed dependencies und
 
 ## Local protocol choices
 
-- Temporary PoC VID:PID: `1209:D003`
+- Shared test-only VID:PID: `1209:0001` (not globally unique; workshop prototyping and testing only)
 - Feature Report ID: `1`
 - Payload: one byte, vibration level `0`～`100`
 - PWM: UIAPduino `D6/A2` / CH32V003 `PC4` / `TIM1_CH4`, 500Hz

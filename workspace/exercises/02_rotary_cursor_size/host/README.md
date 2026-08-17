@@ -4,7 +4,7 @@
 
 共通部分:
 
-- `1209:C004`のHID列挙、1台接続確認、`open_path`
+- 共有テスト用`1209:0001`とProduct文字列`UIAP Rotary Cursor`によるHID列挙、1台接続確認、`open_path`
 - Report IDなしの`[delta, sequence]`入力デコード
 - CW／CCWイベントループとドライラン
 - コマンドライン、`Ctrl+C`、終了時復元の制御

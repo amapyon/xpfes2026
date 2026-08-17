@@ -9,7 +9,8 @@
 - 新モジュールを使用した従来のOS別実装は、WindowsとmacOSの両方で実機確認済み
 - 共通化後の単一ファームウェアを、WindowsとmacOSの両方で利用者実機確認済み
 - `GND`と`KEY`だけの2本配線で、従来と同じ`AbCdE`入力を利用者実機確認済み
-- VID:PID `1209:C003`とシリアル`TEST3-001`はPoC用一時値
+- VID:PIDは共有テスト用`1209:0001`、Product文字列は`UIAP Macro Keyboard`
+- `1209:0001`は世界で一意ではなく、教育目的の試作とワークショップ内テスト専用。製品、製造、販売、再配布には使用しない
 
 ## 配線
 
@@ -63,7 +64,7 @@ make hidcheck
 
 ```text
 Matching devices: 1
-[0] VID:PID=1209:C003
+[0] VID:PID=1209:0001
   Product: UIAP Macro Keyboard
   Serial: TEST3-001
 UIAP Macro Keyboard HID enumeration: PASS

@@ -19,10 +19,20 @@
 #include <stdint.h>
 #ifdef INSTANCE_DESCRIPTORS
 
+/*
+ * TEST-ONLY USB IDENTIFIER
+ * 1209:0001 is a shared pid.codes test identifier and is not globally unique.
+ * Use only for educational prototyping and testing within this workshop.
+ * Do not use for products, manufacturing, sale, or redistribution.
+ */
+#define UIAP_USB_VID 0x1209
+#define UIAP_USB_PID 0x0001
+
 static const uint8_t device_descriptor[] = {
     18, 0x01, 0x10, 0x01,
     0x00, 0x00, 0x00, 0x08,
-    0x09, 0x12, 0x08, 0xC0,
+    UIAP_USB_VID & 0xff, UIAP_USB_VID >> 8,
+    UIAP_USB_PID & 0xff, UIAP_USB_PID >> 8,
     0x10, 0x00, 1, 2, 3, 1
 };
 

@@ -20,7 +20,7 @@ The pinned rv003usb `demo_hidapi` source also demonstrates using `ws2812b_dma_sp
 
 ## Local protocol choices
 
-- Temporary PoC VID:PID: `1209:D008`
+- Shared test-only VID:PID: `1209:0001` (not globally unique; workshop prototyping and testing only)
 - Feature Report ID: `1`
 - Report payload: 24 bytes = eight RGB triples
 - LED wire order: firmware converts host RGB to WS2812B GRB

@@ -14,11 +14,15 @@ from unittest.mock import patch
 ROOT = Path(__file__).resolve().parents[1]
 
 
+# TEST-ONLY USB IDENTIFIER
+# The 1209:0001 values below are shared, not globally unique, and limited to
+# educational prototyping and testing within this workshop. They must not be
+# used for products, manufacturing, sale, or redistribution.
 CASES = (
     (
         "01_macro_keyboard",
         ROOT / "workspace/exercises/01_macro_keyboard/host/hidcheck.py",
-        0xC003,
+        0x0001,
         "UIAP Macro Keyboard",
         "TEST3-001",
         None,
@@ -26,7 +30,7 @@ CASES = (
     (
         "02_rotary_cursor_size",
         ROOT / "workspace/exercises/02_rotary_cursor_size/host/cursor_size_host.py",
-        0xC004,
+        0x0001,
         "UIAP Rotary Cursor",
         "TEST7-001",
         "hidcheck",
@@ -34,7 +38,7 @@ CASES = (
     (
         "03_vibration_motor_console",
         ROOT / "workspace/exercises/03_vibration_motor_console/host/motorctl.py",
-        0xC006,
+        0x0001,
         "UIAP Vibration Console",
         "TEST9-001",
         "hidcheck",
@@ -42,7 +46,7 @@ CASES = (
     (
         "04_rotary_cursor_haptic",
         ROOT / "workspace/exercises/04_rotary_cursor_haptic/host/cursor_size_host.py",
-        0xC005,
+        0x0001,
         "UIAP Rotary Haptic",
         "TEST8-001",
         "hidcheck",

@@ -10,8 +10,12 @@ import signal
 import sys
 import time
 
+# TEST-ONLY USB IDENTIFIER
+# 1209:0001 is shared, not globally unique, and limited to educational
+# prototyping and testing within this workshop. Do not use it for products,
+# manufacturing, sale, or redistribution.
 VID = 0x1209
-PID = 0xD003
+PID = 0x0001
 PRODUCT = "UIAP Vibration Motor"
 REPORT_ID = 0x01
 

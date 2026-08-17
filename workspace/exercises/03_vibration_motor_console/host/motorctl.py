@@ -8,8 +8,12 @@ import platform
 import sys
 from typing import Any
 
+# TEST-ONLY USB IDENTIFIER
+# 1209:0001 is shared, not globally unique, and limited to educational
+# prototyping and testing within this workshop. Do not use it for products,
+# manufacturing, sale, or redistribution.
 VID = 0x1209
-PID = 0xC006
+PID = 0x0001
 PRODUCT = "UIAP Vibration Console"
 REPORT_ID = 0x01
 REPORT_SIZE = 7

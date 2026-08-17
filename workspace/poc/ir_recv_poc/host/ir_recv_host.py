@@ -8,8 +8,12 @@ import sys
 import time
 from typing import Iterable
 
+# TEST-ONLY USB IDENTIFIER
+# 1209:0001 is shared, not globally unique, and limited to educational
+# prototyping and testing within this workshop. Do not use it for products,
+# manufacturing, sale, or redistribution.
 VID = 0x1209
-PID = 0xD009
+PID = 0x0001
 PRODUCT = "UIAP IR Receiver PoC"
 REPORT_LEN = 8
 

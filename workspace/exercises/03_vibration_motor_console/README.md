@@ -35,7 +35,7 @@ make size
 make flash
 ```
 
-書き込み直後は振動モジュールがOFFであることを確認します。USBデバイスの暫定識別子は`1209:C006`、Productは`UIAP Vibration Console`、Serialは`TEST9-001`です。
+書き込み直後は振動モジュールがOFFであることを確認します。USBデバイスの共有テスト用識別子は`1209:0001`、Productは`UIAP Vibration Console`、Serialは`TEST9-001`です。`1209:0001`は世界で一意ではなく、教育目的の試作とワークショップ内テスト専用です。製品、製造、販売、再配布には使用しません。
 
 ## 検証状態
 
@@ -57,7 +57,7 @@ make list
 
 ```text
 Matching devices: 1
-[0] VID:PID=1209:C006
+[0] VID:PID=1209:0001
   Product: UIAP Vibration Console
   Serial: TEST9-001
 UIAP Vibration Console HID enumeration: PASS

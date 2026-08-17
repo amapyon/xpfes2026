@@ -10,8 +10,12 @@ import os
 from pathlib import Path
 import sys
 
+# TEST-ONLY USB IDENTIFIER
+# 1209:0001 is shared, not globally unique, and limited to educational
+# prototyping and testing within this workshop. Do not use it for products,
+# manufacturing, sale, or redistribution.
 VID = 0x1209
-PID = 0xC008
+PID = 0x0001
 PRODUCT = "UIAP Joystick Mouse"
 REPORT_SIZE = 4
 SPEED_PIXELS = (0, 1, 2, 4, 7, 11)

@@ -12,8 +12,12 @@ except Exception as exc:
     print(f"detail: {exc}")
     raise SystemExit(2)
 
+# TEST-ONLY USB IDENTIFIER
+# 1209:0001 is shared, not globally unique, and limited to educational
+# prototyping and testing within this workshop. Do not use it for products,
+# manufacturing, sale, or redistribution.
 VID = 0x1209
-PID = 0xD003
+PID = 0x0001
 REPORT_ID = 0x01
 REPORT_LEN = 8
 EXPECTED_PRODUCT = "UIAP HID Preflight"

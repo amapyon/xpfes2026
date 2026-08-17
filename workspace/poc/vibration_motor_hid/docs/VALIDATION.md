@@ -7,7 +7,7 @@
 - UIAPduino Pro Micro CH32V003 V1.4
 - ブートローダー `1209:B803`
 - Vendor-defined USB HID Feature Report
-- アプリケーション `1209:D003`
+- アプリケーション `1209:0001`（共有テスト用。識別子変更後は再検証対象）
 - 振動レベル `1`～`100`
 - 数値に応じた振動強度の変化
 - `status`

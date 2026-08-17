@@ -2,7 +2,8 @@
 
 USBはVendor-defined HID Feature Reportを使用します。
 
-- VID:PID: `1209:D009`（PoC用の暫定値）
+- VID:PID: `1209:0001`（共有テスト用。教育目的の試作とワークショップ内テスト専用）
+- `1209:0001`は世界で一意ではなく、製品、製造、販売、再配布には使用しない
 - Product: `UIAP OLED PoC`
 - Report ID: `0x01`
 - Report全長: 25バイト（Report IDを含む）

@@ -18,8 +18,14 @@
 #define PREFLIGHT_REPORT_PAYLOAD_SIZE 7
 #define PREFLIGHT_REPORT_TOTAL_SIZE 8
 
+/*
+ * TEST-ONLY USB IDENTIFIER
+ * 1209:0001 is a shared pid.codes test identifier and is not globally unique.
+ * Use only for educational prototyping and testing within this workshop.
+ * Do not use for products, manufacturing, sale, or redistribution.
+ */
 #define UIAP_USB_VID 0x1209
-#define UIAP_USB_PID 0xD003
+#define UIAP_USB_PID 0x0001
 
 #ifndef __ASSEMBLER__
 #include <stdint.h>

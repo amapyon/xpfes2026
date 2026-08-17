@@ -346,13 +346,13 @@ make app
 各段階の成功条件を分ける。
 
 - `make doctor`: ホスト側自己テストがPASS
-- `make hidcheck`: `1209:D003`、Usage Page `0xFF00`、Usage `0x0001`を検出
+- `make hidcheck`: 共有テスト用`1209:0001`、対象Product文字列、Usage Page `0xFF00`、Usage `0x0001`を検出
 - `make adc-monitor`: 静止時の値幅が小さく、段階が往復しない
 - `make cursor-test`: `32 → 144 → 256`へ変化し、起動前設定へ復元
 - `make haptic-test`: 選択したパターンを知覚できる
 - `make app`: ポテンショメーター操作で15段階のサイズが変化し、変更成功時だけ振動する
 
-アプリケーションVID:PID `1209:D003`、製品名、シリアル番号はPoC用一時値であることを記載する。
+アプリケーションVID:PID `1209:0001`は共有テスト用であり、世界で一意ではないこと、教育目的の試作とワークショップ内テスト以外に使用できないことを記載する。Product文字列は演習ごとに記載する。
 
 ## 9. 成功条件
 
@@ -447,10 +447,12 @@ make restore
 
 ```text
 ブートローダー: 1209:B803
-アプリケーション: 演習ごとの設定
+アプリケーション: 1209:0001（共有テスト用）
 ```
 
-PoCの一時値は、必ず一時値と明記する。
+演習・自由制作ごとにProduct文字列を設定する。VIDとPIDを定義または直接埋め込むコードにはテスト専用警告を記載する。
+
+過去のPoCの一時値は現行手順で使用しない。
 
 ```text
 1209:C003
@@ -460,7 +462,7 @@ TEST3-001
 TEST7-001
 ```
 
-これらを正式な公開配布用識別子として説明しない。
+これらを現行のワークショップ識別子として説明しない。
 
 1台の物理USBデバイスが、Windows上で親デバイスと複数のHIDインターフェースとして表示されることがある。表示行数と物理ボード数を混同しない。
 
@@ -728,7 +730,7 @@ make app
 
 成功条件:
 
-1. `make list`: `1209:C004`を1台検出する
+1. `make list`: `1209:0001`かつProduct文字列`UIAP Rotary Cursor`を1台検出する
 2. `make app-dry-run`: カーソル設定を変えず、CWとCCWの両方を表示する
 3. `make host-doctor`: カーソル倍率API、ABI判定、同値書込み、再読取りがPASSになる
 4. `make app`: 回転方向に応じてカーソルサイズが変わる
@@ -746,7 +748,7 @@ make restore
 
 ## 27. macOS振動単体・ロータリー触覚演習の手順記載
 
-`03_vibration_motor_console`は、先に`02_rotary_cursor_size`の成功を確認してから開始する。振動モジュールを配線して`make flash`を実行後、`make list`で`1209:C006`を1台検出し、`make pulse LEVEL=25`、`LEVEL=75`、`LEVEL=100`で強さを比較する。`make pattern LEVEL=95 ON_MS=80 OFF_MS=40 COUNT=2`で、一括パラメーター受信、2回振動、デバイス側自動停止を確認する。`make on LEVEL=<1..100>`を使った場合は必ず`make status`と`make off`まで実行する。
+`03_vibration_motor_console`は、先に`02_rotary_cursor_size`の成功を確認してから開始する。振動モジュールを配線して`make flash`を実行後、`make list`で`1209:0001`かつProduct文字列`UIAP Vibration Console`を1台検出し、`make pulse LEVEL=25`、`LEVEL=75`、`LEVEL=100`で強さを比較する。`make pattern LEVEL=95 ON_MS=80 OFF_MS=40 COUNT=2`で、一括パラメーター受信、2回振動、デバイス側自動停止を確認する。`make on LEVEL=<1..100>`を使った場合は必ず`make status`と`make off`まで実行する。
 
 `04_rotary_cursor_haptic`は、先に`02_rotary_cursor_size`と`03_vibration_motor_console`の成功を確認してから開始する。振動モジュールは`03`で配線済みとし、`04`では配線を変更しない。
 
@@ -756,7 +758,7 @@ make restore
 cd "$UIAP_WORKSPACE/exercises/04_rotary_cursor_haptic"
 ```
 
-`make list`では`1209:C005`を1台検出する。`make app-dry-run`ではCW／CCWだけを確認し、振動しない。`make app`では回転中にカーソルサイズだけを変更し、最後の回転から200ms後、通常変更ではD6/A2 / PC4の振動モジュールがレベル95で80msを2回、間隔40msで動作する。上限／下限では同じ待ち時間後に250msを1回振動する。変更失敗時は振動しない。`Ctrl+C`終了時は起動前のカーソルサイズへ戻る。
+`make list`では`1209:0001`かつProduct文字列`UIAP Rotary Haptic`を1台検出する。`make app-dry-run`ではCW／CCWだけを確認し、振動しない。`make app`では回転中にカーソルサイズだけを変更し、最後の回転から200ms後、通常変更ではD6/A2 / PC4の振動モジュールがレベル95で80msを2回、間隔40msで動作する。上限／下限では同じ待ち時間後に250msを1回振動する。変更失敗時は振動しない。`Ctrl+C`終了時は起動前のカーソルサイズへ戻る。
 
 振動が連続する、発熱、異臭、USB切断、連続リセットが発生した場合は直ちにUSBを外し、振動モジュールのVCC、GND、INとモジュールの定格を確認する。
 

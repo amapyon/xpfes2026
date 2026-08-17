@@ -34,7 +34,8 @@
 - 現行のレベル95・一括パターンレポート版は、Windows実機で想定動作を確認済み
 - 振動モジュール単体の制御方式はWindows 11 x64とmacOS Apple Siliconで実機確認済み
 - 統合後の共通ホストと一括パターン方式は、macOS実機で再確認が必要
-- VID:PID `1209:C005`とシリアル`TEST8-001`はPoC用一時値
+- VID:PIDは共有テスト用`1209:0001`、Product文字列は`UIAP Rotary Haptic`
+- `1209:0001`は世界で一意ではなく、教育目的の試作とワークショップ内テスト専用。製品、製造、販売、再配布には使用しない
 
 ## 使用する部品
 
@@ -100,7 +101,7 @@ make app
 
 ```text
 Matching devices: 1
-[0] VID:PID=1209:C005
+[0] VID:PID=1209:0001
   Product: UIAP Rotary Haptic
   Serial: TEST8-001
 UIAP Rotary Haptic HID enumeration: PASS

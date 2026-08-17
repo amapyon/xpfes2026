@@ -120,8 +120,10 @@ make doctor
 
 ## USB HIDレポート
 
-USB IDは`1209:D009`、Product文字列は`UIAP IR Receiver PoC`、入力レポート長は
+USB IDは共有テスト用`1209:0001`、Product文字列は`UIAP IR Receiver PoC`、入力レポート長は
 8byteです。
+
+`1209:0001`は世界で一意ではなく、教育目的の試作とワークショップ内テスト専用です。製品、製造、販売、再配布には使用できません。
 
 ### NECイベント
 

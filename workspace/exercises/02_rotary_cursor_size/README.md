@@ -6,7 +6,8 @@
 
 - 統合後の共通ホストと単一ファームウェアはWindows/macOSで想定動作を実機確認済み
 - macOSではDevkit `v0.1.2`の演習手順を利用者実機で合格確認済み
-- VID:PID `1209:C004`とシリアル`TEST7-001`はPoC用一時値
+- VID:PIDは共有テスト用`1209:0001`、Product文字列は`UIAP Rotary Cursor`
+- `1209:0001`は世界で一意ではなく、教育目的の試作とワークショップ内テスト専用。製品、製造、販売、再配布には使用しない
 
 ## 配線
 
@@ -45,7 +46,7 @@ make app
 
 ```text
 Matching devices: 1
-[0] VID:PID=1209:C004
+[0] VID:PID=1209:0001
   Product: UIAP Rotary Cursor
   Serial: TEST7-001
 UIAP Rotary Cursor HID enumeration: PASS

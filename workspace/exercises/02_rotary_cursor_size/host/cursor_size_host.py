@@ -16,10 +16,12 @@ from typing import Any
 
 VERSION = "0.3.0"
 
-# rotary_cursor_size.cが通知するUSB識別子。
-# 派生演習や製品を作る場合は、ファームウェア側と同時に変更する。
+# TEST-ONLY USB IDENTIFIER
+# 1209:0001 is shared, not globally unique, and limited to educational
+# prototyping and testing within this workshop. Do not use it for products,
+# manufacturing, sale, or redistribution.
 VID = 0x1209
-PID = 0xC004
+PID = 0x0001
 PRODUCT = "UIAP Rotary Cursor"
 
 # 参加者が調整しやすいWindows用の値。

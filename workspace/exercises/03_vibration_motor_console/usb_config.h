@@ -25,9 +25,14 @@
 
 #ifdef INSTANCE_DESCRIPTORS
 
-/* 演習用の暫定識別子。正式な製品識別子として使用しない。 */
+/*
+ * TEST-ONLY USB IDENTIFIER
+ * 1209:0001 is a shared pid.codes test identifier and is not globally unique.
+ * Use only for educational prototyping and testing within this workshop.
+ * Do not use for products, manufacturing, sale, or redistribution.
+ */
 #define UIAP_USB_VID 0x1209
-#define UIAP_USB_PID 0xC006
+#define UIAP_USB_PID 0x0001
 
 static const uint8_t device_descriptor[] = {
     18, 1,
