@@ -263,6 +263,10 @@ class DocumentBundleTests(unittest.TestCase):
                     "docs/project/00_PROJECT_OVERVIEW.md",
                     "docs/project/40_WORKSHOP_GUIDE_RULES.md",
                     "workspace/ai/README.md",
+                    "workspace/ai/CONCEPT_GENERATION_PROMPT.md",
+                    "workspace/ai/REQUIREMENTS_GENERATION_PROMPT.md",
+                    "workspace/ai/WIRING_GENERATION_PROMPT.md",
+                    "workspace/ai/PROGRAM_GENERATION_PROMPT.md",
                     "workspace/parts/PARTS_FOR_AI.md",
                     "workspace/exercises/00_onboard_led_blink/README.md",
                     "workspace/my/README.md",
@@ -343,13 +347,16 @@ class UnifiedRepositoryTests(unittest.TestCase):
         self.assertIn("## 配線前30秒チェック", wiring)
         self.assertIn("## 要確認事項", wiring)
 
-    def test_program_generation_prompt_enforces_simplified_safety_gate(self) -> None:
+    def test_program_generation_prompt_distinguishes_safety_from_software_choices(self) -> None:
         prompt = (ROOT / "workspace" / "ai" / "PROGRAM_GENERATION_PROMPT.md").read_text(encoding="utf-8")
         self.assertIn("## 最初に確認すること", prompt)
-        self.assertIn("WIRING.mdの`設計結果`が`要確認`ではない", prompt)
-        self.assertIn("## 要確認で停止する場合", prompt)
-        self.assertIn("- WIRING.mdが`要確認`", prompt)
-        self.assertIn("### 物理配線の変更が必要な場合", prompt)
+        self.assertIn("## プログラム生成を停止する条件", prompt)
+        self.assertIn("WIRING.mdの`設計結果`が`要確認`の場合も", prompt)
+        self.assertIn("物理配線や安全性が未確定なら停止", prompt)
+        self.assertIn("ソフトウェア実装だけが未確定なら生成を続行", prompt)
+        self.assertIn("## 物理配線の変更が必要な場合", prompt)
+        self.assertIn("VID: `0x1209`", prompt)
+        self.assertIn("PID: `0x0001`", prompt)
         self.assertIn("`プログラム生成OK`", prompt)
 
     def test_macos_commands_are_git_executable(self) -> None:

@@ -717,7 +717,7 @@ make help
 - Web経路の`device1.zip`が、二重ディレクトリなしで`workspace/my/device1`へ配置できる
 - `BOARD_FOR_AI.md`、`PROGRAM_GENERATION_PROMPT.md`、`MY_DEVICE_TEMPLATE/`、`new_my_device.py`、`prepare_web_handoff.py`が完成し、対象Devkit版と整合している
 - `new_my_device.py`が`device1`を初期化でき、既存の`device1`を上書きしない
-- `REQUIREMENTS.md`と`WIRING.md`のひな型、および配線安全確認の中間ゲートが参加者向け資料にある
+- `REQUIREMENTS.md`と`WIRING.md`のひな型、設計結果と要確認事項の分類、および配線前30秒チェックが参加者向け資料にある
 - Web経路で生成したサンプルをPC上のDevkitへ配置し、WindowsとmacOSでビルドから実機確認まで検証している
 - 各部品の写真、基板表記、端子配置、電源電圧、信号電圧を記録
 - RGB LED、赤外線LED、パッシブブザーに必要な抵抗・駆動部品が最終BOMへ含まれる

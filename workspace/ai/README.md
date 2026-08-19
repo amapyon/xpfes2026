@@ -14,6 +14,9 @@
 | ファイル | 用途 |
 |---|---|
 | `BOARD_FOR_AI.md` | 基板、端子、電源、周辺機能、競合、ビルド条件 |
+| `CONCEPT_GENERATION_PROMPT.md` | 作りたい動きから3案を比較する指示 |
+| `REQUIREMENTS_GENERATION_PROMPT.md` | 採用案を簡潔な要件に整理する指示 |
+| `WIRING_GENERATION_PROMPT.md` | 部品と要件から配線と安全条件を設計する指示 |
 | `PROGRAM_GENERATION_PROMPT.md` | ローカル操作型とWeb型で共通使用する生成指示 |
 | `MY_DEVICE_TEMPLATE/` | `device1`の要件、配線、Cプログラム、Makefileのひな型 |
 | `new_my_device.py` | ひな型を`workspace/my/device1`へ安全にコピーする初期化ツール |
@@ -24,16 +27,15 @@
 
 ## 共通の制作手順
 
-1. 生成AIと相談し、作りたいものと完成条件を`workspace/my/device1/REQUIREMENTS.md`へ整理する
-2. 使用する部品を`workspace/parts/PARTS_FOR_AI.md`から選ぶ
-3. 配線表と安全確認結果を`workspace/my/device1/WIRING.md`へ整理する
+1. `CONCEPT_GENERATION_PROMPT.md`で作りたい動きの候補を比較し、使用する部品を`workspace/parts/PARTS_FOR_AI.md`から選ぶ
+2. `REQUIREMENTS_GENERATION_PROMPT.md`で作りたいものと完成条件を`workspace/my/device1/REQUIREMENTS.md`へ整理する
+3. `WIRING_GENERATION_PROMPT.md`で配線表と設計結果を`workspace/my/device1/WIRING.md`へ整理する
 4. 電圧、電流、端子、GPIO、ADC、PWM、タイマー、USBとの競合を確認する
-5. 受講者または講師が`WIRING.md`の配線表と部品仕様を確認し、「配線安全確認」を`確認済み`にする。生成AI自身には`確認済み`へ変更させない
-6. 配線安全確認が終わるまで、プログラムを生成せず、実物も配線しない
-7. `workspace/my/device1`のプログラム一式を生成する
-8. PC上のDevkitでビルドする
-9. 配線を再確認してから書き込み、実機動作を確認する
-10. エラーや動作結果を生成AIへ返し、修正する
+5. 電源、GND、GPIO、極性、部品定格などの安全上または物理配線上の問題が残る場合は、配線とプログラム生成を停止する
+6. ソフトウェア実装上の未確定事項だけなら、`PROGRAM_GENERATION_PROMPT.md`に従って合理的な初期値を選び、プログラム一式を生成する
+7. PC上のDevkitでビルドする
+8. `WIRING.md`の「配線前30秒チェック」で実物を確認してから書き込み、実機動作を確認する
+9. エラーや動作結果を生成AIへ返し、修正する
 
 配線図を画像で作成する場合は`WIRING.png`などとして添付できますが、`WIRING.md`の文字による配線表を正本とします。画像だけを根拠にプログラムを作らせません。
 
@@ -44,7 +46,7 @@
 - `workspace/parts/PARTS_FOR_AI.md`
 - `workspace/ai/BOARD_FOR_AI.md`
 - 受講者と生成AIが整理した`workspace/my/device1/REQUIREMENTS.md`
-- 安全確認済みの`workspace/my/device1/WIRING.md`と、必要に応じて配線図画像
+- 安全上の問題が残っていない`workspace/my/device1/WIRING.md`と、必要に応じて配線図画像
 - `workspace/ai/MY_DEVICE_TEMPLATE/`
 - `workspace/ai/PROGRAM_GENERATION_PROMPT.md`
 
