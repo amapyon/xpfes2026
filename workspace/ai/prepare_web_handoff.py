@@ -11,6 +11,7 @@ import os
 from pathlib import Path, PurePosixPath
 import re
 import shutil
+import sys
 import tempfile
 import zipfile
 
@@ -20,6 +21,13 @@ DEFAULT_WORKSPACE = AI_DIR.parent
 OUTPUT_MARKER = ".uiap_web_handoff"
 MAX_FILE_BYTES = 2 * 1024 * 1024
 MAX_TOTAL_BYTES = 20 * 1024 * 1024
+
+
+def configure_text_output() -> None:
+    for stream in (sys.stdout, sys.stderr):
+        if hasattr(stream, "reconfigure"):
+            stream.reconfigure(encoding="utf-8")
+
 
 CORE_FILES = (
     "ai/PROGRAM_GENERATION_PROMPT.md",
@@ -355,6 +363,7 @@ def build(workspace: Path, output: Path, explicit_references: list[str], force: 
 
 
 def main() -> int:
+    configure_text_output()
     args = parse_args()
     workspace = args.workspace.resolve()
     output = (args.output or (workspace / "my" / "WEB_HANDOFF_device1")).resolve()

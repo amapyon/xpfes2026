@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import os
 from pathlib import Path
 from pathlib import PurePosixPath
 import subprocess
@@ -308,11 +309,15 @@ class NewPocTests(unittest.TestCase):
             workspace = Path(workspace_raw)
             shutil.copytree(ROOT / "workspace" / "ai", workspace / "ai")
             tool = workspace / "ai" / "new_my_device.py"
+            subprocess_env = os.environ.copy()
+            subprocess_env["PYTHONIOENCODING"] = "cp1252"
             first = subprocess.run(
                 [sys.executable, str(tool), "--workspace", str(workspace)],
                 check=False,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                env=subprocess_env,
             )
             self.assertEqual(0, first.returncode, first.stdout + first.stderr)
             project = workspace / "my" / "device1"
@@ -324,6 +329,8 @@ class NewPocTests(unittest.TestCase):
                 check=False,
                 capture_output=True,
                 text=True,
+                encoding="utf-8",
+                env=subprocess_env,
             )
             self.assertEqual(1, second.returncode)
             self.assertIn("上書きしません", second.stdout)

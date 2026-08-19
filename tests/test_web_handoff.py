@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import hashlib
+import os
 from pathlib import Path
 import shutil
 import subprocess
@@ -26,11 +27,15 @@ class WebHandoffTests(unittest.TestCase):
         return workspace
 
     def run_tool(self, workspace: Path, *args: str) -> subprocess.CompletedProcess[str]:
+        subprocess_env = os.environ.copy()
+        subprocess_env["PYTHONIOENCODING"] = "cp1252"
         return subprocess.run(
             [sys.executable, str(workspace / "ai" / "prepare_web_handoff.py"), "--workspace", str(workspace), *args],
             check=False,
             capture_output=True,
             text=True,
+            encoding="utf-8",
+            env=subprocess_env,
         )
 
     def test_creates_folder_markdown_and_zip_with_auto_reference(self) -> None:
